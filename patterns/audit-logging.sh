@@ -1,246 +1,191 @@
 #!/usr/bin/env bash
-# Audit Logging Pattern
-# Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v5.2.0-production-archive
-# Usage: source patterns/audit-logging.sh
-#
-# Demonstrates: Seven Pillars #3 (Audit Logging), #7 (Observability)
-#
-# Provides structured logging and audit trail patterns:
-# - Log levels (INFO, WARN, ERROR, DEBUG)
-# - Timestamp formatting
-# - Colored output for terminals
-# - Audit trail with context
-# - Log file management
-# - Performance timing
-#
-# Example:
-#   source patterns/audit-logging.sh
-#   log_info "Operation started"
-#   log_error "Operation failed"
-#   audit_log "USER_ACTION" "deployed service"
-#
-# TODO: Implementation to be extracted from rylan-unifi-case-study
+# Script: audit-logging.sh
+# Purpose: Provide structured logging and audit trail functions for sourced scripts
+# Usage: source "$(dirname "${BASH_SOURCE[0]}")/audit-logging.sh"  # Silent on success
+# Domain: Verification (Audit/Observability)
+# Agent: Bauer
+# Author: rylanlab canonical
+# Date: 2025-12-19
 
 set -euo pipefail
+IFS=$'\n\t'
 
-# Log configuration
-LOG_LEVEL="${LOG_LEVEL:-INFO}"  # DEBUG, INFO, WARN, ERROR
-LOG_FILE="${LOG_FILE:-}"  # Set to enable file logging
-AUDIT_FILE="${AUDIT_FILE:-}"  # Set to enable audit trail
+#######################################
+# Constants
+#######################################
+readonly LEVEL_DEBUG=0
+readonly LEVEL_INFO=1
+readonly LEVEL_WARN=2
+readonly LEVEL_ERROR=3
 
-# Colors for terminal output
 readonly COLOR_RED='\033[0;31m'
 readonly COLOR_YELLOW='\033[1;33m'
 readonly COLOR_GREEN='\033[0;32m'
 readonly COLOR_BLUE='\033[0;34m'
 readonly COLOR_NC='\033[0m'
 
-# Log levels
-readonly LEVEL_DEBUG=0
-readonly LEVEL_INFO=1
-readonly LEVEL_WARN=2
-readonly LEVEL_ERROR=3
+# Configuration (env vars override)
+LOG_LEVEL="${LOG_LEVEL:-INFO}"
+LOG_FILE="${LOG_FILE:-}"
+AUDIT_FILE="${AUDIT_FILE:-}"
+NO_COLOR="${NO_COLOR:-false}"  # Force no color if set
 
 #######################################
 # Get numeric log level
 # Arguments:
-#   $1 - Log level string
+#   $1 - Level string (default: INFO)
 # Returns:
-#   Numeric log level
+#   0-3 numeric level
 #######################################
 get_log_level() {
-    case "${1:-INFO}" in
-        DEBUG) echo ${LEVEL_DEBUG} ;;
-        INFO)  echo ${LEVEL_INFO} ;;
-        WARN)  echo ${LEVEL_WARN} ;;
-        ERROR) echo ${LEVEL_ERROR} ;;
-        *)     echo ${LEVEL_INFO} ;;
-    esac
+  local level="${1:-INFO}"
+  case "${level^^}" in
+    DEBUG)  echo "${LEVEL_DEBUG}" ;;
+    INFO)   echo "${LEVEL_INFO}" ;;
+    WARN)   echo "${LEVEL_WARN}" ;;
+    ERROR)  echo "${LEVEL_ERROR}" ;;
+    *)      echo "${LEVEL_INFO}" ;;
+  esac
 }
 
 #######################################
-# Check if message should be logged
+# Check if should log message
 # Arguments:
-#   $1 - Message log level
+#   $1 - Message level string
 # Returns:
-#   0 if should log, 1 otherwise
+#   0 (true) if should log
 #######################################
 should_log() {
-    local msg_level
-    local current_level
-    msg_level=$(get_log_level "$1")
-    current_level=$(get_log_level "${LOG_LEVEL}")
-    [[ ${msg_level} -ge ${current_level} ]]
+  local msg_level current_level
+  msg_level=$(get_log_level "$1")
+  current_level=$(get_log_level "${LOG_LEVEL}")
+  (( msg_level >= current_level ))
 }
 
 #######################################
-# Format timestamp
-# Returns:
-#   ISO 8601 timestamp
+# ISO8601 timestamp with seconds
+# Outputs:
+#   Timestamp string
 #######################################
 timestamp() {
-    date '+%Y-%m-%d %H:%M:%S'
+  date -Iseconds
 }
 
 #######################################
-# Log message with level
+# Internal: Write log message
+# Globals:
+#   None
 # Arguments:
-#   $1 - Log level
-#   $2+ - Message
+#   $1 - Level (INFO|WARN|ERROR|DEBUG)
+#   $2+ - Message parts
 # Outputs:
-#   Formatted log message
+#   Formatted message to appropriate stream/file
 #######################################
-log_message() {
-    local level="$1"
-    shift
-    local message="$*"
-    local ts
-    ts=$(timestamp)
-    local color="${COLOR_NC}"
-    local output=1  # stdout
-    
-    # Set color and output stream
-    case "${level}" in
-        ERROR)
-            color="${COLOR_RED}"
-            output=2  # stderr
-            ;;
-        WARN)
-            color="${COLOR_YELLOW}"
-            output=2  # stderr
-            ;;
-        INFO)
-            color="${COLOR_NC}"
-            ;;
-        DEBUG)
-            color="${COLOR_BLUE}"
-            ;;
-    esac
-    
-    # Format message
-    local formatted="[${ts}] [${level}] ${message}"
-    
-    # Output to terminal (with color if TTY)
-    if [[ -t ${output} ]]; then
-        echo -e "${color}${formatted}${COLOR_NC}" >&${output}
-    else
-        echo "${formatted}" >&${output}
-    fi
-    
-    # Output to log file if configured
-    if [[ -n "${LOG_FILE}" ]]; then
-        echo "${formatted}" >> "${LOG_FILE}"
-    fi
+_log_message() {
+  local level="$1"
+  shift
+  local message="$*"
+  local ts color output_stream=1
+
+  case "${level}" in
+    ERROR|WARN) output_stream=2 color="${COLOR_RED}";;
+    DEBUG)              color="${COLOR_BLUE}";;
+    INFO)               color="${COLOR_NC}";;
+  esac
+
+  [[ "${NO_COLOR}" == "true" ]] && color=""
+
+  local formatted="[$(timestamp)] [${level}] ${message}"
+
+  # Terminal output
+  if [[ -t ${output_stream} ]]; then
+    echo -e "${color}${formatted}${COLOR_NC}" >&${output_stream}
+  else
+    echo "${formatted}" >&${output_stream}
+  fi
+
+  # File output (append with flock for safety)
+  if [[ -n "${LOG_FILE}" ]]; then
+    (
+      flock 200
+      echo "${formatted}"
+    ) >> "${LOG_FILE}" 200>"${LOG_FILE}.lock"
+  fi
 }
 
 #######################################
-# Log info message
-# Arguments:
-#   $@ - Message
+# Public logging functions
 #######################################
-log_info() {
-    should_log INFO && log_message INFO "$@"
-}
+log_info()  { should_log INFO  && _log_message INFO  "$@"; }
+log_warn()  { should_log WARN  && _log_message WARN  "$@"; }
+log_error() { should_log ERROR && _log_message ERROR "$@"; }
+log_debug() { should_log DEBUG && _log_message DEBUG "$@"; }
 
 #######################################
-# Log warning message
+# Structured audit entry
 # Arguments:
-#   $@ - Message
-#######################################
-log_warn() {
-    should_log WARN && log_message WARN "$@"
-}
-
-#######################################
-# Log error message
-# Arguments:
-#   $@ - Message
-#######################################
-log_error() {
-    should_log ERROR && log_message ERROR "$@"
-}
-
-#######################################
-# Log debug message
-# Arguments:
-#   $@ - Message
-#######################################
-log_debug() {
-    should_log DEBUG && log_message DEBUG "$@"
-}
-
-#######################################
-# Create audit log entry
-# Arguments:
-#   $1 - Event type
-#   $2 - Event description
-#   $3+ - Additional context (optional)
+#   $1 - Event type (uppercase)
+#   $2 - Description
+#   $3+ - Optional key=value context
 # Outputs:
-#   Audit trail entry
+#   Audit line to file + INFO log
 #######################################
 audit_log() {
-    local event_type="$1"
-    local event_desc="$2"
-    shift 2
-    local context="$*"
-    
-    local ts
-    ts=$(timestamp)
-    local user="${USER:-unknown}"
-    local hostname="${HOSTNAME:-unknown}"
-    
-    # Format audit entry
-    local entry="[${ts}] [AUDIT] [${event_type}] user=${user} host=${hostname} action=${event_desc}"
-    if [[ -n "${context}" ]]; then
-        entry="${entry} context=${context}"
-    fi
-    
-    # Output to audit file if configured
-    if [[ -n "${AUDIT_FILE}" ]]; then
-        echo "${entry}" >> "${AUDIT_FILE}"
-    fi
-    
-    # Also log as INFO
-    log_info "AUDIT: ${event_type} - ${event_desc}"
+  local event_type="$1"
+  local desc="$2"
+  shift 2
+  local context="$*"
+
+  local ts user host entry
+  ts=$(timestamp)
+  user="${USER:-unknown}"
+  host="${HOSTNAME:-unknown}"
+
+  entry="[${ts}] [AUDIT] [${event_type}] user=${user} host=${host} action=${desc}"
+  [[ -n "${context}" ]] && entry="${entry} ${context}"
+
+  if [[ -n "${AUDIT_FILE}" ]]; then
+    (
+      flock 200
+      echo "${entry}"
+    ) >> "${AUDIT_FILE}" 200>"${AUDIT_FILE}.lock"
+  fi
+
+  log_info "AUDIT: ${event_type} - ${desc}${context:+ ${context}}"
 }
 
 #######################################
-# Start timing operation
-# Globals:
-#   _TIMER_START (set)
-# Arguments:
-#   $1 - Operation name
+# Timer functions (namespaced)
 #######################################
+_timer_start_time=0
+_timer_operation=""
+
 timer_start() {
-    local operation="${1:-operation}"
-    _TIMER_START=$(date +%s)
-    _TIMER_OPERATION="${operation}"
-    log_debug "Timer started: ${operation}"
+  local operation="${1:-operation}"
+  _timer_start_time=$(date +%s)
+  _timer_operation="${operation}"
+  log_debug "Timer started: ${operation}"
 }
 
-#######################################
-# End timing operation
-# Globals:
-#   _TIMER_START (read)
-# Arguments:
-#   None
-# Outputs:
-#   Duration message
-#######################################
 timer_end() {
-    local end
-    end=$(date +%s)
-    local duration=$((end - _TIMER_START))
-    log_info "${_TIMER_OPERATION} completed in ${duration}s"
-    audit_log "TIMING" "${_TIMER_OPERATION}" "duration=${duration}s"
+  local end_time duration
+  (( _timer_start_time == 0 )) && return 0
+  end_time=$(date +%s)
+  duration=$(( end_time - _timer_start_time ))
+
+  log_info "${_timer_operation} completed in ${duration}s"
+  audit_log "TIMING" "${_timer_operation}" "duration=${duration}s"
+
+  # Reset
+  _timer_start_time=0
+  _timer_operation=""
 }
 
-# TODO: Add more logging patterns
-# - Structured JSON logging
-# - Log rotation
-# - Log aggregation
-# - Performance metrics
-# - Error tracking integration
+# Silence on source — no output
+# Trap not needed (caller responsible)
 
-echo "TODO: Extract complete audit logging patterns from rylan-unifi-case-study" >&2
+#######################################
+# Future Extensions (canon-ready placeholders)
+#######################################
+# json_log() { ... }  # Structured JSON for aggregation
+# rotate_logs() { ... }  # logrotate integration

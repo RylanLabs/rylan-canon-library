@@ -1,258 +1,197 @@
 #!/usr/bin/env bash
-# Idempotency Pattern
-# Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v5.2.0-production-archive
-# Usage: source patterns/idempotency.sh
-#
-# Demonstrates: Seven Pillars #1 (Idempotency), #6 (Reversibility)
-#
-# Provides patterns for safe re-execution:
-# - State checking before actions
-# - Lock file management
-# - Conditional execution
-# - Rollback mechanisms
-# - State validation
-# - Safe retry logic
-#
-# Example:
-#   source patterns/idempotency.sh
-#   
-#   if acquire_lock "my-operation"; then
-#       if needs_action; then
-#           perform_action
-#       else
-#           log "Already complete (idempotent)"
-#       fi
-#       release_lock "my-operation"
-#   fi
-#
-# TODO: Implementation to be extracted from rylan-unifi-case-study
+# Script: idempotency.sh
+# Purpose: Provide secure idempotency, locking, and marker patterns for sourced scripts
+# Usage: source "$(dirname "${BASH_SOURCE[0]}")/idempotency.sh"
+# Domain: Verification (Idempotency/State) | Hardening (Locking/Reversibility)
+# Agent: Bauer | Beale
+# Author: rylanlab canonical
+# Date: 2025-12-19
 
 set -euo pipefail
-
-# Lock file configuration
-LOCK_DIR="${LOCK_DIR:-/tmp}"
-LOCK_TIMEOUT="${LOCK_TIMEOUT:-300}"  # 5 minutes
+IFS=$'\n\t'
 
 #######################################
-# Check if action is needed
-# (Override this in your script)
-# Returns:
-#   0 if action needed, 1 if already done
+# Constants
 #######################################
-needs_action() {
-    # TODO: Implement state checking logic
-    # Examples:
-    # - Check if file exists
-    # - Verify service state
-    # - Compare checksums
-    # - Query API status
-    
-    echo "TODO: Implement needs_action() for your use case" >&2
-    return 0  # Default: assume action needed
-}
+readonly LOCK_DIR="${LOCK_DIR:-/var/run/rylan-idempotency}"
+readonly MARKER_DIR="${MARKER_DIR:-/var/lib/rylan-markers}"
+readonly LOCK_TIMEOUT="${LOCK_TIMEOUT:-300}"  # seconds
+
+# Ensure directories exist with secure permissions
+mkdir -p "${LOCK_DIR}" "${MARKER_DIR}" 2>/dev/null || true
+chmod 755 "${LOCK_DIR}" "${MARKER_DIR}" 2>/dev/null || true
 
 #######################################
-# Acquire lock for operation
+# Atomic lock acquire using mkdir (race-free)
 # Arguments:
-#   $1 - Lock name
+#   $1 - Lock name (unique identifier)
 # Returns:
-#   0 if lock acquired, 1 if already locked
+#   0 if acquired, 1 if already held
+# Outputs:
+#   Status to stderr, audit if available
 #######################################
 acquire_lock() {
-    local lock_name="$1"
-    local lock_file="${LOCK_DIR}/${lock_name}.lock"
-    local pid=$$
-    
-    # Check if lock file exists
-    if [[ -f "${lock_file}" ]]; then
-        # Check if process is still running
-        local lock_pid
-        lock_pid=$(cat "${lock_file}" 2>/dev/null || echo "")
-        
-        if [[ -n "${lock_pid}" ]] && kill -0 "${lock_pid}" 2>/dev/null; then
-            # Lock is held by running process
-            echo "Lock held by process ${lock_pid}" >&2
-            return 1
-        else
-            # Stale lock file
-            echo "Removing stale lock file" >&2
-            rm -f "${lock_file}"
-        fi
+  local lock_name="$1"
+  local lock_path="${LOCK_DIR}/${lock_name}.lock"
+
+  if mkdir "${lock_path}" 2>/dev/null; then
+    if declare -F audit_log &>/dev/null; then
+      audit_log "LOCK_ACQUIRE" "Idempotency lock taken" "name=${lock_name}"
     fi
-    
-    # Create lock file
-    echo "${pid}" > "${lock_file}"
-    
-    # Verify we got the lock (race condition check)
-    local written_pid
-    written_pid=$(cat "${lock_file}")
-    if [[ "${written_pid}" != "${pid}" ]]; then
-        echo "Failed to acquire lock (race condition)" >&2
-        return 1
-    fi
-    
-    echo "Lock acquired: ${lock_name}" >&2
     return 0
+  else
+    if declare -F log_info &>/dev/null; then
+      log_info "Lock already held: ${lock_name}"
+    fi
+    return 1
+  fi
 }
 
 #######################################
-# Release lock for operation
+# Release lock
 # Arguments:
 #   $1 - Lock name
 #######################################
 release_lock() {
-    local lock_name="$1"
-    local lock_file="${LOCK_DIR}/${lock_name}.lock"
-    
-    if [[ -f "${lock_file}" ]]; then
-        rm -f "${lock_file}"
-        echo "Lock released: ${lock_name}" >&2
+  local lock_name="$1"
+  local lock_path="${LOCK_DIR}/${lock_name}.lock"
+
+  if [[ -d "${lock_path}" ]]; then
+    rmdir "${lock_path}" 2>/dev/null || true
+    if declare -F audit_log &>/dev/null; then
+      audit_log "LOCK_RELEASE" "Idempotency lock released" "name=${lock_name}"
     fi
+  fi
 }
 
 #######################################
 # Wait for lock with timeout
 # Arguments:
 #   $1 - Lock name
-#   $2 - Timeout in seconds (optional)
+#   $2 - Timeout seconds (default: LOCK_TIMEOUT)
 # Returns:
-#   0 if lock acquired, 1 on timeout
+#   0 if acquired, 1 on timeout
 #######################################
 wait_for_lock() {
-    local lock_name="$1"
-    local timeout="${2:-${LOCK_TIMEOUT}}"
-    local elapsed=0
-    local interval=5
-    
-    while ! acquire_lock "${lock_name}"; do
-        sleep ${interval}
-        elapsed=$((elapsed + interval))
-        
-        if [[ ${elapsed} -ge ${timeout} ]]; then
-            echo "Timeout waiting for lock: ${lock_name}" >&2
-            return 1
-        fi
-        
-        echo "Waiting for lock... (${elapsed}/${timeout}s)" >&2
-    done
-    
-    return 0
-}
+  local lock_name="$1"
+  local timeout="${2:-${LOCK_TIMEOUT}}"
+  local elapsed=0
+  local interval=5
 
-#######################################
-# Check current state
-# (Override this in your script)
-# Returns:
-#   0 if state valid, 1 if invalid
-#######################################
-check_state() {
-    # TODO: Implement state validation
-    # Examples:
-    # - Verify file permissions
-    # - Check service health
-    # - Validate configuration
-    # - Confirm resource availability
-    
-    echo "TODO: Implement check_state() for your use case" >&2
-    return 0  # Default: assume state valid
-}
-
-#######################################
-# Save state for rollback
-# Arguments:
-#   $1 - State identifier
-#######################################
-save_state() {
-    local state_id="$1"
-    local state_file="${LOCK_DIR}/${state_id}.state"
-    
-    # TODO: Implement state saving
-    # Examples:
-    # - Backup configuration files
-    # - Record current values
-    # - Snapshot database
-    # - Store environment state
-    
-    echo "TODO: Implement save_state() for your use case" >&2
-    echo "$(date +%s)" > "${state_file}"
-}
-
-#######################################
-# Restore state (rollback)
-# Arguments:
-#   $1 - State identifier
-# Returns:
-#   0 on success, 1 on failure
-#######################################
-restore_state() {
-    local state_id="$1"
-    local state_file="${LOCK_DIR}/${state_id}.state"
-    
-    if [[ ! -f "${state_file}" ]]; then
-        echo "No saved state found: ${state_id}" >&2
-        return 1
+  while ! acquire_lock "${lock_name}"; do
+    sleep ${interval}
+    elapsed=$((elapsed + interval))
+    if (( elapsed >= timeout )); then
+      if declare -F fail &>/dev/null; then
+        fail "Timeout waiting for lock: ${lock_name}" 1 "Another instance may be running"
+      else
+        echo "ERROR: Timeout waiting for lock: ${lock_name}" >&2
+        exit 1
+      fi
     fi
-    
-    # TODO: Implement state restoration
-    # Examples:
-    # - Restore configuration files
-    # - Revert changes
-    # - Rollback database
-    # - Reset environment
-    
-    echo "TODO: Implement restore_state() for your use case" >&2
-    return 0
+    if declare -F log_info &>/dev/null; then
+      log_info "Waiting for lock... (${elapsed}s/${timeout}s)"
+    fi
+  done
 }
 
 #######################################
-# Run action with idempotency check
+# Check if marker exists (simple idempotency)
+# Arguments:
+#   $1 - Marker name
+# Returns:
+#   0 if exists (already done), 1 if needs action
+#######################################
+marker_exists() {
+  local marker_name="$1"
+  [[ -f "${MARKER_DIR}/${marker_name}.done" ]]
+}
+
+#######################################
+# Create marker (mark as complete)
+# Arguments:
+#   $1 - Marker name
+#   $2 - Optional details (e.g., version/checksum)
+#######################################
+create_marker() {
+  local marker_name="$1"
+  local details="${2:-}"
+  local marker_file="${MARKER_DIR}/${marker_name}.done"
+
+  mkdir -p "$(dirname "${marker_file}")"
+  echo "${details:-$(date -Iseconds)}" > "${marker_file}"
+  chmod 644 "${marker_file}"
+
+  if declare -F audit_log &>/dev/null; then
+    audit_log "MARKER_CREATE" "Idempotency marker set" "name=${marker_name} details=${details}"
+  fi
+}
+
+#######################################
+# Remove marker (for rollback/testing)
+# Arguments:
+#   $1 - Marker name
+#######################################
+remove_marker() {
+  local marker_name="$1"
+  local marker_file="${MARKER_DIR}/${marker_name}.done"
+
+  if [[ -f "${marker_file}" ]]; then
+    rm -f "${marker_file}"
+    if declare -F audit_log &>/dev/null; then
+      audit_log "MARKER_REMOVE" "Idempotency marker cleared" "name=${marker_name}"
+    fi
+  fi
+}
+
+#######################################
+# Run command only if needed (idempotent wrapper)
+# Globals:
+#   None
 # Arguments:
 #   $1 - Lock name
-#   $@ - Command to run
+#   $2 - Marker name
+#   $3+ - Command to run if needed
 # Returns:
-#   0 on success (or already done), 1 on failure
+#   0 always (success or already done)
 #######################################
 run_idempotent() {
-    local lock_name="$1"
-    shift
-    local action="$*"
-    
-    # Check if action needed
-    if ! needs_action; then
-        echo "Action not needed (already complete)" >&2
-        return 0
+  local lock_name="$1"
+  local marker_name="$2"
+  shift 2
+
+  if marker_exists "${marker_name}"; then
+    if declare -F log_info &>/dev/null; then
+      log_info "Already complete (idempotent): ${marker_name}"
     fi
-    
-    # Acquire lock
-    if ! acquire_lock "${lock_name}"; then
-        echo "Could not acquire lock" >&2
-        return 1
-    fi
-    
-    # Save state for rollback
-    save_state "${lock_name}"
-    
-    # Run action
-    local exit_code=0
-    eval "${action}" || exit_code=$?
-    
-    # Release lock
-    release_lock "${lock_name}"
-    
-    if [[ ${exit_code} -ne 0 ]]; then
-        echo "Action failed, consider rollback" >&2
-        return 1
-    fi
-    
     return 0
+  fi
+
+  if ! acquire_lock "${lock_name}"; then
+    if declare -F fail &>/dev/null; then
+      fail "Could not acquire lock: ${lock_name}"
+    else
+      echo "ERROR: Lock held" >&2
+      exit 1
+    fi
+  fi
+
+  trap 'release_lock "${lock_name}"' EXIT
+
+  # Run the action
+  "$@"
+
+  create_marker "${marker_name}" "completed by $(basename "$0") at $(date -Iseconds)"
+
+  # Trap will release lock on exit
 }
 
-# TODO: Add more idempotency patterns
-# - Checksum validation
-# - Atomic operations
-# - Transaction patterns
-# - Distributed locks
-# - State machines
+# Silence on source — no output
+# Caller uses: run_idempotent "my-op" "config-applied" configure_system
 
-echo "TODO: Extract complete idempotency patterns from rylan-unifi-case-study" >&2
+#######################################
+# Example Canon Usage (commented)
+#######################################
+# if run_idempotent "deploy-web" "web-v1.2.0" deploy_web_service; then
+#   log_info "Deployment complete or already done"
+# fi

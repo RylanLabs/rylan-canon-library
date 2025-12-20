@@ -1,280 +1,199 @@
 # Patterns
 
-> Part of rylan-patterns-library  
+> Part of rylan-canon-library  
 > Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
 > Version: v5.2.0-production-archive  
 > Date: December 19, 2025
 
-**Status**: 🚧 Content extraction in progress
+**Status**: ✅ Production-grade — Canon compliant
 
 ---
 
 ## Overview
 
-This directory contains reusable bash patterns demonstrating Seven Pillars principles in practice. These are **reference implementations** you can study, copy, or source directly in your scripts.
+This directory contains **reusable, production-grade bash pattern libraries** implementing the Seven Pillars of Hellodeolu v6.
 
-## Philosophy
+These files are designed to be **sourced directly** in your scripts, providing immediate access to disciplined, traceable, and resilient behavior.
 
-**Learn by example, implement with understanding.**
+**Philosophy**: Discipline through understanding and reuse.
 
-These patterns show *how* to implement Seven Pillars principles:
-- Study the implementation to understand the pattern
-- Copy functions or source files directly
-- Adapt patterns to your specific use case
+- Source patterns to inherit production standards
+- Study implementations to internalize principles
 - Combine patterns for comprehensive solutions
-
-**Not a library**: These are educational examples, not a framework. Copy and own the code.
-
-## Available Patterns
-
-### error-handling.sh
-
-**Demonstrates**: Pillar 2 (Error Handling), Pillar 7 (Observability)
-
-**Includes**:
-- Strict mode setup (`set -euo pipefail`)
-- Error trap handlers
-- Exit code conventions
-- Error message formatting
-- Cleanup on failure
-- Graceful degradation patterns
-
-**Usage**:
-```bash
-# Source the pattern
-source patterns/error-handling.sh
-
-# Or copy functions into your script
-# Study the implementation for best practices
-```
-
-**Key functions**:
-- `error_handler()` - Trap handler for errors
-- `cleanup_on_exit()` - Cleanup logic
-- `fail_with_message()` - Structured error exit
-
-**Status**: 🚧 TODO - Extract from source repository
+- Own the behavior — these are your fortress walls
 
 ---
+
+## Available Patterns
 
 ### audit-logging.sh
 
 **Demonstrates**: Pillar 3 (Audit Logging), Pillar 7 (Observability)
 
-**Includes**:
-- Structured logging functions
-- Timestamp formatting
-- Log levels (INFO, WARN, ERROR, DEBUG)
-- Colored output for terminals
-- Log file rotation patterns
-- Audit trail formatting
+**Features**:
+- Structured, timestamped logging with ISO8601
+- Log levels: DEBUG, INFO, WARN, ERROR
+- Terminal coloring with `NO_COLOR` respect
+- Optional file logging with flock safety
+- Structured audit trail entries
+- Timer functions for operation duration
+
+**Key functions**:
+- `log_info`, `log_warn`, `log_error`, `log_debug`
+- `audit_log "EVENT" "description" "key=value"`
+- `timer_start "operation"`, `timer_end`
 
 **Usage**:
 ```bash
-# Source the pattern
-source patterns/audit-logging.sh
+source "$(dirname "${BASH_SOURCE[0]}")/audit-logging.sh"
 
-# Use logging functions
-log_info "Starting operation"
-log_error "Operation failed"
-log_debug "Debug information"
+log_info "Operation starting"
+audit_log "DEPLOY" "web-service" "env=production"
 ```
 
-**Key functions**:
-- `log_info()` - Info level logging
-- `log_warn()` - Warning logging
-- `log_error()` - Error logging
-- `log_debug()` - Debug logging
-- `audit_log()` - Audit trail entry
+---
 
-**Status**: 🚧 TODO - Extract from source repository
+### error-handling.sh
+
+**Demonstrates**: Pillar 2 (Error Handling), Pillar 7 (Observability)
+
+**Features**:
+- Full strict mode with IFS restriction
+- Comprehensive ERR trap with stack trace
+- Actionable error messages with remediation hints
+- Cleanup trap with audit integration
+- Validation helpers
+- Integration with audit-logging.sh
+
+**Key functions**:
+- `setup_error_traps` — **call once after sourcing**
+- `fail "message" [code] [fix]`
+- `warn "message"`
+- `require_command "cmd"`
+- `require_file "path"`
+
+**Usage**:
+```bash
+source "$(dirname "${BASH_SOURCE[0]}")/error-handling.sh"
+setup_error_traps
+
+require_command jq
+fail "Configuration invalid" 3 "Run validation script"
+```
 
 ---
 
 ### idempotency.sh
 
-**Demonstrates**: Pillar 1 (Idempotency), Pillar 6 (Reversibility)
+**Demonstrates**: Pillar 1 (Idempotency), Pillar 6 (Reversibility), Pillar 5 (Validation)
 
-**Includes**:
-- State checking patterns
-- Lock file management
-- Conditional execution
-- State validation
-- Safe re-execution patterns
-- Rollback mechanisms
+**Features**:
+- Atomic mkdir-based locking (race-free)
+- Marker file pattern for simple state tracking
+- Integrated lock + marker wrapper
+- Audit logging on lock/marker events
+- Secure directories (/var/run & /var/lib)
+
+**Key functions**:
+- `acquire_lock "name"`, `release_lock "name"`
+- `wait_for_lock "name" [timeout]`
+- `marker_exists "name"`, `create_marker "name" [details]`, `remove_marker "name"`
+- `run_idempotent "lock" "marker" command...`
 
 **Usage**:
 ```bash
-# Source the pattern
-source patterns/idempotency.sh
+source "$(dirname "${BASH_SOURCE[0]}")/idempotency.sh"
 
-# Check if action needed
-if needs_action; then
-    perform_action
-fi
+run_idempotent "deploy-web" "web-v20251219" deploy_web_service
+# Succeeds if already done, runs safely if not
 ```
-
-**Key functions**:
-- `check_state()` - Current state validation
-- `acquire_lock()` - Prevent concurrent execution
-- `release_lock()` - Clean up lock
-- `is_idempotent()` - Check if safe to re-run
-- `rollback()` - Undo changes
-
-**Status**: 🚧 TODO - Extract from source repository
 
 ---
 
-## Using Patterns
+## Combining Patterns (Recommended)
 
-### Direct Sourcing
+Production scripts typically combine all three:
 
-**Source patterns in your scripts**:
 ```bash
 #!/usr/bin/env bash
+# Script: deploy-service.sh
+# Purpose: Deploy service with full discipline
+# Domain: Deployment
+# Agent: Bauer | Beale
+# Author: rylanlab canonical
+# Date: 2025-12-19
+
 set -euo pipefail
+IFS=$'\n\t'
 
 # Source patterns
-source "$(dirname "$0")/patterns/error-handling.sh"
-source "$(dirname "$0")/patterns/audit-logging.sh"
-source "$(dirname "$0")/patterns/idempotency.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/audit-logging.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/error-handling.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/idempotency.sh"
 
-# Use pattern functions
-log_info "Starting script"
+# Setup
+setup_error_traps
+timer_start "full-deployment"
 
-if ! check_state; then
-    log_error "Invalid state"
-    exit 1
-fi
+log_info "Deployment starting"
+audit_log "DEPLOY_START" "service-deployment"
 
-# Your logic here
+# Idempotent execution
+run_idempotent "deploy-lock" "service-deployed-v1" ./internal-deploy.sh
+
+timer_end
+audit_log "DEPLOY_COMPLETE" "service-deployment" "status=success"
+
+log_info "Deployment finished"
 ```
-
-### Copying Functions
-
-**Copy individual functions into your script**:
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Copied from patterns/audit-logging.sh
-log_info() {
-    local message="$*"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] ${message}"
-}
-
-# Your script logic
-log_info "Script started"
-```
-
-### Studying Patterns
-
-**Use patterns as learning tools**:
-1. Read the pattern implementation
-2. Understand *why* each element exists
-3. See how Seven Pillars principles manifest in code
-4. Apply lessons to your own scripts
-
-## Combining Patterns
-
-**Most scripts need multiple patterns**:
-
-```bash
-#!/usr/bin/env bash
-# Production script combining patterns
-set -euo pipefail
-
-# Source all needed patterns
-source patterns/error-handling.sh
-source patterns/audit-logging.sh
-source patterns/idempotency.sh
-
-# Setup error handling (Pattern 1)
-trap error_handler ERR
-trap cleanup_on_exit EXIT
-
-# Check idempotency (Pattern 3)
-if ! acquire_lock; then
-    log_error "Another instance running"
-    exit 1
-fi
-
-# Main logic with logging (Pattern 2)
-log_info "Starting operation"
-
-if needs_action; then
-    perform_action
-    log_info "Action completed"
-else
-    log_info "No action needed (idempotent)"
-fi
-
-# Cleanup handled by trap
-```
-
-## Pattern Structure
-
-Each pattern file includes:
-
-1. **Header**: Description, usage, Seven Pillars mapping
-2. **Configuration**: Constants and defaults
-3. **Core Functions**: Main pattern implementation
-4. **Helper Functions**: Supporting utilities
-5. **Examples**: Usage demonstrations (in comments)
-6. **Tests**: Manual test cases (in comments)
-
-## Seven Pillars Mapping
-
-| Pattern | Primary Pillars | Secondary Pillars |
-|---------|----------------|-------------------|
-| error-handling.sh | 2 (Error Handling) | 7 (Observability) |
-| audit-logging.sh | 3 (Audit Logging) | 7 (Observability), 4 (Documentation) |
-| idempotency.sh | 1 (Idempotency) | 6 (Reversibility), 5 (Validation) |
-
-## Extending Patterns
-
-**Add your own patterns**:
-
-1. Copy pattern structure
-2. Implement your pattern functions
-3. Document Seven Pillars mapping
-4. Add usage examples
-5. Test manually
-6. Share back to community
-
-## Testing Patterns
-
-**Manual testing approach**:
-
-```bash
-# Test individual pattern
-bash patterns/error-handling.sh
-
-# Test in isolation
-bash -c 'source patterns/idempotency.sh; check_state'
-
-# Test in your script
-./your-script.sh --debug
-```
-
-## Related Documentation
-
-- [Seven Pillars](../docs/seven-pillars.md) - Principles patterns implement
-- [Bash Discipline](../docs/bash-discipline.md) - Standards patterns follow
-- [Templates](../templates/) - Use patterns with templates
-- [Validators](../validators/) - Verify pattern compliance
-
-## Contributing Patterns
-
-See [CONTRIBUTING-template.md](../templates/CONTRIBUTING-template.md) for guidelines on contributing new patterns.
-
-New patterns should:
-- Map to one or more Seven Pillars
-- Include complete documentation
-- Provide usage examples
-- Pass all validators
-- Be tested manually
 
 ---
 
-**Next steps**: Extract pattern implementations from rylan-unifi-case-study v5.2.0-production-archive
+## Seven Pillars Coverage
+
+| Pattern             | Primary Pillars                          | Supporting Pillars                  |
+|---------------------|------------------------------------------|-------------------------------------|
+| audit-logging.sh    | 3 (Audit Logging)                        | 7 (Observability), 4 (Documentation) |
+| error-handling.sh   | 2 (Error Handling)                       | 7 (Observability), 5 (Validation)   |
+| idempotency.sh      | 1 (Idempotency)                          | 6 (Reversibility), 5 (Validation)   |
+
+**Combined**: Full Seven Pillars coverage when used together.
+
+---
+
+## Pattern Design Principles
+
+Each pattern file follows Bash Canon:
+- Full canonical header
+- `set -euo pipefail` + `IFS=$'\n\t'`
+- Readonly constants
+- Snake_case functions
+- Comprehensive documentation blocks
+- Silence on source
+- Integration with sibling patterns
+- Junior-at-3-AM readability
+
+---
+
+## Usage Guidelines
+
+1. **Source directly** — preferred for consistency
+2. **Call setup functions** (e.g., `setup_error_traps`) immediately after sourcing
+3. **Combine patterns** — they are designed to work together
+4. **Extend safely** — copy and modify only with understanding
+
+---
+
+## Related Resources
+
+- [../docs/seven-pillars.md](../docs/seven-pillars.md) — Core principles
+- [../docs/bash-discipline.md](../docs/bash-discipline.md) — Standards implemented
+- [../docs/hellodeolu-v6.md](../docs/hellodeolu-v6.md) — Evolution context
+- [../templates/](../templates/) — Scripts using these patterns
+- [../validators/](../validators/) — Compliance checks
+
+---
+
+**The fortress demands discipline. No shortcuts. No exceptions.**
+
+The Trinity endures.
