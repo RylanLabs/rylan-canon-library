@@ -1,225 +1,103 @@
 #!/usr/bin/env bash
-# <SCRIPT_NAME>: <One-line description>
-# Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v5.2.0-production-archive
-# Usage: ./<SCRIPT_NAME> [options] <arguments>
-#
-# <DESCRIPTION>
-# Detailed description of what this script does, why it exists,
-# and any important context for users.
-#
-# Options:
-#   -h, --help     Show this help message
-#   -v, --verbose  Enable verbose output
-#   -d, --debug    Enable debug mode
-#
-# Examples:
-#   ./<SCRIPT_NAME> --help
-#   ./<SCRIPT_NAME> --verbose <arg>
-#
-# TODO: Implementation to be extracted from rylan-unifi-case-study
-# TODO: Customize this template for your specific use case
+# Script: script-template.sh
+# Purpose: Canonical starting point for production-grade bash scripts
+# Domain: General
+# Agent: Bauer
+# Author: rylanlab canonical
+# Date: 2025-12-19
+# Usage: ./script-template.sh [options]
 
 set -euo pipefail
+IFS=$'\n\t'
 
+#######################################
+# Canonical pattern sourcing
+# Source all production patterns — single source of truth
+#######################################
+# Resolve template directory robustly
+readonly TEMPLATE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${TEMPLATE_DIR}/../patterns/audit-logging.sh"
+source "${TEMPLATE_DIR}/../patterns/error-handling.sh"
+source "${TEMPLATE_DIR}/../patterns/idempotency.sh"
+
+# Setup canon error handling
+setup_error_traps
+
+#######################################
 # Script metadata
+#######################################
 readonly SCRIPT_NAME="$(basename "$0")"
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_VERSION="1.0.0"
 
-# Configuration
-VERBOSE=false
-DEBUG=false
-
-# Colors for output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly NC='\033[0m' # No Color
+# Replace these placeholders
+readonly OPERATION_LOCK="replace-with-unique-lock-name"   # e.g., "deploy-web-service"
+readonly OPERATION_MARKER="replace-with-unique-marker"   # e.g., "web-service-v20251219"
 
 #######################################
-# Display usage information
-# Globals:
-#   SCRIPT_NAME
-# Arguments:
-#   None
-# Outputs:
-#   Usage information to stdout
+# Usage/help
 #######################################
 usage() {
-    cat << EOF
-Usage: ${SCRIPT_NAME} [options] <arguments>
+  cat << EOF
+${SCRIPT_NAME} v${SCRIPT_VERSION}
 
-<Brief description of script purpose>
+Usage: ${SCRIPT_NAME} [options]
 
 Options:
-    -h, --help      Show this help message and exit
-    -v, --verbose   Enable verbose output
-    -d, --debug     Enable debug mode
+  -h, --help      Show this help message
+  --dry-run       Show what would be done (optional)
 
-Examples:
-    ${SCRIPT_NAME} --help
-    ${SCRIPT_NAME} --verbose <arg>
+Description:
+  Replace placeholders (OPERATION_LOCK, OPERATION_MARKER, main_action) with your logic.
+  This template provides full Seven Pillars coverage via sourced canon patterns.
 
-TODO: Customize usage information for your script
 EOF
+  exit 0
 }
 
 #######################################
-# Log message with timestamp
-# Globals:
-#   None
-# Arguments:
-#   $1 - Log level (INFO, WARN, ERROR)
-#   $@ - Message to log
-# Outputs:
-#   Formatted log message to stdout/stderr
+# Main action — replace with your logic
 #######################################
-log() {
-    local level="$1"
-    shift
-    local message="$*"
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    
-    case "$level" in
-        INFO)
-            echo "[${timestamp}] [INFO] ${message}"
-            ;;
-        WARN)
-            echo -e "${YELLOW}[${timestamp}] [WARN] ${message}${NC}" >&2
-            ;;
-        ERROR)
-            echo -e "${RED}[${timestamp}] [ERROR] ${message}${NC}" >&2
-            ;;
-        DEBUG)
-            if [[ "$DEBUG" == true ]]; then
-                echo -e "${GREEN}[${timestamp}] [DEBUG] ${message}${NC}" >&2
-            fi
-            ;;
-    esac
+main_action() {
+  log_info "Starting main operation"
+
+  # Example: Perform your core task here
+  # command_that_does_work || fail "Command failed" 1 "Check prerequisites"
+
+  log_info "Main operation completed"
 }
 
 #######################################
-# Error handler - called on script failure
-# Globals:
-#   BASH_SOURCE, LINENO, BASH_COMMAND
-# Arguments:
-#   None
-# Outputs:
-#   Error information to stderr
-#######################################
-error_handler() {
-    local line_num="$1"
-    log ERROR "Script failed at line ${line_num}"
-    log ERROR "Failed command: ${BASH_COMMAND}"
-    # TODO: Add cleanup logic if needed
-    exit 1
-}
-
-# Set error trap
-trap 'error_handler ${LINENO}' ERR
-
-#######################################
-# Cleanup on exit
-# Globals:
-#   None
-# Arguments:
-#   None
-#######################################
-cleanup() {
-    log DEBUG "Cleanup function called"
-    # TODO: Add cleanup logic (remove temp files, etc.)
-}
-
-# Set cleanup trap
-trap cleanup EXIT
-
-#######################################
-# Validate input arguments
-# Globals:
-#   None
-# Arguments:
-#   $@ - Script arguments
-# Returns:
-#   0 on success, 1 on validation failure
-#######################################
-validate_inputs() {
-    log DEBUG "Validating inputs"
-    
-    # TODO: Add your validation logic here
-    # Example:
-    # if [[ -z "${REQUIRED_ARG:-}" ]]; then
-    #     log ERROR "Missing required argument"
-    #     return 1
-    # fi
-    
-    return 0
-}
-
-#######################################
-# Main script logic
-# Globals:
-#   VERBOSE, DEBUG
-# Arguments:
-#   $@ - Parsed arguments
-# Returns:
-#   0 on success, non-zero on failure
+# Main entry point
 #######################################
 main() {
-    log INFO "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
-    
-    # Validate inputs
-    if ! validate_inputs "$@"; then
-        log ERROR "Input validation failed"
-        usage
-        return 1
-    fi
-    
-    # TODO: Add your main script logic here
-    # Example structure:
-    # 1. Check preconditions (idempotency)
-    # 2. Perform actions with logging
-    # 3. Validate results
-    # 4. Report success
-    
-    log INFO "${SCRIPT_NAME} completed successfully"
+  local dry_run=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help) usage ;;
+      --dry-run) dry_run=true; shift ;;
+      *) fail "Unknown argument: $1" 2 "Use --help for usage" ;;
+    esac
+  done
+
+  timer_start "${SCRIPT_NAME}"
+
+  log_info "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
+  audit_log "SCRIPT_START" "${SCRIPT_NAME}" "version=${SCRIPT_VERSION}"
+
+  if [[ "${dry_run}" == true ]]; then
+    log_info "Dry-run mode — no changes will be made"
+    audit_log "DRY_RUN" "${SCRIPT_NAME}"
     return 0
+  fi
+
+  # Execute idempotently — safe to re-run
+  run_idempotent "${OPERATION_LOCK}" "${OPERATION_MARKER}" main_action
+
+  timer_end
+  audit_log "SCRIPT_SUCCESS" "${SCRIPT_NAME}"
+  log_info "${SCRIPT_NAME} completed successfully"
 }
 
-#######################################
-# Parse command line arguments
-# Globals:
-#   VERBOSE, DEBUG
-# Arguments:
-#   $@ - Command line arguments
-#######################################
-parse_args() {
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            -h|--help)
-                usage
-                exit 0
-                ;;
-            -v|--verbose)
-                VERBOSE=true
-                shift
-                ;;
-            -d|--debug)
-                DEBUG=true
-                VERBOSE=true
-                shift
-                ;;
-            *)
-                # TODO: Handle positional arguments
-                log ERROR "Unknown option: $1"
-                usage
-                exit 1
-                ;;
-        esac
-    done
-}
-
-# Script entry point
-parse_args "$@"
+# Execute
 main "$@"
