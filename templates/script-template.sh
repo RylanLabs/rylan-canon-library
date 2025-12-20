@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # <SCRIPT_NAME>: <One-line description>
 # Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v∞.5.2-production-archive
+# Source: rylan-unifi-case-study v5.2.0-production-archive
 # Usage: ./<SCRIPT_NAME> [options] <arguments>
 #
 # <DESCRIPTION>

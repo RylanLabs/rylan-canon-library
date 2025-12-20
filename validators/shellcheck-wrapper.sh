@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ShellCheck Wrapper with Custom Rules
 # Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v∞.5.2-production-archive
+# Source: rylan-unifi-case-study v5.2.0-production-archive
 # Usage: ./shellcheck-wrapper.sh [--fix] <script1.sh> [script2.sh ...]
 #
 # Runs ShellCheck with custom configurations for rylan-patterns-library:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Validate Bash Script Headers
 # Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v∞.5.2-production-archive
+# Source: rylan-unifi-case-study v5.2.0-production-archive
 # Usage: ./validate-bash-headers.sh <script1.sh> [script2.sh ...]
 #
 # Checks bash scripts for complete, standardized headers including:

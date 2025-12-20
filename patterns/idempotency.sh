@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Idempotency Pattern
 # Part of: rylan-patterns-library
-# Source: rylan-unifi-case-study v∞.5.2-production-archive
+# Source: rylan-unifi-case-study v5.2.0-production-archive
 # Usage: source patterns/idempotency.sh
 #
 # Demonstrates: Seven Pillars #1 (Idempotency), #6 (Reversibility)

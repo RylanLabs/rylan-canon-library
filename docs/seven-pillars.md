@@ -1,51 +1,219 @@
-# Seven Pillars of Production Infrastructure
+# Seven Pillars of Production-Grade Code
 
-> Part of rylan-patterns-library  
-> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v∞.5.2-production-archive  
-> Date: December 19, 2025
-
-**Status**: 🚧 Content extraction in progress
+> Canonical definition — RylanLabs standard  
+> Extracted from: rylan-unifi-case-study v5.2.0-production-archive  
+> Source: https://github.com/RylanLabs/rylan-unifi-case-study  
+> Date: 19/12/2025  
+> Agent: Bauer (Verification) | Domain: Audit
 
 ---
 
-<!-- TODO: Add content from rylan-unifi-case-study extraction -->
-
-## Overview
-
-The Seven Pillars are the foundational principles for production-grade infrastructure code. Every script, pattern, and validator in this library is designed to exemplify these principles.
-
-## The Seven Pillars
+## The Pillars (Hellodeolu v6 — Non-Negotiable)
 
 ### 1. Idempotency
-<!-- TODO: Extract documentation -->
 
-### 2. Error Handling
-<!-- TODO: Extract documentation -->
+**Principle**: Multiple executions produce identical outcome — no side effects on re-run.
 
-### 3. Audit Logging
-<!-- TODO: Extract documentation -->
+**Why**: Junior-at-3-AM must re-run safely. Prevents drift, enables automation.
 
-### 4. Documentation
-<!-- TODO: Extract documentation -->
+**Canon**:
 
-### 5. Validation
-<!-- TODO: Extract documentation -->
+- Check state before action
+- Declarative source of truth (YAML/JSON)
+- No destructive ops without guard
 
-### 6. Reversibility
-<!-- TODO: Extract documentation -->
+**Example**:
 
-### 7. Observability
-<!-- TODO: Extract documentation -->
+```bash
+# BAD — appends every run
+echo "key=value" >> /etc/config
 
-## Implementation Examples
+# GOOD — idempotent
+if ! grep -q "^key=" /etc/config; then
+  echo "key=value" >> /etc/config
+fi
+```
 
-<!-- TODO: Link to patterns/ directory examples -->
-
-## Validation
-
-<!-- TODO: Link to validators/validate-seven-pillars.sh -->
+**Validation**: Run script twice — second run must change nothing.
 
 ---
 
-**Next**: See [hellodeolu-v6.md](hellodeolu-v6.md) for evolution context
+### 2. Error Handling
+
+**Principle**: Fail fast, fail loud, provide context.
+
+**Why**: 3-AM failures need immediate actionable diagnosis.
+
+**Canon**:
+
+- `set -euo pipefail` mandatory
+- Trap ERR + EXIT
+- Meaningful exit codes
+- Actionable messages (what + how to fix)
+
+**Example**:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+trap 'echo "ERROR at line $LINENO (exit $?)"; exit 1' ERR
+
+if [[ ! -f "$CONFIG" ]]; then
+  echo "❌ Config missing: $CONFIG" >&2
+  echo "   Create: cp config.example.yaml $CONFIG" >&2
+  exit 3
+fi
+```
+
+**Exit Codes**:
+
+- 0 success
+- 1 generic error
+- 2 usage
+- 3 config
+- 4 network
+- 5 permission
+
+---
+
+### 3. Functionality
+
+**Principle**: Does exactly one thing, perfectly.
+
+**Why**: Single responsibility → composable, testable, maintainable.
+
+**Canon**:
+
+- Clear purpose in header
+- `--help` + `--dry-run`
+- Manual test 3× before commit
+- Document inputs/outputs/prereqs
+
+**Example**:
+
+```bash
+#!/usr/bin/env bash
+# Purpose: Backup UniFi controller config
+# Usage: ./backup.sh [--dry-run]
+# Prereq: UNIFI_TOKEN set, curl/jq installed
+# Output: .backups/config-YYYYMMDD-HHMMSS.json
+```
+
+---
+
+### 4. Audit Logging
+
+**Principle**: Every action traceable.
+
+**Why**: Forensics, compliance, blameless post-mortems.
+
+**Canon**:
+
+- Timestamped to stderr
+- Success + failure logged
+- Git commits explain WHY
+- Structured when complex
+
+**Example**:
+
+```bash
+log() { echo "[$(date -Iseconds)] $*" >&2; }
+
+log "Starting VLAN 10 creation"
+log_success "VLAN 10 created"
+log_error "Failed — check permissions"
+```
+
+---
+
+### 5. Failure Recovery
+
+**Principle**: Graceful degradation + clear recovery path.
+
+**Why**: Partial failures must not leave broken state.
+
+**Canon**:
+
+- Backup before destructive change
+- Trap cleanup
+- Rollback instructions in error
+- Stateful resume optional
+
+**Example**:
+
+```bash
+trap 'rm -f "$TEMP_FILE"' EXIT
+
+if [[ -f "$CONFIG" ]]; then
+  cp "$CONFIG" "$CONFIG.bak"
+  echo "Backup: $CONFIG.bak" >&2
+fi
+```
+
+---
+
+### 6. Security Hardening
+
+**Principle**: Assume hostile environment.
+
+**Why**: Default secure > default convenient.
+
+**Canon**:
+
+- No cleartext secrets
+- Input validation
+- Least privilege
+- Secure temp files (`mktemp`)
+- No `eval`
+
+**Example**:
+
+```bash
+TEMP=$(mktemp)
+chmod 600 "$TEMP"
+trap 'rm -f "$TEMP"' EXIT
+```
+
+---
+
+### 7. Documentation Clarity
+
+**Principle**: Junior at 3 AM can run and understand.
+
+**Why**: Knowledge transfer > clever code.
+
+**Canon**:
+
+- Header: purpose, usage, prereqs, output
+- Inline comments for non-obvious
+- Clear names
+- README quick-start
+- Examples
+
+**Example Header**:
+
+```bash
+#!/usr/bin/env bash
+# Script: backup-unifi.sh
+# Purpose: Backup UniFi controller configuration
+# Agent:  
+# Author: rylanlab canonical
+# Date: 19/12/2025
+```
+
+---
+
+**Trinity Alignment**:
+
+- Carter: Identity (prereqs, auth)
+- Bauer: Verification (audit, validation)
+- Beale: Hardening (security, recovery)
+
+**Hellodeolu v6 Outcomes**:
+
+- Junior-at-3-AM deployable
+- Pre-commit 100% green
+- One-command resurrection
+
+**The fortress demands these pillars. No exceptions.**

@@ -78,6 +78,9 @@ cd <project-directory>
 ```
 <project-name>/
 ├── README.md              # This file
+├── .github/
+│   ├── agents/           # Agent configuration files
+│   └── instructions/     # Instruction sets
 ├── scripts/              # Main scripts
 │   └── *.sh             # Implementation scripts
 ├── docs/                 # Documentation
@@ -120,7 +123,7 @@ Key principles:
 
 This project uses patterns from:
 - **rylan-patterns-library**: [GitHub](https://github.com/RylanLabs/rylan-patterns-library)
-- **Source**: rylan-unifi-case-study v∞.5.2-production-archive
+- **Source**: rylan-unifi-case-study v5.2.0-production-archive
 
 Patterns implemented:
 - [ ] Error handling (from `patterns/error-handling.sh`)

@@ -2,7 +2,7 @@
 
 > Part of rylan-patterns-library  
 > Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v∞.5.2-production-archive  
+> Version: v5.2.0-production-archive  
 > Date: December 19, 2025
 
 **Status**: 🚧 Content extraction in progress

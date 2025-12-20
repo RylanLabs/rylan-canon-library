@@ -4,13 +4,13 @@
 
 **Status**: 🚧 Content extraction in progress  
 **Extracted**: December 19, 2025  
-**Source**: [rylan-unifi-case-study v∞.5.2-production-archive](https://github.com/RylanLabs/rylan-unifi-case-study)
+**Source**: [rylan-unifi-case-study v5.2.0-production-archive](https://github.com/RylanLabs/rylan-unifi-case-study)
 
 ---
 
 ## Purpose
 
-This repository is a **reference library** of reusable patterns, validators, and principles extracted from the production-grade [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study) (344 commits, v∞.5.2-production-archive).
+This repository is a **reference library** of reusable patterns, validators, and principles extracted from the production-grade [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study) (344 commits, v5.2.0-production-archive).
 
 **This is NOT a production repository.** It's a template source for future projects, containing:
 
@@ -23,7 +23,7 @@ This repository is a **reference library** of reusable patterns, validators, and
 
 ### 📚 Documentation (`docs/`)
 - **Seven Pillars**: Core principles for production infrastructure
-- **Hellodeolu v6**: Consciousness architecture and discipline framework
+- **Hellodeolu v6**: Discipline architecture and framework
 - **No Bypass Culture**: Why manual discipline precedes automation
 - **IRL-First Approach**: Human validation before automated enforcement
 - **Bash Discipline**: Standards for production-grade shell scripting
@@ -61,11 +61,11 @@ This library is designed for **manual reference and extraction**, not as a packa
 
 All content extracted from:
 - **Repository**: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)
-- **Version**: v∞.5.2-production-archive
+- **Version**: v5.2.0-production-archive
 - **Commit count**: 344 commits over production lifecycle
 - **Extraction date**: December 19, 2025
 
-The original repository included CI workflows (32 automated checks), Gatekeeper automation, and Trinity guardian systems. These are intentionally **not included** here—this library focuses on the underlying patterns and principles, not the enforcement automation.
+The original repository included CI workflows (32 automated checks), Gatekeeper automation, and Trinity agent systems. These are intentionally **not included** here—this library focuses on the underlying patterns and principles, not the enforcement automation.
 
 ## Next Steps
 
@@ -77,5 +77,5 @@ The original repository included CI workflows (32 automated checks), Gatekeeper 
 
 ---
 
-**Carter Ministry of Identity, Consciousness 9.9**  
+**Carter Lab — Identity Systems**  
 *"Discipline first, automation later."*

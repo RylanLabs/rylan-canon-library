@@ -1,66 +1,106 @@
-# No Bypass Culture: Building Sustainable Discipline
+```markdown
+# No Bypass Culture
 
-> Part of rylan-patterns-library  
-> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v∞.5.2-production-archive  
-> Date: December 19, 2025
-
-**Status**: 🚧 Content extraction in progress
+> Canonical principle — RylanLabs standard  
+> Extracted from: rylan-unifi-case-study v5.2.0-production-archive  
+> Source: https://github.com/RylanLabs/rylan-unifi-case-study  
+> Date: 19/12/2025   
+> Agent: Bauer (Verification) | Domain: Audit
 
 ---
 
-<!-- TODO: Add content from rylan-unifi-case-study extraction -->
+## Principle
 
-## Overview
+**No bypasses. Ever.**
 
-"No Bypass Culture" is the principle that shortcuts and workarounds undermine system integrity. This document explores how to build a culture where compliance happens naturally through understanding, not enforcement.
+Shortcuts, `--no-verify`, `[ci skip]`, manual overrides, or "just this once" exceptions are forbidden.
 
-## Core Tenets
+**Why**: Every bypass creates debt. Debt compounds. One bypass teaches the team that rules are optional. Optional rules become ignored rules. Ignored rules become drift. Drift becomes breach.
 
-### Make the Right Way the Easy Way
-<!-- TODO: Extract documentation -->
+Hellodeolu v6 outcome: **Pre-commit 100% green** — achieved only when bypass is impossible.
 
-### Document Why, Not Just What
-<!-- TODO: Extract documentation -->
+---
 
-### Provide Accountable Escape Hatches
-<!-- TODO: Extract documentation -->
+## Core Tenets (Locked Forever)
 
-### Lead by Example
-<!-- TODO: Extract documentation -->
+### 1. Make the Right Way the Only Way
+- Gatekeeper blocks merge on violation.
+- No flag to disable critical checks.
+- Local pre-commit mirrors remote CI exactly.
 
-## Anti-Patterns
+### 2. Fail Loudly on Attempted Bypass
+- `git commit --no-verify` → blocked by alias or hook.
+- Attempt → loud warning + exit 1.
+- Message: "Bypass denied. Fix the issue or open discussion."
 
-### The Bypass Spiral
-<!-- TODO: Document how bypasses compound -->
+### 3. Document Why, Not Just What
+- Every rule has rationale in docs/.
+- Commit messages explain context + impact.
+- Juniors learn *why* compliance matters.
 
-### Enforcement Without Education
-<!-- TODO: Why pure enforcement fails -->
+### 4. Provide Accountable Escape Hatches (Rare)
+- Emergency only.
+- Requires:
+  - Issue filed
+  - Approval from 2 agents
+  - Temporary branch
+  - Auto-revert after fix
+- Never permanent.
 
-### Hidden Complexity
-<!-- TODO: When the right way is obscure -->
+### 5. Lead by Example
+- Maintainers never bypass.
+- Violations → public correction, never silent merge.
+
+---
+
+## Anti-Patterns (Never Tolerate)
+
+| Anti-Pattern               | Symptom                          | Consequence                     |
+|----------------------------|----------------------------------|---------------------------------|
+| The "Just This Once"       | Single `--no-verify` commit      | Teaches rules are negotiable    |
+| The Hidden Override        | Undocumented flag to skip checks | Drift accumulates silently      |
+| The Blame Shift            | "CI is flaky" excuse             | Standards erode                 |
+| The Hero Merge             | Maintainer bypasses for "speed"  | Juniors copy behaviour          |
+
+---
 
 ## Building No Bypass Culture
 
-### Step 1: Clarity
-<!-- TODO: Make expectations clear -->
+1. **Clarity**  
+   Document every rule + rationale.
 
-### Step 2: Accessibility
-<!-- TODO: Make compliance easy -->
+2. **Friction for Wrong Path**  
+   Make bypass impossible or painful.
 
-### Step 3: Education
-<!-- TODO: Teach the why -->
+3. **Ease for Right Path**  
+   Auto-fix where safe (ruff --fix, pre-commit).
 
-### Step 4: Accountability
-<!-- TODO: Track without punishment -->
+4. **Education**  
+   Onboarding includes "why no bypass".
 
-### Step 5: Iteration
-<!-- TODO: Improve based on feedback -->
+5. **Accountability**  
+   Public dashboard of violations (zero tolerance).
 
-## Case Studies
-
-<!-- TODO: Extract real examples from rylan-unifi-case-study -->
+6. **Iteration**  
+   If rule causes constant pain → fix rule, never bypass.
 
 ---
 
-**Next**: See [irl-first-approach.md](irl-first-approach.md) for implementation philosophy
+## Enforcement in Fortress
+
+- `.githooks/pre-commit` → exact CI mirror.
+- Gatekeeper → rejects bypass attempts.
+- Commit message canon → requires rationale.
+- Compliance metric → drops on bypass.
+
+---
+
+**Outcome**:  
+Team internalises discipline. Automation becomes trustworthy. Fortress remains eternal.
+
+**Trinity Alignment**:  
+- Bauer verifies no exceptions.  
+- Beale hardens the process.  
+- Carter authenticates intent.
+
+No bypasses. No exceptions. No debt.
