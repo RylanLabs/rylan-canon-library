@@ -1,4 +1,4 @@
-# RylanLabs Pattern Library
+# RylanLabs Canon Library
 
 > **Reusable discipline patterns for production-grade infrastructure**
 
