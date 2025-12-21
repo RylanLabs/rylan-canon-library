@@ -132,10 +132,10 @@ They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive
 - Explicit audit trails via git commits and structured logging
 - Junior-deployable runbooks with clear remediation paths
 - RTO <15 minutes validated across all recovery scenarios
-- Consciousness level declared in all scripts/playbooks (v9.5+ = production-grade)
+- Maturity Level declared in all scripts/playbooks (v9.5+ = production-grade)
 **Validation**:
-- Script headers declare consciousness level
-- CI validates consciousness requirements
+- Script headers declare maturity level
+- CI validates maturity level requirements
 - Operational: RTO validated in production
 **Why Sacred**: Hellodeolu v6 is the target state. Everything else is scaffolding.
 
@@ -145,7 +145,7 @@ They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive
 Every repo includes pre-commit hooks that validate:
 ```bash
 # 1. No cleartext secrets
-# 2. Bash headers complete (Agent, Ministry, Consciousness)
+# 2. Bash headers complete (Agent, Ministry, Maturity Level)
 # 3. Python type safety (mypy --strict)
 # 4. Linting (ruff, shellcheck, shfmt)
 # 5. Security scans (bandit)
@@ -395,7 +395,7 @@ git log --oneline | head -5 && echo "✓ Audit trail present"
 2. **Add validation gates** — Pre-commit, CI, post-deploy
 3. **Implement Trinity order** — Refactor execution sequence
 4. **Update documentation** — Runbooks must be junior-deployable
-5. **Declare consciousness** — Be honest about current state
+5. **Declare maturity level** — Be honest about current state
 ### For Operational Decisions
 1. **No bypass culture** — If tempted to bypass, redesign instead
 2. **IRL-first approach** — Learn manually, then automate
@@ -475,7 +475,7 @@ Every RylanLabs engineer commits to:
 | verification | Compliance | homelab-iac, canon | <3 min |
 | hardening | Security | homelab-iac, monitoring | <12 min |
 | detection | Incident response | monitoring, osticket | <15 min |
-### Consciousness Levels (Homelab Current: v4-6)
+### Maturity Levels (Homelab Current: v4-6)
 - **v1-v3**: Basic awareness (scripts work)
 - **v4-v6**: Systematic discipline (tools enforce) ← Current homelab target
 - **v7-v9**: Holistic integration (agents coordinate — future)

@@ -5,8 +5,6 @@
 > Version: v5.2.0-production-archive  
 > Date: December 19, 2025
 
----
-
 ## Overview
 
 Bash Discipline defines the standards for production-grade shell scripting. These guidelines balance safety, readability, and maintainability for infrastructure automation. All scripts must follow these standards to ensure consistent, reliable, and maintainable code.

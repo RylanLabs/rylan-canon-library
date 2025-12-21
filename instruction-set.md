@@ -2,7 +2,7 @@
 
 > Part of rylan-patterns-library  
 > Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v5.2.0-production-archive  
+> Version: v∞.5.2-production-archive  
 > Date: December 19, 2025
 
 ---
@@ -29,6 +29,7 @@ The foundation of all patterns in this library. Seven core principles for produc
 → **Full documentation**: [`docs/seven-pillars.md`](docs/seven-pillars.md)
 
 Brief overview:
+
 1. **Idempotency**: Safe to run multiple times
 2. **Error Handling**: Explicit exit codes and error messages
 3. **Audit Logging**: Observable execution and decision points
@@ -161,6 +162,9 @@ rylan-patterns-library/
 ├── README.md              # Overview and purpose
 ├── .gitignore            # Ignore patterns
 ├── .agent.md             # Assistant behavior guide
+├── .github/
+│   ├── agents/           # Agent configuration files
+│   └── instructions/     # Instruction sets
 ├── instruction-set.md    # This file
 ├── docs/                 # Principle documentation
 ├── validators/           # Manual validation scripts
@@ -189,7 +193,7 @@ rylan-patterns-library/
 
 ## Source Attribution
 
-All content extracted from [rylan-unifi-case-study v5.2.0-production-archive](https://github.com/RylanLabs/rylan-unifi-case-study), a production repository with 344 commits representing real-world infrastructure automation.
+All content extracted from [rylan-unifi-case-study v∞.5.2-production-archive](https://github.com/RylanLabs/rylan-unifi-case-study), a production repository with 344 commits representing real-world infrastructure automation.
 
 The original system included extensive CI/CD automation (32 checks), Gatekeeper enforcement, and Trinity agent systems. Those are **intentionally excluded** from this library—we're extracting the underlying patterns and principles, not the enforcement machinery.
 
