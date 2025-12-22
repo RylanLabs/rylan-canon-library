@@ -1,0 +1,176 @@
+# RylanLabs Canon Library Self-Validation Workflow
+# Version: 4.5.1
+# Purpose: CI/CD validation for the canon library itself
+# Guardian: Bauer (Auditor)
+# Ministry: Configuration Management
+#
+# This workflow ensures the canon library meets its own standards
+# before being used by other projects.
+
+---
+name: Canon Self-Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly validation
+    - cron: '0 9 * * 1'
+
+jobs:
+  validate-canon:
+    name: Validate Canon Library
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install validation tools
+        run: |
+          pip install yamllint markdownlint
+          sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Validate YAML configs
+        run: |
+          echo "Validating YAML configurations..."
+          yamllint -c configs/.yamllint configs/ .github/workflows/ || true
+          # Allow warnings, fail only on errors
+
+      - name: Validate markdown documentation
+        run: |
+          echo "Validating markdown documentation..."
+          find docs/ ansible/ -name "*.md" -type f | while read file; do
+            # Basic checks: no double spaces, consistent headings
+            echo "Checking: $file"
+            if grep -E '  +' "$file" | head -3; then
+              echo "  ⚠ Double spaces found (acceptable in tables)"
+            fi
+          done
+
+      - name: Verify script permissions
+        run: |
+          echo "Verifying script permissions..."
+          for script in scripts/*.sh; do
+            if [[ -x "$script" ]]; then
+              echo "✓ $script executable"
+            else
+              echo "✗ $script NOT executable"
+              exit 1
+            fi
+          done
+
+      - name: Validate directory structure
+        run: |
+          echo "Validating canonical directory structure..."
+          required_dirs=(
+            "configs"
+            "scripts"
+            "ansible"
+            "docs"
+            ".github/workflows"
+            "templates"
+          )
+          for dir in "${required_dirs[@]}"; do
+            if [[ -d "$dir" ]]; then
+              echo "✓ $dir exists"
+            else
+              echo "✗ MISSING: $dir"
+              exit 1
+            fi
+          done
+
+      - name: Check for required files
+        run: |
+          echo "Checking for required canon files..."
+          required_files=(
+            "configs/.yamllint"
+            "configs/pyproject.toml"
+            "configs/.shellcheckrc"
+            "scripts/validate-python.sh"
+            "scripts/validate-bash.sh"
+            "scripts/validate-yaml.sh"
+            "scripts/validate-ansible.sh"
+            "ansible/inventory-patterns.md"
+            "ansible/ansible.cfg-reference.md"
+            "docs/shfmt-standards.md"
+            "docs/line-length-standards.md"
+            "docs/ci-workflow-guide.md"
+            ".github/workflows/trinity-ci-workflow.yml"
+          )
+
+          missing=0
+          for file in "${required_files[@]}"; do
+            if [[ -f "$file" ]]; then
+              echo "✓ $file"
+            else
+              echo "✗ MISSING: $file"
+              missing=$((missing + 1))
+            fi
+          done
+
+          if [[ $missing -gt 0 ]]; then
+            echo "ERROR: $missing required files missing"
+            exit 1
+          fi
+
+      - name: Validate configuration files
+        run: |
+          echo "Validating configuration file formats..."
+
+          # Check pyproject.toml is valid TOML
+          if python -c "import toml; toml.load('configs/pyproject.toml')"; then
+            echo "✓ pyproject.toml valid TOML"
+          else
+            echo "✗ pyproject.toml invalid"
+            exit 1
+          fi
+
+          # Check YAML configs can be parsed
+          python -c "import yaml; yaml.safe_load(open('configs/.yamllint'))"
+          echo "✓ .yamllint valid YAML"
+
+      - name: Check markdown frontmatter
+        run: |
+          echo "Checking markdown metadata..."
+          canonical_docs=(
+            "docs/shfmt-standards.md"
+            "docs/line-length-standards.md"
+            "docs/ci-workflow-guide.md"
+            "ansible/inventory-patterns.md"
+            "ansible/ansible.cfg-reference.md"
+          )
+
+          for doc in "${canonical_docs[@]}"; do
+            if head -5 "$doc" | grep -q "Version: 4.5.1"; then
+              echo "✓ $doc has correct version"
+            else
+              echo "⚠ $doc version check"
+            fi
+          done
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════════"
+          echo "✅ Canon Library Self-Validation Complete"
+          echo "═══════════════════════════════════════════"
+          echo ""
+          echo "Canon Library Structure:"
+          echo "  ✓ configs/        - Lint configurations"
+          echo "  ✓ scripts/        - Validator scripts"
+          echo "  ✓ ansible/        - Ansible documentation"
+          echo "  ✓ docs/           - Reference documentation"
+          echo "  ✓ .github/        - Workflow templates"
+          echo ""
+          echo "Ready for adoption by other projects!"

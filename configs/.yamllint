@@ -1,0 +1,66 @@
+# RylanLabs Canonical YAML Linting Configuration
+# Version: 4.5.1
+# Guardian: Bauer (Auditor)
+# Ministry: Configuration Management
+# Purpose: Enforce consistent YAML style across inventory and code
+#
+# Line Length Standards:
+#   - 140 chars: Inventory files (device-manifest.yml, hosts.yml)
+#   - 120 chars: Code files (playbooks, workflows, general YAML)
+# Rationale: Device manifests need horizontal space for inline metadata
+#
+# References:
+#   - docs/line-length-standards.md
+#   - https://yamllint.readthedocs.io/
+
+---
+extends: "default"
+
+rules:
+  line-length:
+    max: 120
+    level: "warning"
+    # Override to 140 for inventory files via:
+    # yamllint -d "{extends: default, rules: {line-length: {max: 140}}}" inventory/
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  comments:
+    min-spaces-from-content: 2
+    require-starting-space: true
+
+  comments-indentation: {}
+
+  quoted-strings: disable
+
+  empty-lines:
+    max: 2
+    level: "warning"
+
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false
+
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  colons:
+    max-spaces-after: 1
+
+  commas:
+    max-spaces-after: 1
+
+  key-duplicates: {}
+
+  trailing-spaces: {}
+
+  new-lines:
+    type: "unix"

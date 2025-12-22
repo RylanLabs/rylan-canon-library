@@ -1,0 +1,17 @@
+# RylanLabs Canonical ShellCheck Configuration
+# Version: 4.5.1
+# Guardian: Carter (Guardian)
+# Ministry: Configuration Management
+# Purpose: Disable ShellCheck rules that conflict with Trinity patterns
+#
+# Usage:
+#   export SHELLCHECKRC=.shellcheckrc
+#   shellcheck script.sh
+#
+# References:
+#   - https://www.shellcheck.net/wiki/
+
+disable=SC2034   # Unused variables (false positives in sourced libs)
+disable=SC1090   # Can't follow non-constant source (modular scripts)
+disable=SC2155   # Declare and assign separately (acceptable for simple cases)
+disable=SC1091   # Not following non-constant source (sourced lib patterns)

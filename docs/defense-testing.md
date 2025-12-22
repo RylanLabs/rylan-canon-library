@@ -1,8 +1,8 @@
 # Defense Testing — RylanLabs Canon
 
-> Canonical standard — Required post-deploy validation  
-> Date: December 21, 2025  
-> Agent: Whitaker  
+> Canonical standard — Required post-deploy validation
+> Date: December 21, 2025
+> Agent: Whitaker
 > Author: rylanlab canonical
 
 **Status**: ✅ **PRODUCTION** — Whitaker Canonical | Breach Simulation | Post-Deploy Mandatory
@@ -22,7 +22,7 @@ It enforces **Whitaker ministry** — proving defenses work under attack.
 - Confirm hardening effectiveness
 - Junior-at-3-AM executability
 
-**Sacred Principle**: Theory is worthless without proof.  
+**Sacred Principle**: Theory is worthless without proof.
 Every deployment must survive Whitaker's attack.
 
 ---
@@ -312,7 +312,7 @@ test_vlan_isolation() { ping -c 1 -W 2 192.168.1.10 &>/dev/null && return 1; ret
 test_guest_isolation() { curl -s --connect-timeout 5 http://192.168.1.1 &>/dev/null && return 1; return 0; }
 test_unauthorized_ports() { nc -z -w 3 192.168.1.1 22 &>/dev/null && return 1; return 0; }
 test_management_access() { curl -k -s --connect-timeout 5 https://192.168.1.1:8443 &>/dev/null || return 1; return 0; }
-test_firewall_compliance() { 
+test_firewall_compliance() {
     rule_count=$(sudo nft list ruleset 2>/dev/null | grep -cE 'accept|drop' || echo 0)
     max_rules=$(grep max_firewall_rules ~/repos/rylan-inventory/inventory/device-manifest.yml | awk '{print $2}')
     [[ $rule_count -le $max_rules ]]
@@ -334,7 +334,7 @@ test_internet_access() { curl -s --connect-timeout 10 https://1.1.1.1 &>/dev/nul
 main() {
     log "━━━ Whitaker Defense Testing ━━━"
     log "Maturity Level: 10.0 | Ministry: detection"
-    
+
     run_test "VLAN Isolation" test_vlan_isolation
     run_test "Guest Network Isolation" test_guest_isolation
     run_test "Unauthorized Port Access" test_unauthorized_ports
@@ -347,7 +347,7 @@ main() {
     run_test "SUID Binary Minimization" test_suid_binaries
     run_test "SSH Hardening" test_ssh_hardening
     run_test "Internet Access Policy" test_internet_access
-    
+
     log "━━━ Results: $TESTS_PASSED/$TESTS_RUN passed ━━━"
     [[ $TESTS_PASSED -eq $TESTS_RUN ]] && { log "✅ ALL DEFENSES VALIDATED"; exit 0; } || { log "❌ SECURITY FAILURE"; exit 1; }
 }
@@ -397,7 +397,7 @@ Whitaker (Phase 4) collaborates across the fortress:
 }
 ```
 
-**Guardian Cascade**: 
+**Guardian Cascade**:
 ```
 Carter → Bauer → Beale → Whitaker → Lazarus (if breach)
 ```
@@ -422,8 +422,8 @@ ansible-playbook playbooks/ssh-hardening.yml
 cat > docs/incidents/$(date +%Y-%m-%d)-ssh-hardening.md <<EOF
 # Incident: SSH Hardening Validation Failed
 
-**Root Cause**: fail2ban not running after deployment  
-**Resolution**: Restarted service, added check to beale-harden.sh  
+**Root Cause**: fail2ban not running after deployment
+**Resolution**: Restarted service, added check to beale-harden.sh
 **Prevention**: Updated playbooks to verify service status
 EOF
 git add docs/incidents/

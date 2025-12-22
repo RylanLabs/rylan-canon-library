@@ -72,15 +72,15 @@ Every rule has rationale. Every bypass attempt is documented.
 ```
 Commit message (good):
   feat(bash): add strict mode to deploy.sh
- 
+
   Added set -euo pipefail to prevent cascade failures.
   Real incident: Variable typo caused silent failure.
   Impact: Prevents 80% of deployment errors.
- 
+
   Closes #42
 Commit message (bypass attempt):
   chore: skip shellcheck on deploy.sh
- 
+
   ERROR: This is a bypass attempt.
   Why: shellcheck caught real bug (unquoted variable)
   Remediation: Fix the bug, don't skip the check
@@ -103,23 +103,23 @@ Escape hatches exist, but are rare, visible, and audited.
 Situation: Production database down, need emergency rollback
 Step 1: Emergency bypass requested
   Developer: "Production is down, need to skip validation"
- 
+
 Step 2: Approval process
   Bauer: "Validates emergency is real, approves bypass"
   Beale: "Confirms rollback is safe, approves bypass"
- 
+
 Step 3: Temporary branch
   Branch: emergency/db-rollback-2025-12-20
   Bypass: Allowed for this branch only
- 
+
 Step 4: Execute rollback
   Rollback completes in 8m32s (within RTO)
- 
+
 Step 5: Post-mortem
   Root cause: Backup validation missed corrupted state
   Fix: Add backup integrity check to pre-flight validation
   Prevention: Rule refined, no future bypasses needed
- 
+
 Outcome: Emergency handled, no permanent bypass, learning preserved
 ```
 
@@ -138,7 +138,7 @@ Right approach:
   Maintainer: Runs full validation, takes extra time
   Team sees: Rules apply to everyone, no exceptions
   Culture: Discipline is non-negotiable
- 
+
 Result: Team internalizes "no bypass" as cultural norm
 ```
 
@@ -189,14 +189,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-     
+
       - name: Check for bypass attempts
         run: |
           if git log -1 --pretty=%B | grep -i "skip\|bypass\|no-verify"; then
             echo "ERROR: Bypass attempt detected in commit message"
             exit 1
           fi
-     
+
       - name: Run all validators
         run: |
           shellcheck scripts/*.sh
@@ -204,7 +204,7 @@ jobs:
           ruff check --select ALL src/
           bandit -r src/ -ll
           pytest --cov-fail-under=80
-     
+
       - name: Block merge on failure
         if: failure()
         run: |
@@ -222,10 +222,10 @@ set -euo pipefail
 while read oldrev newrev refname; do
   # Check for bypass attempts in commit messages
   commits=$(git rev-list $oldrev..$newrev)
- 
+
   for commit in $commits; do
     msg=$(git log -1 --pretty=%B $commit)
-   
+
     if echo "$msg" | grep -iE "skip|bypass|no-verify|ci skip"; then
       echo "ERROR: Bypass attempt detected in $commit"
       echo "Commit message contains bypass keyword"
@@ -233,7 +233,7 @@ while read oldrev newrev refname; do
       exit 1
     fi
   done
- 
+
   # Validate all commits
   for commit in $commits; do
     git show $commit | git apply --check || {
@@ -342,7 +342,7 @@ Week 2: Analysis
 Week 3: Rule refined
   Result: 0 bypass attempts
   Team: "Now it makes sense"
- 
+
 Learning: Rule was too strict. Fixing rule > allowing bypass.
 ```
 
@@ -412,15 +412,15 @@ Talk to developer:
 Edge case:
   Response: "Good catch. Let's refine the rule."
   Action: Update rule, document exception
- 
+
 Misunderstanding:
   Response: "Let's understand why this rule exists."
   Action: Teach principles, practice together
- 
+
 Time pressure:
   Response: "Discipline saves time, doesn't waste it."
   Action: Address project planning
- 
+
 Laziness:
   Response: "No bypass. Fix the issue."
   Action: Reinforce discipline, review with team

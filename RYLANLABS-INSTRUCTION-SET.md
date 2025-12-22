@@ -1,15 +1,15 @@
 # RylanLabs Instruction Set
 
-> Canonical instruction set — RylanLabs standard  
-> Organization: RylanLabs  
-> Version: 0.0.1  
+> Canonical instruction set — RylanLabs standard
+> Organization: RylanLabs
+> Version: 0.0.1
 > Date: 20/12/2025
 
 ---
 
 ## Purpose
 
-Single source of truth for all RylanLabs repositories.  
+Single source of truth for all RylanLabs repositories.
 Defines non-negotiable standards for code quality, security, resilience, and culture.
 
 **Objectives**:
@@ -24,28 +24,28 @@ Defines non-negotiable standards for code quality, security, resilience, and cul
 
 ## Core Principles — Seven Pillars
 
-1. **Idempotency**  
+1. **Idempotency**
    Safe to run multiple times — identical outcome.
 
-2. **Error Handling**  
+2. **Error Handling**
    Fail fast, fail loud, provide context.
 
-3. **Audit Logging**  
+3. **Audit Logging**
    Every action traceable — timestamped, structured.
 
-4. **Documentation Clarity**  
+4. **Documentation Clarity**
    Junior at 3 AM can understand and execute.
 
-5. **Validation**  
+5. **Validation**
    Verify inputs, preconditions, postconditions.
 
-6. **Reversibility**  
+6. **Reversibility**
    Rollback path always exists.
 
-7. **Observability**  
+7. **Observability**
    Visibility into state and progress.
 
-**Hellodeolu v6 Alignment**:  
+**Hellodeolu v6 Alignment**:
 All pillars mandatory. No exceptions.
 
 ---
@@ -145,17 +145,17 @@ Types: feat, fix, docs, refactor, test, chore, security
 
 ### Identity (Carter)
 
-Bootstrap identity (Samba AD/DC, RADIUS, 802.1X).  
+Bootstrap identity (Samba AD/DC, RADIUS, 802.1X).
 Everything starts with who you are.
 
 ### Verification (Bauer)
 
-Verify everything (SSH hardening, GitHub keys, zero lint debt).  
+Verify everything (SSH hardening, GitHub keys, zero lint debt).
 Nothing passes unverified.
 
 ### Hardening (Beale)
 
-Harden the host, detect the breach (Bastille automation, Snort/Suricata).  
+Harden the host, detect the breach (Bastille automation, Snort/Suricata).
 Fortress walls + early warning.
 
 **Execution Order**:

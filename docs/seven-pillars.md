@@ -1,9 +1,9 @@
 # Seven Pillars of Production-Grade Code
 
-> Canonical definition — RylanLabs standard  
-> Extracted from: rylan-unifi-case-study v5.2.0-production-archive  
-> Source: https://github.com/RylanLabs/rylan-unifi-case-study  
-> Date: 19/12/2025  
+> Canonical definition — RylanLabs standard
+> Extracted from: rylan-unifi-case-study v5.2.0-production-archive
+> Source: https://github.com/RylanLabs/rylan-unifi-case-study
+> Date: 19/12/2025
 > Agent: Bauer (Verification) | Domain: Audit
 
 ---
@@ -197,7 +197,7 @@ trap 'rm -f "$TEMP"' EXIT
 #!/usr/bin/env bash
 # Script: backup-unifi.sh
 # Purpose: Backup UniFi controller configuration
-# Agent:  
+# Agent:
 # Author: rylanlab canonical
 # Date: 19/12/2025
 ```

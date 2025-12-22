@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-> Based on [rylan-patterns-library](https://github.com/RylanLabs/rylan-patterns-library)  
+> Based on [rylan-patterns-library](https://github.com/RylanLabs/rylan-patterns-library)
 > Principles: Seven Pillars, IRL-First, No Bypass Culture
 
 ---

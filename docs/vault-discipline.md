@@ -1,8 +1,8 @@
 # Vault Discipline — RylanLabs Canon
 
-> Canonical standard — Production-grade secrets management  
-> Date: December 21, 2025  
-> Agent: Carter  
+> Canonical standard — Production-grade secrets management
+> Date: December 21, 2025
+> Agent: Carter
 > Author: rylanlab canonical
 
 **Status**: ✅ **PRODUCTION** — Carter Ministry Canonical | Zero Cleartext | Rotation Enforced
@@ -27,7 +27,7 @@ It enforces **Carter ministry** — identity hygiene and zero cleartext leakage.
 
 ## Repository: rylanlabs-private-vault
 
-**Visibility**: PRIVATE  
+**Visibility**: PRIVATE
 **Access**: RylanLabs team only
 
 **Structure** (Mandatory):

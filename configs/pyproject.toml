@@ -1,0 +1,138 @@
+# RylanLabs Canonical Python Project Configuration
+# Version: 4.5.1
+# Guardian: Bauer (Auditor)
+# Ministry: Development Standards
+# Purpose: Single source of truth for Python tooling (mypy, ruff, bandit, pytest)
+#
+# USAGE: Copy to new projects and customize project-specific paths
+#
+# References:
+#   - https://mypy.readthedocs.io/
+#   - https://docs.astral.sh/ruff/
+#   - https://bandit.readthedocs.io/
+#   - https://docs.pytest.org/
+
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{ PROJECT_NAME }}"
+version = "4.5.1"
+description = "{{ PROJECT_DESCRIPTION }}"
+requires-python = ">=3.11"
+
+# ============================================================================
+# RUFF: Fast Python linter and formatter
+# ============================================================================
+# Philosophy: Comprehensive linting with auto-formatting
+# Line Length: 120 chars (balance: readability + density)
+# Rules: E (syntax), F (undefined), I (imports), N (naming), W (warnings), D (docstrings)
+
+[tool.ruff]
+# Core configuration
+line-length = 120
+target-version = "py311"
+
+# Lint configuration
+lint.select = [
+    "E",    # pycodestyle errors
+    "F",    # Pyflakes (undefined names, unused imports)
+    "I",    # isort (import sorting)
+    "N",    # pep8-naming (naming conventions)
+    "W",    # pycodestyle warnings
+    "D",    # pydocstyle (docstrings)
+    "UP",   # pyupgrade (modern Python syntax)
+    "B",    # flake8-bugbear (likely bugs)
+    "RUF",  # Ruff-specific rules
+]
+
+lint.ignore = [
+    "D100",  # Missing module docstring (acceptable in small modules)
+    "D104",  # Missing docstring in public package
+    "E501",  # Line too long (handled by formatter)
+]
+
+# Per-file ignores
+lint.per-file-ignores."tests/*" = ["D", "S101"]              # No docstrings in tests, allow assert
+lint.per-file-ignores."scripts/*" = ["S603", "S607"]         # Allow subprocess in automation scripts
+lint.per-file-ignores."__init__.py" = ["F401"]               # Allow unused imports for re-exports
+
+# Formatting configuration
+format.quote-style = "double"
+format.indent-style = "space"
+format.skip-magic-trailing-comma = false
+format.docstring-code-format = true
+
+# ============================================================================
+# MYPY: Static type checker
+# ============================================================================
+# Philosophy: Strict type checking for production code
+# Mode: strict (all optionals checked, no implicit Any)
+# Note: urllib3 has upstream INTERNAL_ERROR (non-fatal, ignored)
+
+[tool.mypy]
+# Core settings
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_any_unimported = false
+
+# Paths to type-check
+files = ["scripts/", "tests/", "src/"]
+
+# Ignore patterns
+[[tool.mypy.overrides]]
+module = "urllib3.*"
+ignore_errors = true
+# Rationale: urllib3 has known INTERNAL_ERROR in transformers integration
+# This is non-fatal and upstream issue, safe to ignore
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+# Tests have looser typing requirements
+
+# ============================================================================
+# BANDIT: Security vulnerability scanner
+# ============================================================================
+# Philosophy: Catch common security issues early
+# Level: -ll (medium/high severity only, skip low-severity warnings)
+
+[tool.bandit]
+exclude_dirs = [".venv", "venv", "tests"]
+# Skip rules for scripts/ (they run as root via automation)
+skips = ["B602", "B607"]  # subprocess.run with shell=True, partial path in subprocess
+
+# ============================================================================
+# PYTEST: Unit testing framework
+# ============================================================================
+# Philosophy: Comprehensive testing with coverage enforcement
+
+[tool.pytest.ini_options]
+# Test discovery
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Coverage configuration
+addopts = "--cov=scripts --cov=src --cov-report=term-missing --cov-report=html --cov-fail-under=70"
+
+# Markers for test categorization
+markers = [
+    "integration: integration tests (deselect with '-m \"not integration\"')",
+    "slow: slow running tests (deselect with '-m \"not slow\"')",
+]
+
+# ============================================================================
+# OTHER TOOLS (for reference)
+# ============================================================================
+
+# Note: shellcheck, shfmt configuration lives in:
+#   - .shellcheckrc (ShellCheck disables)
+#   - docs/shfmt-standards.md (shfmt args: -i 2 -ci -bn)
+# Note: yamllint configuration lives in:
+#   - configs/.yamllint (YAML linting rules)

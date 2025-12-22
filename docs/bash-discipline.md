@@ -1,8 +1,8 @@
 # Bash Discipline: Production-Grade Shell Scripting
 
-> Part of rylan-patterns-library  
-> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v5.2.0-production-archive  
+> Part of rylan-patterns-library
+> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)
+> Version: v5.2.0-production-archive
 > Date: December 19, 2025
 
 ## Overview
@@ -52,11 +52,11 @@ IFS=$'\n\t'
 - **`-e`**: Exit immediately if any command fails
   - Prevents cascading failures
   - Makes errors visible immediately
-  
+
 - **`-u`**: Treat unset variables as errors
   - Catches typos in variable names
   - Prevents silent failures from undefined variables
-  
+
 - **`-o pipefail`**: Pipeline fails if any command in it fails
   - Default bash only checks the last command's exit code
   - This ensures all commands in a pipeline are checked
@@ -118,13 +118,13 @@ fi
 error_exit() {
   local message="$1"
   local exit_code="${2:-1}"
-  
+
   echo "❌ ERROR: $message" >&2
-  
+
   if [[ -n "${3:-}" ]]; then
     echo "   Fix: $3" >&2
   fi
-  
+
   exit "$exit_code"
 }
 
@@ -196,19 +196,19 @@ deploy-service() { ... }  # Dashes problematic
 deploy_service() {
   local service_name="${1:-}"
   local environment="${2:-production}"
-  
+
   # Validate required parameters
   if [[ -z "$service_name" ]]; then
     echo "Error: service_name required" >&2
     return 2
   fi
-  
+
   # Validate parameter values
   if [[ ! "$environment" =~ ^(dev|staging|production)$ ]]; then
     echo "Error: Invalid environment: $environment" >&2
     return 2
   fi
-  
+
   # Implementation...
   echo "Deploying $service_name to $environment"
 }
@@ -226,7 +226,7 @@ deploy_service() {
 ```bash
 get_service_status() {
   local service="$1"
-  
+
   if systemctl is-active "$service" &>/dev/null; then
     echo "running"
     return 0
@@ -268,7 +268,7 @@ Use inline comments to document:
 deploy_service() {
   local service_name="${1:-}"
   local environment="${2:-production}"
-  
+
   # Implementation...
 }
 ```
@@ -317,13 +317,13 @@ process_data() {
   local input_file="$1"
   local output_file="/tmp/output.txt"
   local -i line_count=0
-  
+
   # Process with local scope
   while IFS= read -r line; do
     ((line_count++))
     echo "$line" >> "$output_file"
   done < "$input_file"
-  
+
   echo "Processed $line_count lines"
 }
 ```

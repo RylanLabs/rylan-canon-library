@@ -2,7 +2,7 @@
 
 > **<One-line project description>**
 
-**Status**: 🚧 Development in Progress  
+**Status**: 🚧 Development in Progress
 **Based on**: [rylan-patterns-library](https://github.com/RylanLabs/rylan-patterns-library)
 
 ---

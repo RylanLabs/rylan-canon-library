@@ -1,0 +1,67 @@
+# RylanLabs Canonical Pre-Commit Configuration
+# Version: 4.5.2
+# Guardian: Bauer (Auditor)
+# Ministry: Configuration Management
+# Purpose: Enable LOCAL GREEN = CI GREEN (Hellodeolu v6)
+# Usage:
+#   pre-commit install          # Setup hooks (one-time)
+#   pre-commit run --all-files  # Manual validation
+#   git commit ...              # Automatic on commit
+
+---
+default_language_version:
+  python: python3.12
+
+repos:
+  # Local validators (from rylan-canon-library)
+  - repo: local
+    hooks:
+      - id: validate-python
+        name: Python validation (mypy + ruff + bandit)
+        entry: bash scripts/validate-python.sh
+        language: script
+        types: [python]
+        pass_filenames: false
+
+      - id: validate-bash
+        name: Bash validation (shellcheck + shfmt)
+        entry: bash scripts/validate-bash.sh
+        language: script
+        types: [shell]
+        pass_filenames: false
+
+      - id: validate-yaml
+        name: YAML validation (yamllint)
+        entry: bash scripts/validate-yaml.sh
+        language: script
+        types: [yaml]
+        pass_filenames: false
+
+      - id: validate-ansible
+        name: Ansible validation (ansible-lint + syntax)
+        entry: bash scripts/validate-ansible.sh
+        language: script
+        types: [yaml]
+        pass_filenames: false
+        # Only run if playbooks/ directory exists
+        files: ^playbooks/
+
+  # Standard pre-commit hooks (optional but recommended)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+
+      - id: end-of-file-fixer
+        name: Fix end of file
+
+      - id: check-yaml
+        name: Check YAML syntax (standard)
+
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=1000']

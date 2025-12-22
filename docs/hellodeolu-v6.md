@@ -1,8 +1,8 @@
 # Hellodeolu v6: Discipline Architecture
 
-> Part of rylan-patterns-library  
-> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)  
-> Version: v5.2.0-production-archive  
+> Part of rylan-patterns-library
+> Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)
+> Version: v5.2.0-production-archive
 > Date: December 19, 2025
 
 ---
@@ -492,13 +492,13 @@ validate_preconditions() {
     echo "ERROR: Service name required" >&2
     exit 2
   }
-  
+
   [[ -f "$CONFIG_FILE" ]] || {
     echo "ERROR: Config missing: $CONFIG_FILE" >&2
     echo "   Fix: Create config file from template" >&2
     exit 3
   }
-  
+
   [[ -x "./deploy-script.sh" ]] || {
     echo "ERROR: Deploy script not executable" >&2
     exit 126
@@ -513,21 +513,21 @@ is_deployed() {
 # Main deployment
 deploy_service() {
   validate_preconditions
-  
+
   if is_deployed; then
     echo "Service already deployed (idempotent)"
     return 0
   fi
-  
+
   echo "Deploying $SERVICE_NAME..."
   ./deploy-script.sh
-  
+
   # Verify deployment
   if ! is_deployed; then
     echo "ERROR: Deployment verification failed" >&2
     return 1
   fi
-  
+
   echo "✓ $SERVICE_NAME deployed successfully"
 }
 
@@ -546,16 +546,16 @@ deploy_service
 confirm_action() {
   local action="$1"
   local details="${2:-}"
-  
+
   echo "========================================" >&2
   echo "CONFIRMATION REQUIRED" >&2
   echo "Action: $action" >&2
   [[ -n "$details" ]] && echo "Details: $details" >&2
   echo "========================================" >&2
   echo -n "Proceed? [y/N]: " >&2
-  
+
   read -r response
-  
+
   if [[ "$response" =~ ^[Yy]$ ]]; then
     echo "[$(date -Iseconds)] [AUDIT] Confirmed: $action" >> /var/log/audit.log
     return 0
@@ -584,13 +584,13 @@ audit_log() {
   local action="$1"
   local status="${2:-unknown}"
   local details="${3:-}"
-  
+
   local timestamp
   timestamp="$(date -Iseconds)"
-  
+
   local user="${USER:-unknown}"
   local hostname="${HOSTNAME:-unknown}"
-  
+
   # Structured log entry
   cat >> /var/log/audit.log << EOF
 [$timestamp] [AUDIT] [${action^^}]

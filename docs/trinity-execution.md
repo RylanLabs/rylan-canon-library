@@ -1,8 +1,8 @@
 # Trinity Execution — RylanLabs Canon
 
-> Canonical standard — Immutable phase order  
-> Date: December 21, 2025  
-> Agent: Trinity  
+> Canonical standard — Immutable phase order
+> Date: December 21, 2025
+> Agent: Trinity
 > Author: rylanlab canonical
 
 **Status**: ✅ **PRODUCTION** — Trinity Canonical | Immutable Phase Order | Audit-Gated
@@ -29,8 +29,8 @@ All RylanLabs operations follow this sequence:
 
 ### Phase 1: Carter (Identity)
 
-**Agent**: Carter  
-**Ministry**: bootstrap  
+**Agent**: Carter
+**Ministry**: bootstrap
 **Purpose**: Establish "who can act" and "what exists"
 
 **Requirements**:
@@ -42,8 +42,8 @@ All RylanLabs operations follow this sequence:
 
 ### Phase 2: Bauer (Verification)
 
-**Agent**: Bauer  
-**Ministry**: verification  
+**Agent**: Bauer
+**Ministry**: verification
 **Purpose**: Verify intent and preconditions
 
 **Requirements**:
@@ -55,8 +55,8 @@ All RylanLabs operations follow this sequence:
 
 ### Phase 3: Beale (Hardening)
 
-**Agent**: Beale  
-**Ministry**: hardening  
+**Agent**: Beale
+**Ministry**: hardening
 **Purpose**: Apply security enforcement
 
 **Requirements**:
@@ -68,8 +68,8 @@ All RylanLabs operations follow this sequence:
 
 ### Phase 4: Whitaker (Offensive Validation)
 
-**Agent**: Whitaker  
-**Ministry**: detection  
+**Agent**: Whitaker
+**Ministry**: detection
 **Purpose**: Prove defenses work under attack
 
 **Requirements**:
@@ -79,7 +79,7 @@ All RylanLabs operations follow this sequence:
 
 **Output**: Offensive validation report
 
-**Why This Order Matters**:  
+**Why This Order Matters**:
 Carter establishes who can act. Bauer verifies what they attempt. Beale hardens against breach. Whitaker proves defenses work. Skip any phase and the fortress is incomplete.
 
 ---

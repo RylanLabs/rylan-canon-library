@@ -1,8 +1,8 @@
 # Emergency Procedures — RylanLabs Canon
 
-> Canonical standard — Disaster recovery runbooks  
-> Date: December 21, 2025  
-> Agent: Lazarus (DR) + Beale (Hardening)  
+> Canonical standard — Disaster recovery runbooks
+> Date: December 21, 2025
+> Agent: Lazarus (DR) + Beale (Hardening)
 > Author: rylanlab canonical
 
 **Status**: ✅ **PRODUCTION** — Lazarus Canonical | RTO <15min Validated | Zero Data Loss
@@ -22,7 +22,7 @@ It enforces **Lazarus protocol** — full system recovery in <15 minutes from ba
 - Audit trail preserved
 - Zero panic
 
-**Sacred Principle**: The fortress must rise from ashes.  
+**Sacred Principle**: The fortress must rise from ashes.
 Every failure has a documented recovery path.
 
 ---
@@ -213,10 +213,10 @@ phase_postmortem() {
     local rto=$((end_time - START_TIME))
     local rto_min=$((rto / 60))
     local rto_sec=$((rto % 60))
-    
+
     cd "$HOME/repos/rylan-homelab-iac"
     mkdir -p docs/incidents
-    
+
     cat > "docs/incidents/$(date +%Y-%m-%d)-resurrection.md" <<EOF
 # Resurrection Event
 
@@ -235,13 +235,13 @@ phase_postmortem() {
 ## Outcome
 Fortress resurrected successfully.
 EOF
-    
+
     git add docs/incidents/ .audit/ 2>/dev/null || true
     git commit -m "incident(lazarus): fortress resurrection — RTO ${rto_min}m${rto_sec}s
 
 Guardian: Lazarus | Ministry: disaster-recovery
 Result: $([[ $rto -lt 900 ]] && echo "SUCCESS" || echo "EXCEEDED_RTO")" || true
-    
+
     log "✅ Post-mortem documented"
     log "━━━ LAZARUS RESURRECTION COMPLETE ━━━"
     log "RTO: ${rto_min}m${rto_sec}s (Target: <15min)"
@@ -250,14 +250,14 @@ Result: $([[ $rto -lt 900 ]] && echo "SUCCESS" || echo "EXCEEDED_RTO")" || true
 main() {
     log "━━━ LAZARUS PROTOCOL — Fortress Resurrection ━━━"
     log "Guardian: Lazarus | Ministry: disaster-recovery"
-    
+
     phase_triage
     phase_validate
     phase_bootstrap
     phase_execute
     phase_validate_defenses
     phase_postmortem
-    
+
     exit 0
 }
 
@@ -383,7 +383,7 @@ git add .audit/rto-metrics.csv docs/incidents/
 git commit -m "test(lazarus): quarterly validation — RTO Xm Ys"
 ```
 
-**Last Validated**: December 21, 2025  
+**Last Validated**: December 21, 2025
 **Next Validation**: March 21, 2026
 
 ---
@@ -397,10 +397,10 @@ git commit -m "test(lazarus): quarterly validation — RTO Xm Ys"
 ```markdown
 # Incident: [Brief Description]
 
-**Date**: YYYY-MM-DD HH:MM:SS  
-**Severity**: CRITICAL | HIGH | MEDIUM  
-**Guardian**: Lazarus  
-**RTO**: Xm Ys (Target: <15min)  
+**Date**: YYYY-MM-DD HH:MM:SS
+**Severity**: CRITICAL | HIGH | MEDIUM
+**Guardian**: Lazarus
+**RTO**: Xm Ys (Target: <15min)
 
 ## Symptoms
 - List of observed failures

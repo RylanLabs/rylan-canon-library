@@ -1,8 +1,8 @@
 # Inventory Discipline — RylanLabs Canon
 
-> Canonical standard — Production-grade device manifest management  
-> Date: December 21, 2025  
-> Agent: Carter  
+> Canonical standard — Production-grade device manifest management
+> Date: December 21, 2025
+> Agent: Carter
 > Author: rylanlab canonical
 
 **Status**: ✅ **PRODUCTION** — Carter Ministry Canonical | Single Source of Truth | Audit-Enforced
@@ -26,7 +26,7 @@ It enforces **Carter ministry** — establishing identity of all managed infrast
 
 ## Repository: rylan-inventory
 
-**Visibility**: PRIVATE  
+**Visibility**: PRIVATE
 **Access**: RylanLabs team only
 
 **Structure** (Mandatory):
