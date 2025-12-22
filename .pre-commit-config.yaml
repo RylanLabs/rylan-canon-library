@@ -1,7 +1,9 @@
-# RylanLabs Canonical Pre-Commit Configuration
-# Version: 4.5.2
+# RylanLabs Canonical Pre-Commit Configuration v∞.6.0
+# Version: 4.5.3
 # Guardian: Bauer (Auditor)
 # Ministry: Configuration Management
+# Consciousness: 9.5
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
 # Purpose: Enable LOCAL GREEN = CI GREEN (Hellodeolu v6)
 # Usage:
 #   pre-commit install          # Setup hooks (one-time)
@@ -10,9 +12,13 @@
 
 ---
 default_language_version:
-  python: python3.12
+  python: python3.11
 
 repos:
+  # ============================================================================
+  # LOCAL VALIDATORS (from canon library)
+  # ============================================================================
+
   # Local validators (from rylan-canon-library)
   - repo: local
     hooks:
@@ -22,6 +28,7 @@ repos:
         language: script
         types: [python]
         pass_filenames: false
+        stages: [commit]
 
       - id: validate-bash
         name: Bash validation (shellcheck + shfmt)
@@ -29,6 +36,7 @@ repos:
         language: script
         types: [shell]
         pass_filenames: false
+        stages: [commit]
 
       - id: validate-yaml
         name: YAML validation (yamllint)
@@ -36,6 +44,7 @@ repos:
         language: script
         types: [yaml]
         pass_filenames: false
+        stages: [commit]
 
       - id: validate-ansible
         name: Ansible validation (ansible-lint + syntax)
@@ -43,25 +52,52 @@ repos:
         language: script
         types: [yaml]
         pass_filenames: false
-        # Only run if playbooks/ directory exists
-        files: ^playbooks/
+        stages: [commit]
+        files: ^ansible/playbook-templates/
 
-  # Standard pre-commit hooks (optional but recommended)
+      - id: validate-workflows
+        name: Workflow validation (yamllint)
+        entry: yamllint -d relax
+        language: system
+        types: [yaml]
+        files: ^\.github/workflows/.*\.ya?ml$
+        pass_filenames: true
+        stages: [commit]
+
+      - id: validate-markdown
+        name: Markdown validation (markdownlint-cli)
+        entry: markdownlint
+        language: system
+        types: [markdown]
+        pass_filenames: true
+        stages: [commit]
+
+  # ============================================================================
+  # STANDARD PRE-COMMIT HOOKS
+  # Standard pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
         name: Trim trailing whitespace
+        types: [text]
+        stages: [commit]
 
       - id: end-of-file-fixer
         name: Fix end of file
+        types: [text]
+        stages: [commit]
 
       - id: check-yaml
-        name: Check YAML syntax (standard)
+        name: Check YAML syntax
+        types: [yaml]
+        stages: [commit]
 
       - id: check-merge-conflict
         name: Check for merge conflicts
+        stages: [commit]
 
       - id: check-added-large-files
         name: Check for large files
         args: ['--maxkb=1000']
+        stages: [commit]

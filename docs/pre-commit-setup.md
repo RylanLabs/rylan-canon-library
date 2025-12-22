@@ -1,308 +1,413 @@
 # Pre-Commit Hook Setup
 
-> Enable LOCAL GREEN = CI GREEN — Automatic validation on every commit
-
 ## Overview
 
-Pre-commit hooks automatically run RylanLabs validators (Python, Bash, YAML, Ansible) before each commit. This ensures code quality gates are met before pushing to GitHub, where CI would catch them anyway.
+This guide covers setting up and using pre-commit hooks for the RylanLabs Canon Library. Pre-commit hooks ensure that code meets validation standards BEFORE committing to git.
 
-**Benefit**: Catch errors locally in <30 seconds instead of waiting for GitHub Actions.
+**Key Principle**: LOCAL GREEN = CI GREEN (Hellodeolu v6)
 
----
+When hooks pass locally, your code will pass GitHub Actions CI validation.
 
 ## Installation
 
 ### Prerequisites
+
 - Git installed
 - Python 3.11+
-- Pre-commit package
+- Node.js 18+ (for markdownlint-cli)
+- Bash 4.0+
+- All scripts in `scripts/` directory are executable
 
-### Setup (One-Time)
+### One-Time Setup
 
 ```bash
-# 1. Install pre-commit package
+# Navigate to repository root
+cd ~/repos/rylan-canon-library
+
+# Install pre-commit framework
 pip install pre-commit
 
-# 2. Navigate to project directory
-cd /path/to/your/project
-
-# 3. Install hooks
+# Install hooks (reads .pre-commit-config.yaml)
 pre-commit install
 
-# Expected output:
-# Installing pre-commit into .git/hooks/pre-commit
-# A .git/hooks directory will be created if it doesn't exist
+# Verify installation succeeded
+pre-commit run --all-files
 ```
 
 ### Verify Installation
 
 ```bash
-# Check if hooks are installed
+# Check pre-commit is installed
+pre-commit --version
+# Expected: pre-commit 3.x.x or higher
+
+# Verify hooks are installed
 ls -la .git/hooks/pre-commit
+# Expected: file exists and is executable
 
-# Expected: -rwxr-xr-x (executable)
+# Test on all files
+pre-commit run --all-files
+# Expected: Hooks run on all files (some may fail initially)
 ```
-
----
 
 ## Usage
 
-### Automatic (Default)
+### Automatic Validation (On Commit)
 
-Hooks run automatically on every `git commit`:
+Hooks run automatically before each commit:
 
 ```bash
-# Make changes
-echo "# New feature" >> scripts/my-script.py
+# Stage your changes
+git add .
 
-# Stage changes
-git add scripts/my-script.py
-
-# Commit (hooks run automatically)
+# Try to commit (hooks run automatically)
 git commit -m "feat: Add new feature"
 
-# Hooks execute:
-# - Python validator (mypy, ruff, bandit)
-# - Bash validator (shellcheck, shfmt)
-# - YAML validator (yamllint)
-# - Ansible validator (if playbooks/ exists)
-
-# If all pass: commit succeeds
-# If any fail: commit blocked, see error output
+# If hooks fail:
+#   1. Review error messages
+#   2. Fix issues
+#   3. Stage changes again
+#   4. Commit (hooks run again)
 ```
 
-### Manual Validation
+**Example**: If `trailing-whitespace` hook fails, fix trailing spaces and stage again:
 
 ```bash
-# Run all hooks on all files
+# Hooks detect trailing whitespace and auto-fix
+git add .  # Stage fixed files
+git commit -m "feat: Add new feature"  # Try again
+```
+
+### Manual Validation (Check All Files)
+
+Run hooks on all files without committing:
+
+```bash
+# Validate all files against all hooks
 pre-commit run --all-files
 
-# Run specific hook
+# Run specific hook only
 pre-commit run validate-python --all-files
+pre-commit run validate-bash --all-files
+pre-commit run validate-yaml --all-files
+pre-commit run validate-ansible --all-files
+pre-commit run validate-workflows --all-files
+pre-commit run validate-markdown --all-files
 
-# Run hooks on changed files only (default)
-pre-commit run
-```
-
-### Dry-Run (Preview Changes)
-
-```bash
-# See what would be validated
+# Dry-run with verbose output (show what would fail)
 pre-commit run --all-files --verbose
-
-# See detailed output
-pre-commit run validate-python --all-files --verbose
 ```
 
----
-
-## Common Workflows
-
-### Before Committing
+### Hook Management
 
 ```bash
-# 1. Make your changes
-vim scripts/my-script.sh
+# Update hooks to latest versions
+pre-commit autoupdate
 
-# 2. Stage changes
-git add scripts/my-script.sh
+# Uninstall hooks (remove from .git/hooks/)
+pre-commit uninstall
 
-# 3. Commit (hooks run automatically)
-git commit -m "fix: Improve my-script.sh"
+# Re-install after uninstall
+pre-commit install
 
-# If hooks fail:
-# - Review error output
-# - Fix issues
-# - Stage changes
-# - Try commit again
+# Run hooks on specific files
+pre-commit run --files src/main.py src/util.py
 ```
 
-### Debugging a Failing Hook
+## Hooks Included
 
-```bash
-# 1. Run failing hook manually with verbose output
-pre-commit run validate-bash --all-files --verbose
+### Local Validators (From Canon Library)
 
-# 2. Review the error message
-# Example: "ShellCheck: SC2086 (Double quote variables)"
+| Hook ID | Name | Purpose | Trigger | Files |
+|---------|------|---------|---------|-------|
+| `validate-python` | Python validation | Type checking, linting, security scan (mypy + ruff + bandit) | `*.py` files | `scripts/validate-python.sh` |
+| `validate-bash` | Bash validation | Shell linting, formatting (shellcheck + shfmt) | `*.sh` files | `scripts/validate-bash.sh` |
+| `validate-yaml` | YAML validation | YAML syntax checking (yamllint) | `*.yml, *.yaml` files | `scripts/validate-yaml.sh` |
+| `validate-ansible` | Ansible validation | Playbook linting, syntax check (ansible-lint) | `ansible/playbook-templates/` | `scripts/validate-ansible.sh` |
+| `validate-workflows` | Workflow validation | GitHub Actions workflow YAML (yamllint) | `.github/workflows/*.yml` | `yamllint -d relax` |
+| `validate-markdown` | Markdown validation | Markdown linting (markdownlint-cli) | `*.md` files | `markdownlint` |
 
-# 3. Fix the issue
-# Example: Change $var to "$var"
+### Standard Hooks (From pre-commit/pre-commit-hooks)
 
-# 4. Stage fixed files
-git add scripts/fixed-file.sh
-
-# 5. Try committing again
-git commit -m "fix: Address ShellCheck warning"
-```
-
-### Bypass Hooks (Emergency Only)
-
-⚠️ **NOT RECOMMENDED** - Violates No Bypass Culture
-
-If you absolutely must bypass hooks (e.g., emergency fix):
-
-```bash
-git commit --no-verify -m "emergency: Bypass hooks"
-```
-
-**Important**: You MUST acknowledge in your commit message that you bypassed validation.
-
----
+| Hook ID | Name | Purpose | Auto-Fix |
+|---------|------|---------|----------|
+| `trailing-whitespace` | Trim whitespace | Remove trailing spaces from all files | Yes |
+| `end-of-file-fixer` | Fix EOF | Ensure files end with newline | Yes |
+| `check-yaml` | YAML syntax | Verify YAML files are parseable | No |
+| `check-merge-conflict` | Merge conflicts | Detect unresolved merge conflicts | No |
+| `check-added-large-files` | Large files | Prevent files >1MB from being committed | No |
 
 ## Troubleshooting
 
-### Issue: "pre-commit: command not found"
+### "markdownlint: command not found"
 
-**Solution**: Install pre-commit globally
-
-```bash
-pip install --user pre-commit
-
-# Add to PATH if needed
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-### Issue: Hooks not running on commit
-
-**Solution**: Reinstall hooks
+The markdown validator requires markdownlint-cli (Node.js):
 
 ```bash
-pre-commit uninstall && pre-commit install
+# Install globally via npm
+npm install -g markdownlint-cli
+
+# Or via Homebrew (macOS)
+brew install markdownlint-cli
+
+# Or via apt (Ubuntu/Debian)
+sudo apt-get install -y markdownlint
 ```
 
-### Issue: Hook fails but I think the error is wrong
-
-**Solution**: Run the hook manually to inspect
+Verify installation:
 
 ```bash
-# Run the validator directly
-bash scripts/validate-python.sh
-
-# This shows you exactly what the hook is checking
+markdownlint --version
 ```
 
-### Issue: Hook changes my files (e.g., formatting)
+### "pre-commit: command not found"
 
-**Solution**: This is intentional! Stage and commit the changes:
+The pre-commit framework is not installed:
 
 ```bash
-# Example: ruff auto-formats your Python
-# After pre-commit run:
-git add scripts/my-script.py
-git commit -m "chore: Auto-format with ruff"
+# Install pre-commit
+pip install pre-commit
+
+# Verify installation
+pre-commit --version
 ```
 
-### Issue: Pre-commit is very slow
+### "Hook failed" on scripts that don't exist
 
-**Solution**: Run only on changed files instead of all files:
+Some hooks trigger on file types that don't exist in your changes:
 
 ```bash
-# Default: runs on changed files only
-pre-commit run
+# Example: validate-ansible only runs if ansible/playbook-templates/ exists
+# If this directory doesn't exist, the hook is skipped gracefully
 
-# Don't use --all-files for every commit
-# Use it only when you need to validate everything
-pre-commit run --all-files  # Slower, but comprehensive
+# To see which hooks would run:
+pre-commit run --all-files --verbose
 ```
 
----
+### "Permissions denied" on validation scripts
 
-## Customization
-
-### Disable a Specific Hook (Temporarily)
-
-Edit `.pre-commit-config.yaml` and set `stages: []`:
-
-```yaml
-- id: validate-ansible
-  stages: []  # Disabled
-```
-
-Then reinstall:
+Validation scripts must be executable:
 
 ```bash
-pre-commit install
+# Make all scripts executable
+chmod +x scripts/*.sh
+
+# Verify permissions
+ls -la scripts/*.sh
+# Expected: -rwxr-xr-x (executable flag present)
 ```
 
-### Disable All Hooks (Temporarily)
+### Hook fails but you want to commit anyway
+
+Use with caution - bypass hooks only for emergency fixes:
 
 ```bash
-pre-commit uninstall
-# ... do work without hooks
-pre-commit install  # Re-enable
+# Skip all hooks (use sparingly!)
+git commit --no-verify -m "Emergency fix: Critical bug"
+
+# Note: This breaks the LOCAL GREEN = CI GREEN principle
+# Bypassed commits may fail in GitHub Actions CI
+# Use only when absolutely necessary
 ```
 
-### Update Hook Versions
+### Update hooks to latest versions
 
 ```bash
+# Check current versions
+pre-commit validate-config
+
+# Update all hooks to latest versions
 pre-commit autoupdate
 
-# Review changes
-git diff .pre-commit-config.yaml
-
-# Commit if satisfied
+# Commit the updated .pre-commit-config.yaml
 git add .pre-commit-config.yaml
-git commit -m "chore: Update pre-commit hook versions"
+git commit -m "chore: Update pre-commit hooks to latest versions"
 ```
 
----
+## Common Error Messages
 
-## Integration with IDE
+### Error: "yamllint" failed
 
-### VS Code
-
-Install the "pre-commit" extension:
+YAML syntax error detected:
 
 ```
-ext install idleberg.pre-commit
+ERROR: yamllint: [error] .github/workflows/example.yml:10:1: syntax error
 ```
 
-Then you'll see pre-commit validation inline.
+**Fix**: Check YAML syntax - common issues:
+- Missing colons after keys
+- Incorrect indentation (use 2 spaces, not tabs)
+- Invalid characters in values
 
-### PyCharm / IntelliJ
+```bash
+# Validate YAML file locally
+yamllint -d relax .github/workflows/example.yml
+```
 
-Go to Settings > Tools > Python Integrated Tools > Default Test Runner and select "pytest".
+### Error: "shellcheck" found issues
 
-Pre-commit will integrate automatically.
+Shell script has issues:
 
----
+```
+SC2086: Double quote to prevent globbing and word splitting.
+```
+
+**Fix**: Use quotes around variables and fix issues indicated
+
+```bash
+# Check specific script
+shellcheck scripts/validate-python.sh
+```
+
+### Error: "ruff" formatting issues
+
+Python code doesn't match formatting standards:
+
+```
+ERROR: ruff: Code style violations found
+```
+
+**Fix**: Use ruff auto-formatter:
+
+```bash
+# Auto-format Python files
+ruff format scripts/
+
+# Then stage and commit
+git add scripts/
+git commit -m "style: Auto-format Python code"
+```
+
+### Error: "Large file detected"
+
+File exceeds 1MB limit:
+
+```
+ERROR: File too large: config/large-file.bin (2.5 MB)
+```
+
+**Fix**: Use git-lfs or reduce file size
+
+```bash
+# Remove large file from staging
+git reset config/large-file.bin
+
+# Add to .gitignore
+echo "config/large-file.bin" >> .gitignore
+
+# Commit just the .gitignore change
+git add .gitignore
+git commit -m "chore: Exclude large file from git"
+```
 
 ## Best Practices
 
-1. **Always fix locally first**: Run hooks before committing
-2. **Read error messages carefully**: They tell you exactly what's wrong
-3. **Don't bypass**: `--no-verify` defeats the purpose
-4. **Keep hooks fast**: Don't add slow checks to pre-commit
-5. **Test changes**: `pre-commit run --all-files` before pushing
-6. **Document exceptions**: If you disable a hook, document why
+### 1. Keep Hooks Fast
 
----
+Hooks run before every commit, so speed matters:
 
-## Reference
+- Avoid hooks that scan entire repository
+- Use `pass_filenames: false` for custom validators
+- Consider excluding large directories with `files: pattern`
 
-| Command | Purpose |
-|---------|---------|
-| `pre-commit install` | Setup hooks |
-| `pre-commit run` | Run on changed files |
-| `pre-commit run --all-files` | Run on all files |
-| `pre-commit run [hook-id] --all-files` | Run specific hook |
-| `pre-commit uninstall` | Remove hooks |
-| `pre-commit autoupdate` | Update hook versions |
-| `git commit --no-verify` | Bypass hooks (not recommended) |
+### 2. Always Check Before Pushing
 
----
+```bash
+# Before pushing, run full validation
+pre-commit run --all-files
+
+# Only push if all hooks pass
+git push origin main
+```
+
+### 3. Fix Issues Immediately
+
+When hooks fail:
+
+1. Read error message carefully
+2. Fix the issue
+3. Stage changes
+4. Re-run hooks
+5. Only commit when all pass
+
+### 4. Keep Configuration Updated
+
+```bash
+# Regularly update hooks
+pre-commit autoupdate
+
+# Test after update
+pre-commit run --all-files
+
+# Commit updates
+git add .pre-commit-config.yaml
+git commit -m "chore: Update pre-commit hooks"
+```
+
+### 5. Document Custom Hooks
+
+If you add custom hooks, document them in `.pre-commit-config.yaml`:
+
+```yaml
+- id: custom-validator
+  name: My Custom Validation
+  entry: bash scripts/my-validator.sh
+  language: script
+  types: [python]
+  stages: [commit]
+```
 
 ## Compliance
 
-✅ Seven Pillars: Idempotency, Error Handling, Functionality, Audit Logging, Failure Recovery, Security, Documentation  
-✅ Hellodeolu v6: LOCAL GREEN = CI GREEN  
-✅ No Bypass Culture: Hooks enforce validation, bypass logged in commit message
+This pre-commit configuration enforces the following standards:
 
----
+### Seven Pillars
+
+- **Idempotency**: Hooks are re-runnable without side effects
+- **Error Handling**: Clear error messages guide developers to fixes
+- **Functionality**: All validators tested locally before CI
+- **Audit Logging**: Each hook validates specific concerns
+- **Failure Recovery**: Auto-fixers resolve common issues
+- **Security Hardening**: bandit scans for security issues
+- **Documentation**: This guide provides complete reference
+
+### Hellodeolu v6
+
+- **RTO <15 minutes**: Local validation completes in seconds
+- **Junior Deployable**: Clear setup instructions, one-command installation
+- **LOCAL GREEN = CI GREEN**: Passing hooks locally = CI pipeline passes
+
+### T3-ETERNAL v∞.6.0
+
+- **Trinity Guardians**: Carter (setup), Bauer (validation), Beale (security)
+- **Consciousness**: Level 9.5 maintained
+- **Ministry**: Configuration Management
+- **No Bypass Culture**: `--no-verify` discouraged, should be emergency-only
 
 ## Support
 
-- **Canon Library**: https://github.com/RylanLabs/rylan-canon-library
-- **Pre-Commit Docs**: https://pre-commit.com/
-- **Issues**: GitHub Issues on canon repo
+### Get Help
+
+```bash
+# Show pre-commit options
+pre-commit --help
+
+# Validate configuration
+pre-commit validate-config
+
+# Check specific hook
+pre-commit show-config
+```
+
+### Report Issues
+
+If hooks fail unexpectedly:
+
+1. Run with verbose output: `pre-commit run --all-files --verbose`
+2. Check script existence: `ls -la scripts/validate-*.sh`
+3. Verify permissions: `chmod +x scripts/*.sh`
+4. Check dependencies: `pip install -r requirements.txt`, `npm list -g markdownlint-cli`
+
+---
+
+**The Trinity endures. Local validation enforced. 🛡️**
