@@ -1,0 +1,274 @@
+---
+# Playbook: rollback-firewall.yml
+# Purpose: Disaster recovery - rollback firewall rules to last known good state
+# Guardian: Beale (Hardening - emergency procedures)
+# Version: 4.5.2-playbooks
+# Compliance: Seven Pillars (Reversibility, Observability, Error Handling)
+# RTO Target: <5min complete rollback + validation
+#
+# Usage:
+#   # Rollback to latest backup
+#   ansible-playbook ansible/playbook-templates/rollback-firewall.yml \
+#     -i inventory/unifi-hosts.yml \
+#     --extra-vars "rollback_to=latest"
+#
+#   # Rollback to specific backup
+#   ansible-playbook ansible/playbook-templates/rollback-firewall.yml \
+#     -i inventory/unifi-hosts.yml \
+#     --extra-vars "rollback_to=20251222T150000"
+#
+# Idempotency: Multiple rollback runs produce identical state
+# Error Handling: Validates rollback before applying, keeps audit trail
+# Reversibility: All deletions logged with timestamps for manual recovery
+
+- name: "Firewall Rules Disaster Recovery - Rollback"
+  hosts: unifi_controller
+  gather_facts: true
+  vars:
+    backup_dir: "/var/backups/unifi-firewall"
+    audit_dir: ".audit/phase-3-playbooks"
+    timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    rollback_to: "latest"  # Override with --extra-vars
+    dry_run: false
+
+  pre_tasks:
+    - name: "Validate controller accessibility (critical for rollback)"
+      uri:
+        url: "https://{{ inventory_hostname }}:8443/api/s/default"
+        method: GET
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+        timeout: 10
+      register: controller_health
+      failed_when: controller_health.status != 200
+      tags: [validate]
+
+    - name: "Create backup directory if missing (safety)"
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0750'
+        owner: root
+        group: root
+      tags: [setup]
+
+    - name: "Fetch current firewall rules (pre-rollback snapshot)"
+      uri:
+        url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/firewallrule"
+        method: GET
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+        return_content: true
+      register: current_rules
+      failed_when: current_rules.status != 200
+      changed_when: false
+      tags: [snapshot]
+
+    - name: "Archive current rules state (audit trail)"
+      copy:
+        content: "{{ current_rules.json | to_nice_json }}"
+        dest: "{{ backup_dir }}/pre-rollback-rules-{{ timestamp }}.json"
+        mode: '0640'
+      tags: [audit]
+
+    - name: "Determine rollback target"
+      set_fact:
+        target_backup: "{{ rollback_to }}"
+      tags: [plan]
+
+    - name: "Locate rollback backup file (latest or specific)"
+      find:
+        path: "{{ backup_dir }}"
+        pattern: "firewall-rules-*.json"
+        age: "0s"
+        file_type: file
+      register: backup_files
+      tags: [plan]
+
+    - name: "Select rollback backup"
+      set_fact:
+        selected_backup: "{{ (backup_files.files | sort(attribute='mtime', reverse=True) | first).path if rollback_to == 'latest' else (backup_files.files | selectattr('path', 'contains', rollback_to) | first).path }}"
+      tags: [plan]
+
+    - name: "Validate rollback backup exists and is readable"
+      stat:
+        path: "{{ selected_backup }}"
+        get_checksum: true
+        checksum_algorithm: sha256
+      register: backup_stat
+      failed_when: not backup_stat.stat.exists
+      tags: [validate]
+
+    - name: "Load rollback backup (target rules state)"
+      slurp:
+        src: "{{ selected_backup }}"
+      register: backup_content
+      tags: [load]
+
+    - name: "Parse backup JSON"
+      set_fact:
+        target_rules: "{{ backup_content.content | b64decode | from_json }}"
+      tags: [load]
+
+    - name: "Generate rollback plan (diff analysis)"
+      set_fact:
+        rules_to_delete: "{{ current_rules.json | difference(target_rules) }}"
+        rules_to_create: "{{ target_rules | difference(current_rules.json) }}"
+      tags: [plan]
+
+  tasks:
+    - name: "Log rollback initiation"
+      lineinfile:
+        path: "{{ audit_dir }}/rollback-firewall-{{ timestamp }}.log"
+        line: "[{{ ansible_date_time.iso8601 }}] Rollback initiated. Target: {{ selected_backup }}. Rules to delete: {{ rules_to_delete | length }}. Rules to create: {{ rules_to_create | length }}"
+        create: yes
+        state: present
+      tags: [audit]
+
+    - name: "Display rollback plan (dry run info)"
+      debug:
+        msg: |
+          🔄 ROLLBACK PLAN
+          Current Rules: {{ current_rules.json | length }}
+          Target Rules: {{ target_rules | length }}
+          
+          Changes Required:
+            Delete: {{ rules_to_delete | length }}
+            Create: {{ rules_to_create | length }}
+          
+          Backup Source: {{ selected_backup }}
+          Backup SHA256: {{ backup_stat.stat.checksum }}
+          DRY_RUN: {{ dry_run }}
+      tags: [plan]
+
+    - name: "ABORT ROLLBACK if not confirmed (safety gate)"
+      pause:
+        prompt: "⚠️ CONFIRM ROLLBACK (yes/no)?"
+      register: rollback_confirm
+      when: not dry_run
+      tags: [confirm]
+
+    - name: "Validate confirmation"
+      assert:
+        that:
+          - rollback_confirm.user_input | lower == 'yes'
+        fail_msg: "Rollback CANCELLED by user"
+        success_msg: "✓ Rollback CONFIRMED"
+      when: not dry_run
+      tags: [confirm]
+
+    - name: "Delete current firewall rules (rollback phase 1)"
+      uri:
+        url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/firewallrule/{{ item._id }}"
+        method: DELETE
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+      loop: "{{ rules_to_delete }}"
+      loop_control:
+        label: "DELETE: {{ item.name }}"
+      register: delete_result
+      when: not dry_run
+      tags: [delete]
+
+    - name: "Log deleted rules"
+      lineinfile:
+        path: "{{ audit_dir }}/rollback-firewall-{{ timestamp }}.log"
+        line: "[{{ ansible_date_time.iso8601 }}] DELETED: {{ item.item.name }}"
+        state: present
+      loop: "{{ delete_result.results }}"
+      when: not dry_run
+      tags: [audit]
+
+    - name: "Create rollback firewall rules (rollback phase 2)"
+      uri:
+        url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/firewallrule"
+        method: POST
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+        body_format: json
+        body: "{{ item | combine({'managed': true, 'tag': 'rolled-back-v4.5.2'}) }}"
+      loop: "{{ rules_to_create }}"
+      loop_control:
+        label: "CREATE: {{ item.name }}"
+      register: create_result
+      when: not dry_run
+      tags: [create]
+
+    - name: "Log created rules"
+      lineinfile:
+        path: "{{ audit_dir }}/rollback-firewall-{{ timestamp }}.log"
+        line: "[{{ ansible_date_time.iso8601 }}] CREATED: {{ item.item.name }}"
+        state: present
+      loop: "{{ create_result.results }}"
+      when: not dry_run
+      tags: [audit]
+
+  post_tasks:
+    - name: "Fetch final firewall rules state (verification)"
+      uri:
+        url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/firewallrule"
+        method: GET
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+        return_content: true
+      register: final_rules
+      when: not dry_run
+      tags: [verify]
+
+    - name: "Validate rollback completion"
+      assert:
+        that:
+          - final_rules.json | length == target_rules | length
+        fail_msg: "Rollback FAILED: Rule count mismatch. Expected {{ target_rules | length }}, got {{ final_rules.json | length }}"
+        success_msg: "✓ Rollback VERIFIED"
+      when: not dry_run
+      tags: [verify]
+
+    - name: "Archive post-rollback state"
+      copy:
+        content: "{{ final_rules.json | to_nice_json }}"
+        dest: "{{ backup_dir }}/post-rollback-rules-{{ timestamp }}.json"
+        mode: '0640'
+      when: not dry_run
+      tags: [audit]
+
+    - name: "Display rollback completion summary"
+      debug:
+        msg: |
+          ✅ ROLLBACK COMPLETE
+          Timestamp: {{ ansible_date_time.iso8601 }}
+          Source: {{ selected_backup }}
+          
+          Changes Applied:
+            Deleted: {{ rules_to_delete | length }}
+            Created: {{ rules_to_create | length }}
+          
+          Final State:
+            Rules: {{ final_rules.json | length }}
+            Status: VERIFIED
+          
+          Audit Trail:
+            Pre-Rollback: {{ backup_dir }}/pre-rollback-rules-{{ timestamp }}.json
+            Post-Rollback: {{ backup_dir }}/post-rollback-rules-{{ timestamp }}.json
+            Log: {{ audit_dir }}/rollback-firewall-{{ timestamp }}.log
+      when: not dry_run
+      tags: [summary]
+
+    - name: "Log rollback completion"
+      copy:
+        content: |
+          [{{ ansible_date_time.iso8601 }}] Rollback completed successfully
+          Source: {{ selected_backup }}
+          Backup SHA256: {{ backup_stat.stat.checksum }}
+          Rules: {{ final_rules.json | length }}
+          Status: VERIFIED
+        dest: "{{ audit_dir }}/rollback-completion-{{ timestamp }}.log"
+        mode: '0640'
+      delegate_to: localhost
+      when: not dry_run
+      tags: [audit]
