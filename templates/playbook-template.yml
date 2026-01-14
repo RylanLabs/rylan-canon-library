@@ -8,7 +8,7 @@
 
 - name: "{{ PLAYBOOK_NAME }} : {{ PURPOSE }}"
   hosts: "{{ TARGET_HOSTS }}"
-  gather_facts: false # GATHER phase performs specific lookups
+  gather_facts: false  # GATHER phase performs specific lookups
   become: true
   vars_files:
     - vars/main.yml

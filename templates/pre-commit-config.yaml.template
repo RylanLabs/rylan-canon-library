@@ -1,0 +1,36 @@
+# RylanLabs Pre-Commit Hook Template
+# Maturity: v2.0.0
+# Description: Standard local and remote hooks for Tier 1/2 repos
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: https://github.com/RylanLabs/rylan-canon-library
+    rev: v2.0.0
+    hooks:
+      - id: check-bash-canon
+        name: Bash Canon Validator (Tier 0)
+        entry: scripts/validate-bash.sh
+        language: script
+        types: [shell]
+      - id: check-python-canon
+        name: Python Canon Validator (Tier 0)
+        entry: scripts/validate-python.sh
+        language: script
+        types: [python]
+      - id: check-ansible-canon
+        name: Ansible Canon Validator (Tier 0)
+        entry: scripts/validate-ansible.sh
+        language: script
+        types: [yaml]
+      - id: check-playbook-canon
+        name: Playbook Structure Validator (Tier 0)
+        entry: scripts/playbook-structure-linter.py
+        language: python
+        types: [yaml]

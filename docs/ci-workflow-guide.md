@@ -1,7 +1,7 @@
 # Trinity CI/CD Workflow Guide
 
 > Canonical CI/CD implementation for RylanLabs projects  
-> Version: 4.5.1  
+> Version: 2.0.0  
 > Guardian: Bauer (Auditor)  
 > Ministry: Configuration Management  
 > Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
@@ -39,6 +39,23 @@ PHASE 3: SUMMARY (~1 min)
 ```
 
 **Total Time**: ~15-20 minutes (includes setup)
+
+---
+
+## Markdown Canon
+
+All documentation must follow the **Markdown Canon** to ensure readability and zero format drift.
+
+### Rules
+
+1. **MD022/MD036**: Headings must have blank lines around them; no pseudo-headings.
+2. **MD031/MD032**: Blank lines mandatory around fenced code blocks and lists.
+3. **MD060**: Aligned column style for tables with proper padding.
+4. **MD040/MD034**: Language tags required for code fences; no bare URLs.
+
+### Usage
+
+Run `markdownlint --fix .` to automatically align with these standards. See `docs/markdown-discipline.md` for full details.
 
 ---
 

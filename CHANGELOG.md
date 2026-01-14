@@ -6,6 +6,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [2.0.0] - 2026-01-14
+
+### ✨ Added: Internet-Adoption Maturity (v2.0.0)
+
+**Major Alignment**: Transitioned from consciousness-based maturity (T3-ETERNAL) to **Internet-Adoption Maturity (Standard SemVer)**.
+
+- **Manifest System**: Introduced `canon-manifest.yaml` as the Tier 0 single source of truth for organization-wide enforcement.
+- **Sync/Audit Tools**: Added `scripts/sync-canon.sh` for bootstrapping repos and `scripts/audit-canon.sh` for CI drift detection.
+- **Versioning**: Replaced all `v∞.X.X` and consciousness counters (e.g., 9.9) with standard SemVer `v2.0.0`.
+- **Markdown Canon**: Established canonical markdown documentation standards in `docs/markdown-discipline.md`.
+- **7-Task Workflow**: Formalized canonical 7-task Trinity workflow in `templates/playbook-template.yml`.
+- **Security & APIs**: Added disciplines for `api-coverage`, `security-posture`, and `rotation-readiness`.
+- **VLAN Canon**: Established canonical 5-VLAN scheme (v1.0.0).
+- **Inventory Standards**: Tier patterns (T1-T4) and device manifest templates finalized.
+
+---
+
 ## [1.0.0] - 2026-01-13
 
 ### ✨ Added: Production-Grade Realignment (Tier 0)

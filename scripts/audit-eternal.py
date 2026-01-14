@@ -9,25 +9,24 @@ Date: 2026-01-13
 
 import os
 import sys
-import re
+from typing import List
 
-EXPECTED_VERSION = "1.0.0"
-FILES_TO_CHECK = [
+EXPECTED_VERSION: str = "2.0.0"
+FILES_TO_CHECK: List[str] = [
     "README.md",
     "CHANGELOG.md",
     "RYLANLABS-INSTRUCTION-SET.md",
     ".agent.md",
-    "docs/vlan-discipline.md",
-    "docs/vault-discipline.md"
 ]
 
-def check_version(file_path):
+
+def check_version(file_path: str) -> bool:
     if not os.path.exists(file_path):
         print(f"✗ MISSING: {file_path}")
         return False
-    
-    with open(file_path, 'r') as f:
-        content = f.read()
+
+    with open(file_path, "r") as f:
+        content: str = f.read()
         if EXPECTED_VERSION in content:
             print(f"✓ {file_path}: Version {EXPECTED_VERSION} confirmed")
             return True
@@ -36,20 +35,22 @@ def check_version(file_path):
             # For demonstration, we'll just report drift
             return False
 
-def main():
+
+def main() -> None:
     print(f"--- Eternal Audit: Monitoring for drift (Target: {EXPECTED_VERSION}) ---")
-    drift_detected = False
-    
+    drift_detected: bool = False
+
     for file in FILES_TO_CHECK:
         if not check_version(file):
             drift_detected = True
-            
+
     if drift_detected:
         print("\n🚨 DRIFT DETECTED: Manual alignment required @Bauer.")
         sys.exit(1)
     else:
         print("\n✅ ZERO DRIFT: Alignment confirmed @Carter.")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

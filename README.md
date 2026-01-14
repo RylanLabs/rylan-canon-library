@@ -2,7 +2,7 @@
 
 > Canonical reference — RylanLabs eternal standard
 > Organization: RylanLabs
-> Version: v1.0.0
+> Version: v2.0.0
 > Date: January 13, 2026
 
 **Status**: ✅ **PRODUCTION** — Tier 0 Source of Truth
@@ -16,17 +16,39 @@
 It is a **Tier 0** repository, meaning all other repositories align with or symlink to the patterns defined here.
 
 It contains:
+- **Canon Manifest** — `canon-manifest.yaml` defines sacred, immutable patterns for org-wide sync.
 - **Philosophical foundations** — Seven Pillars, Trinity + Whitaker, Hellodeolu v6
-- **Operational standards** — Ansible discipline, inventory, vault, VLAN scheme
+- **Operational standards** — Ansible vault, credential rotation, VLAN scheme v1.0.0
 - **7-Task Workflow** — GATHER → PROCESS → APPLY → VERIFY → AUDIT → REPORT → FINALIZE
 - **Evolving lessons** — Extracted from real projects
 - **Canonical templates** — Repo structure, documentation, playbooks
 
-**Not in this repo**:
-- Reusable code libraries (unless as templates)
-- Secrets or credentials
-- Device inventory
-- Implementation code (Guidance only)
+---
+
+## Maturity: v2.0.0
+
+The library has transitioned to **internet-adoption-friendly maturity**.
+
+- **SemVer v2.0.0** replaces legacy consciousness counters.
+- **Zero Drift Enforcement** via `canon-manifest.yaml` and `sync-canon.sh`.
+- **Markdown Discipline** enforced across all documentation.
+- **P0/P1 Disciplines** now mandatory (Vault Segregation, Rotation readiness, API coverage).
+
+---
+
+## Adopting the Canon
+
+To align a repository with the RylanLabs Canon:
+
+1. **CARTER (Identity)**: Declare the repo's maturity tier and ministries in its `README.md`.
+2. **BAUER (Verification)**: Run `scripts/sync-canon.sh` to link sacred files from this library.
+3. **BEALE (Hardening)**: Integrate `audit-canon.sh` into CI to prevent drift.
+
+```bash
+# Example sync
+export CANON_LIB_PATH="../rylan-canon-library"
+./scripts/sync-canon.sh
+```
 
 **What this repo does**:
 - Defines non-negotiable standards
@@ -44,9 +66,10 @@ It contains:
 | Philosophy          | ✅     | Seven Pillars, Trinity, eternal glue complete |
 | Ansible Standards   | ✅     | 7-Task Workflow + inventory/ansible.cfg patterns |
 | Bash Standards      | ✅     | bash-discipline.md + shfmt-standards.md    |
-| CI/CD Templates     | ✅     | 7-job Trinity CI/CD workflow (v1.0.0)      |
-| VLAN Canon          | ✅     | Canonical 5-VLAN scheme (v1.0.0)           |
+| CI/CD Templates     | ✅     | 7-job Trinity CI/CD workflow (v2.0.0)      |
+| VLAN Canon          | ✅     | Canonical 5-VLAN scheme (v2.0.0)           |
 | Vault 8-Phase       | ✅     | 8-Phase Rotation process documented        |
+| Markdown Canon      | ✅     | docs/markdown-discipline.md established    |
 | Lint Configs        | ✅     | All 7 tools: ruff, mypy, bandit, yamllint, etc. |
 | Validator Scripts   | ✅     | 4 portable scripts (python, bash, yaml, ansible) |
 | Eternal Glue        | ✅     | 6 sacred artifacts defined                 |

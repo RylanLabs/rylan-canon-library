@@ -1,33 +1,50 @@
 # RylanLabs Trinity CI/CD Template
-# Version: 4.5.3
+# Maturity: v2.0.0
 # Guardian: Bauer (Auditor)
 # Ministry: Configuration Management
 #
 # Purpose: Canonical CI/CD workflow for all RylanLabs projects
-# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
-#
-# CUSTOMIZATION COMPLETE for rylan-canon-library
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL v2.0.0
 
 ---
-name: "rylan-canon-library Trinity CI/CD"
+name: "Trinity CI/CD Workflow"
 
 on:
   push:
     branches: [main, develop, 'feat/**', 'fix/**']
   pull_request:
     branches: [main, develop]
-  schedule:
-    # Run security scan daily at 2 AM UTC
-    - cron: '0 2 * * *'
 
 env:
   PYTHON_VERSION: "3.11"
-  # Project-specific environment variables
-  # {{ CUSTOM_ENV_VARS }}
+  CANON_LIB_URL: "https://github.com/RylanLabs/rylan-canon-library"
 
 jobs:
   # ============================================================================
-  # PHASE 1: Linting (runs in parallel, fast feedback)
+  # PHASE 0: Canon Drift Detection (Carter/Bauer)
+  # ============================================================================
+
+  audit-canon-drift:
+    name: Audit Canon Drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Checkout Canon Library
+        uses: actions/checkout@v4
+        with:
+          repository: RylanLabs/rylan-canon-library
+          path: rylan-canon-library
+          ref: v2.0.0
+
+      - name: Verify Canon Integrity
+        run: |
+          export CANON_LIB_PATH="$(pwd)/rylan-canon-library"
+          ./rylan-canon-library/scripts/audit-canon.sh
+
+  # ============================================================================
+  # PHASE 1: Linting (runs in parallel)
   # ============================================================================
 
   validate-python:
@@ -223,14 +240,15 @@ jobs:
   ci-complete:
     name: CI Status Summary
     runs-on: ubuntu-latest
-    needs: [validate-python, validate-bash, validate-yaml, test-unit, security-scan, validate-ansible]
+    needs: [audit-canon-drift, validate-python, validate-bash, validate-yaml, test-unit, security-scan, validate-ansible]
     if: always()
     timeout-minutes: 5
 
     steps:
       - name: Check job results
         run: |
-          if [[ "${{ needs.validate-python.result }}" != "success" ]] || \
+          if [[ "${{ needs.audit-canon-drift.result }}" != "success" ]] || \
+             [[ "${{ needs.validate-python.result }}" != "success" ]] || \
              [[ "${{ needs.validate-bash.result }}" != "success" ]] || \
              [[ "${{ needs.validate-yaml.result }}" != "success" ]] || \
              [[ "${{ needs.test-unit.result }}" != "success" ]] || \

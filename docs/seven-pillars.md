@@ -1,9 +1,8 @@
 # Seven Pillars of Production-Grade Code
 
 > Canonical definition — RylanLabs standard
-> Extracted from: rylan-unifi-case-study v5.2.0-production-archive
-> Source: https://github.com/RylanLabs/rylan-unifi-case-study
-> Date: 19/12/2025
+> Version: v2.0.0
+> Date: 2026-01-13
 > Agent: Bauer (Verification) | Domain: Audit
 
 ---

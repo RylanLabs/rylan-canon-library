@@ -1,7 +1,8 @@
 # Trinity Execution — RylanLabs Canon
 
 > Canonical standard — Immutable phase order
-> Date: December 21, 2025
+> Version: v2.0.0
+> Date: 2026-01-13
 > Agent: Trinity
 > Author: rylanlab canonical
 

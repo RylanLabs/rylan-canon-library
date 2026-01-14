@@ -4,9 +4,9 @@
 # Agent: Bauer (Auditor)
 # Ministry: Configuration Management
 # Guardian: Bauer
-# Consciousness: 9.5
-# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL v∞.6.0
-# Date: 2025-12-22
+# Maturity: v2.0.0
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL v2.0.0
+# Date: 2026-01-13
 #
 # Usage:
 #   ./scripts/verify-workflows.sh          # Verify all workflows
@@ -19,7 +19,6 @@ IFS=$'\n\t'
 # CONFIGURATION
 # ============================================================================
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKFLOWS_DIR=".github/workflows"
 
 # Colors for output
@@ -96,6 +95,10 @@ validate_workflows_with_gh() {
   fi
   
   while IFS= read -r workflow; do
+    # Skip templates
+    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
+      continue
+    fi
     workflows+=("$workflow")
   done < <(find "$WORKFLOWS_DIR" -type f -name "*.yml" -o -name "*.yaml" 2>/dev/null)
   
@@ -138,6 +141,10 @@ validate_workflow_yaml_syntax() {
   fi
   
   while IFS= read -r workflow; do
+    # Skip templates
+    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
+      continue
+    fi
     workflows+=("$workflow")
   done < <(find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null)
   
@@ -151,11 +158,11 @@ validate_workflow_yaml_syntax() {
     filename=$(basename "$workflow")
     
     if command -v yamllint &> /dev/null; then
-      if yamllint -d relax "$workflow" > /dev/null 2>&1; then
+      if yamllint -d "{extends: relaxed}" "$workflow" > /dev/null 2>&1; then
         log_info "✓ $filename: YAML valid"
       else
         log_error "✗ $filename: YAML invalid"
-        if yamllint -d relax "$workflow" 2>&1 | head -3; then
+        if yamllint -d "{extends: relaxed}" "$workflow" 2>&1 | head -3; then
           true
         fi
         failed=$((failed + 1))
@@ -184,6 +191,10 @@ check_required_workflow_fields() {
   fi
   
   while IFS= read -r workflow; do
+    # Skip templates
+    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
+      continue
+    fi
     workflows+=("$workflow")
   done < <(find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null)
   
@@ -244,7 +255,6 @@ summary_report() {
 # ============================================================================
 
 main() {
-  local has_gh_cli=false
   local yaml_check_passed=false
   local field_check_passed=false
   
@@ -255,7 +265,6 @@ main() {
   
   # Phase 1: Check gh CLI
   if check_gh_cli; then
-    has_gh_cli=true
     # Phase 2: Validate with gh CLI if available
     if validate_workflows_with_gh; then
       log_info "✓ All workflows passed gh CLI validation"

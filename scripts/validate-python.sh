@@ -3,8 +3,8 @@
 # Purpose: Canonical Python validator (mypy + ruff + bandit)
 # Guardian: Bauer (Auditor)
 # Ministry: Configuration Management
-# Version: 4.5.1
-# Date: 2025-12-22
+# Maturity: v2.0.0
+# Date: 2026-01-13
 set -euo pipefail
 IFS=$'\n\t'
 

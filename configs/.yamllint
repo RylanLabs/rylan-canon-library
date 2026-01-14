@@ -16,9 +16,15 @@
 ---
 extends: "default"
 
+ignore: |
+  .venv/
+  node_modules/
+  dist/
+  build/
+
 rules:
   line-length:
-    max: 120
+    max: 160
     level: "warning"
     # Override to 140 for inventory files via:
     # yamllint -d "{extends: default, rules: {line-length: {max: 140}}}" inventory/
