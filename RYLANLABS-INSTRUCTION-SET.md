@@ -2,7 +2,7 @@
 
 > Canonical instruction set — RylanLabs standard
 > Organization: RylanLabs
-> Version: 0.0.1
+> Version: 1.0.0
 > Date: 20/12/2025
 
 ---

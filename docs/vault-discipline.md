@@ -78,6 +78,33 @@ rylanlabs-private-vault/
 
 ---
 
+## Vault 8-Phase Rotation
+
+All sensitive credentials (SSH keys, API tokens, administrative passwords) must follow the **8-Phase Rotation** process. This ensures zero downtime, rollback capability, and complete auditability.
+
+### The 8 Phases
+
+1. **BACKUP**: Create an encrypted archive of the current (working) credential state.
+2. **GENERATE**: Generate new credentials using approved entropy sources (`openssl`, `ssh-keygen`).
+3. **ENCRYPT**: Protct new credentials using `ansible-vault` with the canonical vault password.
+4. **VALIDATE**: Verify the new credentials locally (syntax check, permissions).
+5. **DEPLOY**: Push credentials to the target system (Manual Gate: requires Bauer approval).
+6. **ACTIVATE**: Trigger the reload/restart required to use the new credentials.
+7. **COMMIT**: Record the rotation in Git with a Guardian-tagged commit (`@Lazarus`).
+8. **AUDIT**: Log the successful rotation to the centralized audit trail.
+
+---
+
+## Rotation Automation
+
+Use the following scripts in `scripts/` to execute rotations:
+
+- `rotate-unifi-credentials.sh`: Full 8-phase rotation for UniFi controllers.
+- `rotate-ssh-keys.sh`: Automated rotation and distribution of SSH identity keys.
+- `emergency-revoke.sh`: Immediate revocation and replacement of suspected compromised secrets.
+
+---
+
 ## Key Management
 
 ### Personal SSH Keys (keys/ssh/)

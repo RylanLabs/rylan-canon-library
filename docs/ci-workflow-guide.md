@@ -42,6 +42,26 @@ PHASE 3: SUMMARY (~1 min)
 
 ---
 
+## Ansible 7-Task Workflow
+
+All core playbooks must adhere to the **7-Task Workflow** pattern. This ensures idempotency, auditability, and production-grade execution.
+
+### Sequence
+
+1. **GATHER**: Retrieve current state, facts, and external data.
+2. **PROCESS**: Validate inputs, assert variable presence, and calculate derived states.
+3. **APPLY**: Execute idempotent changes to the target system.
+4. **VERIFY**: Confirm changes were applied correctly (post-validation).
+5. **AUDIT**: Log the action with structured metadata (timestamps, users).
+6. **REPORT**: Update stakeholders, central logging, or dashboards.
+7. **FINALIZE**: Cleanup temporary artifacts, close connections, and exit gracefully.
+
+### Usage
+
+Use `templates/playbook-template.yml` as the starting point for all new automation.
+
+---
+
 ## Core Jobs
 
 ### 1. validate-python

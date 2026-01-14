@@ -26,7 +26,7 @@ This document tracks the extraction of production patterns from `rylan-inventory
 **Decisions Made**:
 - ✅ Extract all 7 lint tools (yamllint, ruff, mypy, shellcheck, shfmt, bandit, pytest)
 - ✅ Extract Ansible P1 documentation (3 docs: ansible-discipline, inventory-patterns, ansible.cfg-reference)
-- ✅ Use standard versioning (v4.5.1, not v∞.6.0)
+- ✅ Use standard versioning (v4.5.1, not v1.0.0)
 - ✅ Use Jinja2 {{ }} placeholders for CI template
 - ✅ Confirmation gates between phases for quality assurance
 
@@ -330,4 +330,4 @@ To adopt this canon in a new RylanLabs project:
 - Source: `rylan-inventory` v4.3.1
 - Extraction Framework: Leo's Comprehensive Copilot Extraction Prompt
 - Compliance: RylanLabs Instruction Set v1.0
-- Standards: Seven Pillars, Hellodeolu v6, T3-ETERNAL v∞.6.0
+- Standards: Seven Pillars, Hellodeolu v6, T3-ETERNAL v1.0.0

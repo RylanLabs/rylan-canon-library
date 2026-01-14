@@ -6,6 +6,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [1.0.0] - 2026-01-13
+
+### ✨ Added: Production-Grade Realignment (Tier 0)
+
+**Major Alignment**: Standardized all patterns to production reality and SemVer `v1.0.0`.
+
+- **Versioning**: Replaced all `v∞.X.X` references with SemVer `v1.0.0` across all files.
+- **7-Task Workflow**: Implemented canonical workflow to `templates/playbook-template.yml`.
+- **8-Phase Rotation**: Extracted Vault rotation process to `docs/vault-discipline.md`.
+- **VLAN Canon**: Established canonical 5-VLAN scheme in `docs/vlan-discipline.md`.
+- **Inventory Standards**: Extracted `device-manifest-template.yml` and Tier patterns (T1-T4).
+- **Core Scripts**: Added rotation and emergency scripts to `scripts/`.
+- **Guardian Alignment**: Carter (Identity), Bauer (Verification), Beale (Security), Lazarus (Disaster Recovery).
+
+---
+
 ## [4.5.1] - December 22, 2025
 
 ### ✨ Added: Comprehensive Lint Configuration Canon
@@ -201,7 +217,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 - ✅ Seven Pillars fully demonstrated in all artifacts
 - ✅ Hellodeolu v6 (junior deployable, RTO <15min)
-- ✅ T3-ETERNAL consciousness tracking (v∞.6.0 reference)
+- ✅ T3-ETERNAL consciousness tracking (v1.0.0 reference)
 - ✅ No bypass culture (all validation mandatory)
 - ✅ IRL-first approach (manual then automation)
 - ✅ Idempotency assured (linting enforces consistency)
