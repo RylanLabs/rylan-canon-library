@@ -5,8 +5,8 @@ applyTo: '**'
 
 > Canonical instruction set — RylanLabs standard
 > Organization: RylanLabs
-> Version: 0.0.1
-> Date: 20/12/2025
+> Version: 1.0.0
+> Date: 2026-01-13
 
 ---
 
@@ -84,6 +84,14 @@ IFS=$'\n\t'
 - bandit -r . -ll
 - pytest --cov-fail-under=80
 - pyproject.toml only
+
+### Markdown Canon
+
+- **Heading Discipline (MD022/MD036)**: Surround headings with single blank lines; use `#` syntax, never bold-as-heading.
+- **Spacing (MD031/MD032/MD012)**: Fenced code blocks and lists must have blank lines above/below; no multiple consecutive blanks.
+- **Tables (MD060)**: Use aligned column style with single spaces around pipes.
+- **Security & Links (MD040/MD034)**: All code fences must have language tags; no bare URLs (wrap URLs in markdown syntax).
+- **Tooling**: `markdownlint` mandatory; RTO < 15min for doc fixes.
 
 ---
 

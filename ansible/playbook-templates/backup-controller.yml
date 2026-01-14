@@ -58,7 +58,7 @@
       lineinfile:
         path: "{{ audit_dir }}/backup-history.log"
         line: "BACKUP: {{ backup_filename }} created on {{ inventory_hostname }} at {{ timestamp }}"
-        create: yes
+        create: true
       delegate_to: localhost
       tags: [audit]
 

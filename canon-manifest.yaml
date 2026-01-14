@@ -1,0 +1,125 @@
+---
+# canon-manifest.yaml
+# Canonical manifest for RylanLabs Canon Library enforcement.
+# Defines sacred (immutable) files/patterns to be symlinked or referenced across repositories.
+# Versioned per SemVer; changes trigger CI drift detection.
+# Structure: Grouped by ministry (e.g., ansible, security) for opt-in adherence.
+# Each entry includes:
+#   - src: Path in rylan-canon-library (Tier 0 source).
+#   - dest: Target path in adopting repo (e.g., docs/, scripts/).
+#   - immutable: true/false (true = no local overrides; false = customizable with drift checks).
+#   - description: Brief rationale, tied to Trinity (Carter/Identity, Bauer/Verification, Beale/Hardening).
+# Ministries are opt-in via repo README.md declaration (e.g., maturity_tier: 1, ministries: [ansible, security]).
+# Enforcement: Symlinked via sync-canon.sh; validated in CI with audit-canon.sh (SHA checksums).
+# No secrets or code libraries; focus on patterns, validators, and workflows.
+
+manifest_version: "1.0.0"  # SemVer; bump on structural changes.
+
+ministries:
+  - ansible
+  - security
+  - network
+  - api
+  - playbook
+  - rotation
+  - validation  # Cross-cutting for linting/scripts
+
+sacred_files:
+  ansible:
+    - src: docs/ansible-vault-discipline.md
+      dest: docs/ansible-vault-discipline.md
+      immutable: true
+      description: "Patterns for passwordless auth, vault file segregation (Carter: Identity via service/{type}.yml; Bauer: Pre-commit linting)."
+    - src: templates/ansible.cfg.template
+      dest: ansible.cfg
+      immutable: false  # Template; customize with local vars, but validate structure.
+      description: "Default config with vault_password_file; enforces reproducibility in CI/CD."
+    - src: .yamllint
+      dest: .yamllint
+      immutable: true
+      description: "YAML lint rules for vault segregation and file naming (e.g., '^vaults/[a-z-]+/[a-z-]+-[a-z]+\\.yml$')."
+
+  security:
+    - src: scripts/validate-security-posture.sh
+      dest: scripts/validate-security-posture.sh
+      immutable: true
+      description: "Checks deny-all defaults, guest isolation (Beale: Hardening via jq queries; Bauer: CI failure on insecure configs)."
+    - src: docs/security-posture-discipline.md
+      dest: docs/security-posture-discipline.md
+      immutable: true
+      description: "Guidelines for explicit allow rules, VLAN isolation; prevents accidental deployments."
+
+  network:
+    - src: docs/network-versioning-discipline.md
+      dest: docs/network-versioning-discipline.md
+      immutable: true
+      description: "SemVer tracking for VLAN schemes (Carter: Version field required; Bauer: CI fails on unchanged version with mods)."
+    - src: templates/network_scheme.yml.template
+      dest: group_vars/network_scheme.yml
+      immutable: false
+      description: "Template for versioned network configs; eternal glue artifact."
+
+  api:
+    - src: docs/api-coverage-discipline.md
+      dest: docs/api-coverage-discipline.md
+      immutable: true
+      description: "Tracking endpoint coverage for DR runbooks (Bauer: Min 80% coverage; pre-commit blocks low coverage)."
+    - src: scripts/track-endpoint-coverage.py
+      dest: scripts/track-endpoint-coverage.py
+      immutable: true
+      description: "Python script for .audit/api/coverage.json updates; enforces guardian mappings."
+
+  playbook:
+    - src: scripts/playbook-structure-linter.py
+      dest: scripts/playbook-structure-linter.py
+      immutable: true
+      description: "Enforces 7-task Trinity workflow (GATHER-PROCESS-APPLY-VERIFY-AUDIT-REPORT-FINALIZE); CI/pre-commit integration."
+    - src: docs/trinity-execution.md
+      dest: docs/trinity-execution.md
+      immutable: true
+      description: "Standardized playbook patterns; prevents inconsistent structures."
+
+  rotation:
+    - src: docs/rotation-discipline.md
+      dest: docs/rotation-discipline.md
+      immutable: true
+      description: "Credential rotation patterns; includes pre-flight checklists."
+    - src: scripts/validate-rotation-readiness.sh
+      dest: scripts/validate-rotation-readiness.sh
+      immutable: true
+      description: "Bash validator for backups, encryption, inventory refs (Bauer: CI green required; Beale: Fail on gaps)."
+
+  validation:
+    - src: templates/pre-commit-config.yaml.template
+      dest: .pre-commit-config.yaml
+      immutable: false
+      description: "Template for remote hooks (v2.0.0); includes ruff, mypy, ansible-lint, shellcheck."
+    - src: scripts/validate-bash.sh
+      dest: scripts/validate-bash.sh
+      immutable: true
+      description: "Portable Bash linter (shfmt, shellcheck); eternal glue for script discipline."
+    - src: scripts/validate-ansible.sh
+      dest: scripts/validate-ansible.sh
+      immutable: true
+      description: "Ansible playbook validator; ties to ansible-lint."
+    - src: templates/pyproject.toml.template
+      dest: pyproject.toml
+      immutable: false
+      description: "Python config for ruff, mypy, bandit; enforces 80% test coverage."
+    - src: .markdownlint.json
+      dest: .markdownlint.json
+      immutable: true
+      description: "Markdown standards (MD022, MD031, etc.); for docs consistency."
+
+enforcement:
+  ci_jobs:
+    - name: canon-verification
+      description: "Clones rylan-canon-library, runs checksums/symlink checks; fails on drift."
+    - name: trinity-ci-workflow
+      description: "7-job pipeline; integrates all validators."
+  cli_commands:
+    - rylan-ctl sync  # Updates symlinks from manifest.
+    - rylan-ctl verify  # Runs audit-canon.sh locally.
+  drift_detection:
+    script: scripts/audit-canon.sh
+    auto_patch: true  # Beale: Applies fixes for detected drifts.

@@ -89,7 +89,10 @@
 
     - name: "Select rollback backup"
       set_fact:
-        selected_backup: "{{ (backup_files.files | sort(attribute='mtime', reverse=True) | first).path if rollback_to == 'latest' else (backup_files.files | selectattr('path', 'contains', rollback_to) | first).path }}"
+        selected_backup: >-
+          {{ (backup_files.files | sort(attribute='mtime', reverse=True) | first).path
+          if rollback_to == 'latest'
+          else (backup_files.files | selectattr('path', 'contains', rollback_to) | first).path }}
       tags: [plan]
 
     - name: "Validate rollback backup exists and is readable"
@@ -122,8 +125,12 @@
     - name: "Log rollback initiation"
       lineinfile:
         path: "{{ audit_dir }}/rollback-firewall-{{ timestamp }}.log"
-        line: "[{{ ansible_date_time.iso8601 }}] Rollback initiated. Target: {{ selected_backup }}. Rules to delete: {{ rules_to_delete | length }}. Rules to create: {{ rules_to_create | length }}"
-        create: yes
+        line: |
+          [{{ ansible_date_time.iso8601 }}] Rollback initiated.
+          Target: {{ selected_backup }}
+          Rules to delete: {{ rules_to_delete | length }}
+          Rules to create: {{ rules_to_create | length }}
+        create: true
         state: present
       tags: [audit]
 
@@ -133,11 +140,11 @@
           🔄 ROLLBACK PLAN
           Current Rules: {{ current_rules.json | length }}
           Target Rules: {{ target_rules | length }}
-          
+
           Changes Required:
             Delete: {{ rules_to_delete | length }}
             Create: {{ rules_to_create | length }}
-          
+
           Backup Source: {{ selected_backup }}
           Backup SHA256: {{ backup_stat.stat.checksum }}
           DRY_RUN: {{ dry_run }}
@@ -243,15 +250,15 @@
           ✅ ROLLBACK COMPLETE
           Timestamp: {{ ansible_date_time.iso8601 }}
           Source: {{ selected_backup }}
-          
+
           Changes Applied:
             Deleted: {{ rules_to_delete | length }}
             Created: {{ rules_to_create | length }}
-          
+
           Final State:
             Rules: {{ final_rules.json | length }}
             Status: VERIFIED
-          
+
           Audit Trail:
             Pre-Rollback: {{ backup_dir }}/pre-rollback-rules-{{ timestamp }}.json
             Post-Rollback: {{ backup_dir }}/post-rollback-rules-{{ timestamp }}.json

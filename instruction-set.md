@@ -2,8 +2,8 @@
 
 > Part of rylan-patterns-library
 > Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)
-> Version: v1.0.0
-> Date: December 19, 2025
+> Version: v2.0.0
+> Date: 2026-01-13
 
 ---
 

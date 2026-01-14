@@ -128,8 +128,11 @@
     - name: "Log firewall rule creation to audit trail"
       lineinfile:
         path: "{{ audit_dir }}/firewall-rules-{{ timestamp }}.log"
-        line: "[{{ ansible_date_time.iso8601 }}] Rule {{ item.item.action }}: {{ item.item.src_subnet }} -> {{ item.item.dst_port | default('*') }} created. Status: {{ item.status }}"
-        create: yes
+        line: |
+          [{{ ansible_date_time.iso8601 }}] Rule {{ item.item.action }}:
+          {{ item.item.src_subnet }} -> {{ item.item.dst_port | default('*') }}
+          status: {{ item.status }}
+        create: true
         state: present
       loop: "{{ rule_result.results }}"
       tags: [audit]

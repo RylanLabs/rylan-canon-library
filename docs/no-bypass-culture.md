@@ -1,8 +1,8 @@
 # No Bypass Culture: Discipline Without Compromise
 
 > Canonical principle — RylanLabs eternal standard
-> Extracted from: rylan-unifi-case-study, firewall-consolidation, CI/CD maturation
-> Date: December 20, 2025
+> Version: v2.0.0
+> Date: 2026-01-13
 > Agent: Bauer (Verification)
 > Ministry: verification
 
