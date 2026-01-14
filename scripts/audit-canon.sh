@@ -73,14 +73,14 @@ if [[ ! -d "$CANON_LIB_PATH" ]]; then
 fi
 
 drift_detected=0
-ministries=$(yq '.sacred_files | keys | .[]' "$MANIFEST_FILE")
+ministries=$(yq -r '.sacred_files | keys | .[]' "$MANIFEST_FILE")
 
 for ministry in $ministries; do
-    length=$(yq ".sacred_files.${ministry} | length" "$MANIFEST_FILE")
+    length=$(yq -r ".sacred_files.${ministry} | length" "$MANIFEST_FILE")
     for ((i=0; i<length; i++)); do
-        src=$(yq ".sacred_files.${ministry}[${i}].src" "$MANIFEST_FILE")
-        dest=$(yq ".sacred_files.${ministry}[${i}].dest" "$MANIFEST_FILE")
-        immutable=$(yq ".sacred_files.${ministry}[${i}].immutable" "$MANIFEST_FILE")
+        src=$(yq -r ".sacred_files.${ministry}[${i}].src" "$MANIFEST_FILE")
+        dest=$(yq -r ".sacred_files.${ministry}[${i}].dest" "$MANIFEST_FILE")
+        immutable=$(yq -r ".sacred_files.${ministry}[${i}].immutable" "$MANIFEST_FILE")
         
         if ! check_drift "$src" "$dest" "$immutable"; then
             drift_detected=1

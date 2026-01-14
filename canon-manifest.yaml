@@ -23,6 +23,7 @@ ministries:
   - playbook
   - rotation
   - validation  # Cross-cutting for linting/scripts
+  - orchestration # Agent definitions and instructions
 
 sacred_files:
   ansible:
@@ -110,6 +111,16 @@ sacred_files:
       dest: .markdownlint.json
       immutable: true
       description: "Markdown standards (MD022, MD031, etc.); for docs consistency."
+
+  orchestration:
+    - src: .github/agents/.agent.md
+      dest: .github/agents/.agent.md
+      immutable: true
+      description: "Canonical Rylan Canon Library Guardian agent definition (Beale: Enforcement; Bauer: Verification)."
+    - src: .github/instructions/instructions.md
+      dest: .github/instructions/instructions.md
+      immutable: true
+      description: "Canonical RylanLabs instruction set (Carter: Identity/Standards; Bauer: Linting enforcement)."
 
 enforcement:
   ci_jobs:

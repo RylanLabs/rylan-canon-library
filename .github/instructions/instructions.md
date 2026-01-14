@@ -3,7 +3,7 @@ applyTo: '**'
 ---
 # RylanLabs Instruction Set
 
-> Canonical instruction set — RylanLabs standard
+> **Canonical Source of Truth**: [rylan-canon-library](https://github.com/RylanLabs/rylan-canon-library)
 > Organization: RylanLabs
 > Version: 1.0.0
 > Date: 2026-01-13
