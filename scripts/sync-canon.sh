@@ -88,17 +88,17 @@ check_dependencies
 log "Parsing manifest: $MANIFEST_FILE"
 
 # Get all ministries from manifest
-ministries=$(yq '.sacred_files | keys | .[]' "$MANIFEST_FILE")
+ministries=$(yq -r '.sacred_files | keys | .[]' "$MANIFEST_FILE")
 
 for ministry in $ministries; do
     log "Processing Ministry: $ministry"
     
     # Iterate through entries for this ministry
-    length=$(yq ".sacred_files.$ministry | length" "$MANIFEST_FILE")
+    length=$(yq -r ".sacred_files.$ministry | length" "$MANIFEST_FILE")
     for ((i=0; i<length; i++)); do
-        src=$(yq ".sacred_files.${ministry}[${i}].src" "$MANIFEST_FILE")
-        dest=$(yq ".sacred_files.${ministry}[${i}].dest" "$MANIFEST_FILE")
-        immutable=$(yq ".sacred_files.${ministry}[${i}].immutable" "$MANIFEST_FILE")
+        src=$(yq -r ".sacred_files.${ministry}[${i}].src" "$MANIFEST_FILE")
+        dest=$(yq -r ".sacred_files.${ministry}[${i}].dest" "$MANIFEST_FILE")
+        immutable=$(yq -r ".sacred_files.${ministry}[${i}].immutable" "$MANIFEST_FILE")
         
         sync_file "$src" "$dest" "$immutable"
     done
