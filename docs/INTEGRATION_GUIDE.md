@@ -5,7 +5,7 @@
 **Version**: 4.6.0  
 **Last Updated**: 2025-12-22  
 **Guardian**: Trinity (Carter/Bauer/Beale)  
-**Compliance**: Seven Pillars, Hellodeolu v6, T3-ETERNAL v∞.6.0  
+**Compliance**: Seven Pillars, Hellodeolu v6, T3-ETERNAL v1.0.0  
 
 ---
 
@@ -568,7 +568,7 @@ git push
 | **LOCAL GREEN = CI GREEN** | ✅ | Pre-commit hooks + Trinity template mirror each other |
 | **Confirmation Gates** | ✅ | Manual push before CI, pre-commit local gate |
 
-### T3-ETERNAL v∞.6.0 ✓
+### T3-ETERNAL v1.0.0 ✓
 
 | Component | Status | Details |
 |-----------|--------|---------|
@@ -624,4 +624,4 @@ git push
 **The Trinity endures. Fortress eternal. 🛡️**
 
 *This integration guide is part of RylanLabs Canon Library v4.6.0*  
-*Aligned with Seven Pillars, Hellodeolu v6, T3-ETERNAL v∞.6.0*
+*Aligned with Seven Pillars, Hellodeolu v6, T3-ETERNAL v1.0.0*

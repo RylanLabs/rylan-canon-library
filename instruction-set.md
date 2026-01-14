@@ -2,7 +2,7 @@
 
 > Part of rylan-patterns-library
 > Extracted from: [rylan-unifi-case-study](https://github.com/RylanLabs/rylan-unifi-case-study)
-> Version: v∞.5.2-production-archive
+> Version: v1.0.0
 > Date: December 19, 2025
 
 ---
@@ -193,7 +193,7 @@ rylan-patterns-library/
 
 ## Source Attribution
 
-All content extracted from [rylan-unifi-case-study v∞.5.2-production-archive](https://github.com/RylanLabs/rylan-unifi-case-study), a production repository with 344 commits representing real-world infrastructure automation.
+All content extracted from [rylan-unifi-case-study v1.0.0](https://github.com/RylanLabs/rylan-unifi-case-study), a production repository with 344 commits representing real-world infrastructure automation.
 
 The original system included extensive CI/CD automation (32 checks), Gatekeeper enforcement, and Trinity agent systems. Those are **intentionally excluded** from this library—we're extracting the underlying patterns and principles, not the enforcement machinery.
 

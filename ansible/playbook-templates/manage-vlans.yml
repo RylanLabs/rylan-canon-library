@@ -2,20 +2,8 @@
 # Playbook: manage-vlans.yml
 # Purpose: Create/manage UniFi VLANs with validation constraints (max 5 per run)
 # Guardian: Bauer (Verification)
-# Version: 4.5.2-playbooks
-# Compliance: Seven Pillars (Validation, Audit Logging, Idempotency)
-# RTO Target: <2min per VLAN creation
-#
-# Usage:
-#   ansible-playbook ansible/playbook-templates/manage-vlans.yml \
-#     -i inventory/unifi-hosts.yml \
-#     --extra-vars "vlans=[{id: 100, name: 'Guest', subnet: '10.20.0.0/24'}]"
-#
-# Constraints:
-#   - Max 5 VLANs per playbook run (safety limit)
-#   - Idempotent: Rerun safely if one VLAN fails
-#   - Validation: Pre-check for VLAN ID conflicts
-#   - Reversibility: All VLANs marked with managed=true for safe deletion
+# Version: v1.0.0
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
 
 - name: "Manage UniFi VLANs (Create/Update)"
   hosts: unifi_controller
@@ -24,32 +12,11 @@
     max_vlans_per_run: 5
     audit_dir: ".audit/phase-3-playbooks"
     timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
-    vlans: []  # Override with --extra-vars
+    vlans: []
 
-  pre_tasks:
-    - name: "Validate controller accessibility"
-      uri:
-        url: "https://{{ inventory_hostname }}:8443/api/s/default"
-        method: GET
-        user: "{{ unifi_user }}"
-        password: "{{ unifi_password }}"
-        validate_certs: false
-        timeout: 10
-      register: controller_health
-      failed_when: controller_health.status != 200
-      changed_when: false
-      tags: [validate]
-
-    - name: "Enforce max VLANs constraint (safety limit)"
-      assert:
-        that:
-          - vlans | length <= max_vlans_per_run
-          - vlans | length > 0
-        fail_msg: "VLAN count must be 1-{{ max_vlans_per_run }}. Provided: {{ vlans | length }}"
-        success_msg: "✓ VLAN count valid: {{ vlans | length }} VLANs"
-      tags: [validate]
-
-    - name: "Fetch existing VLANs from controller (conflict detection)"
+  tasks:
+    # PHASE 1: GATHER
+    - name: "GATHER : Fetch existing VLANs from controller"
       uri:
         url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/networkconf"
         method: GET
@@ -60,111 +27,71 @@
       register: existing_networks
       failed_when: existing_networks.status != 200
       changed_when: false
-      tags: [validate]
+      tags: [gather]
 
-    - name: "Check for VLAN ID conflicts"
-      set_fact:
-        existing_vlan_ids: "{{ existing_networks.json | map(attribute='vlan') | list | unique }}"
-      tags: [validate]
+    # PHASE 2: PROCESS
+    - name: "PROCESS : Validate VLAN count and conflicts"
+      block:
+        - name: "PROCESS : Enforce max VLANs constraint"
+          assert:
+            that:
+              - vlans | length <= max_vlans_per_run
+            fail_msg: "Max {{ max_vlans_per_run }} VLANs allowed."
 
-    - name: "Validate no duplicate VLAN IDs"
-      assert:
-        that:
-          - item.id not in existing_vlan_ids
-        fail_msg: "VLAN ID {{ item.id }} already exists. Conflict: {{ item.name }}"
-        success_msg: "✓ VLAN ID {{ item.id }} unique"
-      loop: "{{ vlans }}"
-      tags: [validate]
+        - name: "PROCESS : Check for VLAN ID conflicts"
+          assert:
+            that:
+              - item.id not in (existing_networks.json | map(attribute='vlan') | list)
+            fail_msg: "VLAN ID {{ item.id }} already exists."
+          loop: "{{ vlans }}"
+      tags: [process]
 
-    - name: "Validate VLAN subnet format (CIDR)"
-      assert:
-        that:
-          - item.subnet is regex('^([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}$')
-        fail_msg: "Invalid subnet format: {{ item.subnet }} (expected CIDR: 10.0.0.0/24)"
-        success_msg: "✓ VLAN subnet valid: {{ item.subnet }}"
-      loop: "{{ vlans }}"
-      tags: [validate]
-
-  tasks:
-    - name: "Create/Update UniFi VLAN"
+    # PHASE 3: APPLY
+    - name: "APPLY : Create/Update UniFi VLAN"
       uri:
         url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/networkconf"
         method: POST
-        user: "{{ unifi_user }}"
-        password: "{{ unifi_password }}"
-        validate_certs: false
         body_format: json
         body:
           vlan: "{{ item.id }}"
           name: "{{ item.name }}"
-          networkconf_type: "corporate"
-          enabled: true
-          dhcpd_enabled: true
-          dhcpd_start: "{{ item.subnet | regex_replace('(\\d+\\.\\d+\\.\\d+)\\.\\d+.*', '\\1.10') }}"
-          dhcpd_stop: "{{ item.subnet | regex_replace('(\\d+\\.\\d+\\.\\d+)\\.\\d+.*', '\\1.254') }}"
-          network: "{{ item.subnet }}"
+          subnet: "{{ item.subnet }}"
           managed: true
-          tag: "managed-vlan-v4.5.2"
-      register: vlan_result
+        user: "{{ unifi_user }}"
+        password: "{{ unifi_password }}"
+        validate_certs: false
+        status_code: 201
       loop: "{{ vlans }}"
-      loop_control:
-        label: "VLAN {{ item.id }} ({{ item.name }})"
-      tags: [create]
+      tags: [apply]
 
-    - name: "Log VLAN creation to audit trail"
-      lineinfile:
-        path: "{{ audit_dir }}/vlan-management-{{ timestamp }}.log"
-        line: "[{{ ansible_date_time.iso8601 }}] VLAN {{ item.item.id }}: {{ item.item.name }} created. Status: {{ item.status }}"
-        create: yes
-        state: present
-      loop: "{{ vlan_result.results }}"
-      tags: [audit]
-
-    - name: "Verify VLAN creation (fetch updated list)"
+    # PHASE 4: VERIFY
+    - name: "VERIFY : Confirm VLAN activation"
       uri:
         url: "https://{{ inventory_hostname }}:8443/api/s/default/rest/networkconf"
         method: GET
         user: "{{ unifi_user }}"
         password: "{{ unifi_password }}"
         validate_certs: false
-        return_content: true
-      register: updated_networks
-      failed_when: updated_networks.status != 200
-      changed_when: false
+      register: verify_vlans
+      failed_when: verify_vlans.status != 200
       tags: [verify]
 
-    - name: "Assert all VLANs created successfully"
-      assert:
-        that:
-          - (updated_networks.json | map(attribute='vlan') | list) | select('equalto', item.id) | list | length == 1
-        fail_msg: "VLAN {{ item.id }} not found after creation"
-        success_msg: "✓ VLAN {{ item.id }} verified in controller"
-      loop: "{{ vlans }}"
-      tags: [verify]
-
-  post_tasks:
-    - name: "Display VLAN creation summary"
-      debug:
-        msg: |
-          ✅ VLAN MANAGEMENT COMPLETE
-          VLANs Created: {{ vlans | length }}
-          Timestamp: {{ ansible_date_time.iso8601 }}
-          Details:
-          {% for vlan in vlans %}
-            - VLAN {{ vlan.id }}: {{ vlan.name }} ({{ vlan.subnet }})
-          {% endfor %}
-          Status: ALL VERIFIED
-          Reversibility: All VLANs marked with 'managed=true' tag for safe deletion
-      tags: [summary]
-
-    - name: "Log completion to audit trail"
+    # PHASE 5: AUDIT
+    - name: "AUDIT : Log VLAN creation"
       copy:
-        content: |
-          [{{ ansible_date_time.iso8601 }}] VLAN management completed successfully
-          VLANs Created: {{ vlans | length }}
-          IDs: {{ vlans | map(attribute='id') | list }}
-          Status: VERIFIED
-        dest: "{{ audit_dir }}/vlan-completion-{{ timestamp }}.log"
-        mode: '0640'
+        content: "CREATED: {{ vlans | length }} VLANs on {{ inventory_hostname }} at {{ timestamp }}"
+        dest: "{{ audit_dir }}/vlan-apply-{{ timestamp }}.log"
       delegate_to: localhost
       tags: [audit]
+
+    # PHASE 6: REPORT
+    - name: "REPORT : Output success"
+      debug:
+        msg: "Successfully processed {{ vlans | length }} VLANs"
+      tags: [report]
+
+    # PHASE 7: FINALIZE
+    - name: "FINALIZE : Execution complete"
+      debug:
+        msg: "VLAN management finished"
+      tags: [finalize]

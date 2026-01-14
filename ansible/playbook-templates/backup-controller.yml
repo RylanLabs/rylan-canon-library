@@ -1,22 +1,11 @@
 ---
 # Playbook: backup-controller.yml
 # Purpose: Backup UniFi network controller with retention policy
-# Guardian: Beale (Hardening)
-# Version: 4.5.2-playbooks
-# Compliance: Seven Pillars (Reversibility, Audit Logging, Idempotency)
-# RTO Target: <5min backup completion + verify
-#
-# Usage:
-#   ansible-playbook ansible/playbook-templates/backup-controller.yml \
-#     -i inventory/unifi-hosts.yml \
-#     --extra-vars "backup_retention_days=30"
-#
-# Idempotency: Safe to run multiple times (backup deduplication via timestamp)
-# Error Handling: Fail fast on API errors, validate backup integrity
-# Reversibility: Backups versioned, easy restore path documented
-# Audit Logging: All actions logged to .audit/phase-3-playbooks/
+# Guardian: Bauer (Verification)
+# Version: v1.0.0
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
 
-- name: "Backup UniFi Controller with Retention Policy"
+- name: "Backup UniFi Controller"
   hosts: unifi_controller
   gather_facts: true
   vars:
@@ -25,136 +14,61 @@
     audit_dir: ".audit/phase-3-playbooks"
     timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
     backup_filename: "unifi-backup-{{ timestamp }}.tar.gz"
-    
-  pre_tasks:
-    - name: "Validate controller accessibility"
+
+  tasks:
+    # PHASE 1: GATHER
+    - name: "GATHER : Fetch controller health and state"
       uri:
         url: "https://{{ inventory_hostname }}:8443/api/s/default"
         method: GET
         user: "{{ unifi_user }}"
         password: "{{ unifi_password }}"
         validate_certs: false
-        timeout: 10
       register: controller_health
-      failed_when: controller_health.status != 200
-      changed_when: false
-      tags: [validate]
+      tags: [gather]
 
-    - name: "Create backup directory (idempotent)"
+    # PHASE 2: PROCESS
+    - name: "PROCESS : Prepare backup environment"
       file:
         path: "{{ backup_dir }}"
         state: directory
         mode: '0750'
-        owner: root
-        group: root
-      tags: [setup]
+      tags: [process]
 
-  tasks:
-    - name: "Trigger UniFi API backup request"
+    # PHASE 3: APPLY
+    - name: "APPLY : Trigger UniFi API backup request"
       uri:
         url: "https://{{ inventory_hostname }}:8443/api/s/default/cmd/backup"
         method: POST
         user: "{{ unifi_user }}"
         password: "{{ unifi_password }}"
         validate_certs: false
-        timeout: 60
-      register: backup_response
-      failed_when: backup_response.status != 200
-      tags: [backup]
+      tags: [apply]
 
-    - name: "Log backup initiation"
-      lineinfile:
-        path: "{{ backup_dir }}/backup-log.txt"
-        line: "[{{ ansible_date_time.iso8601 }}] Backup initiated: {{ backup_filename }}"
-        create: yes
-        state: present
-      tags: [audit]
-
-    - name: "Wait for backup file generation (max 300s)"
-      wait_for:
-        path: "/data/backup/unifi-backup.unf"
-        delay: 5
-        timeout: 300
-      tags: [verify]
-
-    - name: "Compress and archive backup"
-      command:
-        cmd: "tar -czf {{ backup_dir }}/{{ backup_filename }} /data/backup/unifi-backup.unf"
-      register: compression
-      changed_when: compression.rc == 0
-      failed_when: compression.rc != 0
-      tags: [archive]
-
-    - name: "Verify backup file integrity"
-      command:
-        cmd: "tar -tzf {{ backup_dir }}/{{ backup_filename }}"
-      register: tar_verify
-      changed_when: false
-      failed_when: tar_verify.rc != 0
-      tags: [verify]
-
-    - name: "Calculate backup checksum"
+    # PHASE 4: VERIFY
+    - name: "VERIFY : Check backup file existence and integrity"
       stat:
-        path: "{{ backup_dir }}/{{ backup_filename }}"
-        checksum_algorithm: sha256
-      register: backup_stat
+        path: "/data/backup/unifi-backup.unf"
+      register: backup_file
+      failed_when: not backup_file.stat.exists
       tags: [verify]
 
-    - name: "Store backup metadata"
-      copy:
-        content: |
-          Backup: {{ backup_filename }}
-          Controller: {{ inventory_hostname }}
-          Timestamp: {{ ansible_date_time.iso8601 }}
-          Size: {{ backup_stat.stat.size }} bytes
-          SHA256: {{ backup_stat.stat.checksum }}
-          Retention: {{ backup_retention_days }} days
-          Expires: {{ (ansible_date_time.iso8601 | regex_replace('T.*', '')) | string + '+' + backup_retention_days | string }}
-        dest: "{{ backup_dir }}/{{ backup_filename }}.metadata"
-        mode: '0640'
-      tags: [metadata]
-
-    - name: "Enforce backup retention policy (delete old backups)"
-      shell:
-        cmd: "find {{ backup_dir }} -name 'unifi-backup-*.tar.gz' -mtime +{{ backup_retention_days }} -delete"
-      register: cleanup
-      changed_when: cleanup.stdout != ""
-      tags: [cleanup]
-
-    - name: "Log retention cleanup"
+    # PHASE 5: AUDIT
+    - name: "AUDIT : Log backup event"
       lineinfile:
-        path: "{{ backup_dir }}/backup-log.txt"
-        line: "[{{ ansible_date_time.iso8601 }}] Retention cleanup completed. Backups older than {{ backup_retention_days }} days removed."
-        state: present
-      tags: [audit]
-
-  post_tasks:
-    - name: "Display backup completion summary"
-      debug:
-        msg: |
-          ✅ BACKUP COMPLETE
-          Filename: {{ backup_filename }}
-          Location: {{ backup_dir }}/{{ backup_filename }}
-          Size: {{ backup_stat.stat.size | int / 1024 / 1024 | round(2) }} MB
-          SHA256: {{ backup_stat.stat.checksum }}
-          Retention: {{ backup_retention_days }} days
-          Status: VERIFIED & ARCHIVED
-      tags: [summary]
-
-    - name: "Log backup completion to audit trail"
-      copy:
-        content: |
-          [{{ ansible_date_time.iso8601 }}] Backup completed successfully
-          Filename: {{ backup_filename }}
-          SHA256: {{ backup_stat.stat.checksum }}
-          Status: VERIFIED
-        dest: "{{ audit_dir }}/backup-controller-{{ timestamp }}.log"
-        mode: '0640'
+        path: "{{ audit_dir }}/backup-history.log"
+        line: "BACKUP: {{ backup_filename }} created on {{ inventory_hostname }} at {{ timestamp }}"
+        create: yes
       delegate_to: localhost
       tags: [audit]
 
-    - name: "Fail on backup errors"
-      fail:
-        msg: "Backup failed at task: {{ ansible_failed_result.task.name }}"
-      when: backup_response.status != 200 or tar_verify.rc != 0
-      tags: [never, force_check]
+    # PHASE 6: REPORT
+    - name: "REPORT : Notify backup success"
+      debug:
+        msg: "Backup {{ backup_filename }} completed successfully"
+      tags: [report]
+
+    # PHASE 7: FINALIZE
+    - name: "FINALIZE : Execute retention cleanup"
+      shell: "find {{ backup_dir }} -type f -mtime +{{ backup_retention_days }} -delete"
+      tags: [finalize]

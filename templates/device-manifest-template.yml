@@ -1,0 +1,47 @@
+---
+# device-manifest.yml
+# Purpose: Single source of truth — Complete device catalogue
+# Guardian: Carter (Identity)
+# Version: v1.0.0
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
+
+# Tier Patterns (T1-T4):
+# T1 (Critical): Core gateways, main controllers, backbone switches. 24/7 RTO < 1hr.
+# T2 (Standard): Production servers, APs, access switches. RTO < 4hr.
+# T3 (User): Workstations, printers, non-critical services. RTO Next Business Day.
+# T4 (Untrusted): IoT devices, Guest access, Testbeds. RTO Best Effort.
+
+devices:
+  {{ CORE_GATEWAY }}:
+    hostname: "{{ CORE_GATEWAY }}"
+    ip: "192.168.1.1"
+    role: "gateway"
+    tier: "T1"
+    hardware: "UniFi Gateway"
+    backup_enabled: true
+
+  {{ PRIMARY_CONTROLLER }}:
+    hostname: "{{ PRIMARY_CONTROLLER }}"
+    ip: "192.168.1.10"
+    role: "controller"
+    tier: "T1"
+    hardware: "UniFi Cloud Key"
+    backup_enabled: true
+
+  {{ ACCESS_POINT_01 }}:
+    hostname: "{{ ACCESS_POINT_01 }}"
+    ip: "192.168.1.20"
+    role: "access-point"
+    tier: "T2"
+    hardware: "UniFi AP"
+
+  {{ IOT_DEVICE_01 }}:
+    hostname: "{{ IOT_DEVICE_01 }}"
+    ip: "10.0.90.100"
+    role: "iot"
+    tier: "T4"
+    vlan: 90
+
+constraints:
+  allowed_roles: ["gateway", "controller", "switch", "access-point", "iot", "server"]
+  allowed_tiers: ["T1", "T2", "T3", "T4"]

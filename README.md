@@ -2,9 +2,10 @@
 
 > Canonical reference — RylanLabs eternal standard
 > Organization: RylanLabs
-> Date: December 20, 2025
+> Version: v1.0.0
+> Date: January 13, 2026
 
-**Status**: 🔄 In formation — Philosophy complete, execution beginning
+**Status**: ✅ **PRODUCTION** — Tier 0 Source of Truth
 
 ---
 
@@ -12,23 +13,27 @@
 
 **rylan-canon-library** is the **single source of truth** for all RylanLabs discipline, standards, and operational doctrine.
 
+It is a **Tier 0** repository, meaning all other repositories align with or symlink to the patterns defined here.
+
 It contains:
 - **Philosophical foundations** — Seven Pillars, Trinity + Whitaker, Hellodeolu v6
-- **Operational standards** — Ansible discipline, inventory, vault
+- **Operational standards** — Ansible discipline, inventory, vault, VLAN scheme
+- **7-Task Workflow** — GATHER → PROCESS → APPLY → VERIFY → AUDIT → REPORT → FINALIZE
 - **Evolving lessons** — Extracted from real projects
-- **Canonical templates** — Repo structure, documentation
+- **Canonical templates** — Repo structure, documentation, playbooks
 
 **Not in this repo**:
-- Reusable code libraries
+- Reusable code libraries (unless as templates)
 - Secrets or credentials
 - Device inventory
-- Playbooks or roles
+- Implementation code (Guidance only)
 
 **What this repo does**:
 - Defines non-negotiable standards
 - Ensures consistency across organization
 - Preserves earned wisdom
 - Enables junior-at-3-AM understanding
+- Enforces **Zero Bypass Culture**
 
 ---
 
@@ -37,15 +42,15 @@ It contains:
 | Aspect              | Status | Notes                                      |
 |---------------------|--------|--------------------------------------------|
 | Philosophy          | ✅     | Seven Pillars, Trinity, eternal glue complete |
-| Ansible Standards   | ✅     | ansible-discipline.md + inventory/ansible.cfg patterns |
+| Ansible Standards   | ✅     | 7-Task Workflow + inventory/ansible.cfg patterns |
 | Bash Standards      | ✅     | bash-discipline.md + shfmt-standards.md    |
-| CI/CD Templates     | ✅     | 7-job Trinity CI/CD workflow (v4.5.1)      |
+| CI/CD Templates     | ✅     | 7-job Trinity CI/CD workflow (v1.0.0)      |
+| VLAN Canon          | ✅     | Canonical 5-VLAN scheme (v1.0.0)           |
+| Vault 8-Phase       | ✅     | 8-Phase Rotation process documented        |
 | Lint Configs        | ✅     | All 7 tools: ruff, mypy, bandit, yamllint, etc. |
 | Validator Scripts   | ✅     | 4 portable scripts (python, bash, yaml, ansible) |
 | Eternal Glue        | ✅     | 6 sacred artifacts defined                 |
-| Templates           | ✅     | CONTRIBUTING, README, CI workflows         |
-| Code Patterns       | ✅     | Extracted from rylan-inventory v4.3.1      |
-| Domain Repos        | 📋     | Planned (samba, freeradius, etc.)          |
+| Templates           | ✅     | Playbooks, device manifests, READMEs       |
 
 ---
 

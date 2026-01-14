@@ -1,0 +1,94 @@
+---
+# Playbook: {{ PLAYBOOK_NAME }}
+# Purpose: {{ PURPOSE }}
+# Guardian: Bauer (Verification)
+# Ministry: Configuration Management
+# Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
+# Version: v1.0.0
+
+- name: "{{ PLAYBOOK_NAME }} : {{ PURPOSE }}"
+  hosts: "{{ TARGET_HOSTS }}"
+  gather_facts: false # GATHER phase performs specific lookups
+  become: true
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    # ==========================================================================
+    # PHASE 1: GATHER
+    # ==========================================================================
+    - name: "GATHER : Retrieve current state and facts"
+      block:
+        - name: "GATHER : Example fact gathering"
+          setup:
+            gather_subset:
+              - '!all'
+              - 'min'
+      tags: [gather, always]
+
+    # ==========================================================================
+    # PHASE 2: PROCESS
+    # ==========================================================================
+    - name: "PROCESS : Validate inputs and prepare configuration"
+      block:
+        - name: "PROCESS : Assert variable presence"
+          assert:
+            that:
+              - item is defined
+            fail_msg: "Variable {{ item }} is missing"
+          loop: "{{ REQUIRED_VARS }}"
+      tags: [process]
+
+    # ==========================================================================
+    # PHASE 3: APPLY
+    # ==========================================================================
+    - name: "APPLY : Execute changes (Idempotent)"
+      block:
+        - name: "APPLY : Example configuration change"
+          lineinfile:
+            path: /etc/example.conf
+            line: "setting=enabled"
+            state: present
+      tags: [apply]
+
+    # ==========================================================================
+    # PHASE 4: VERIFY
+    # ==========================================================================
+    - name: "VERIFY : Confirm change success"
+      block:
+        - name: "VERIFY : Check service status"
+          command: systemctl is-active example-service
+          register: service_status
+          changed_when: false
+      tags: [verify]
+
+    # ==========================================================================
+    # PHASE 5: AUDIT
+    # ==========================================================================
+    - name: "AUDIT : Log action for traceability"
+      block:
+        - name: "AUDIT : Log attempt to local syslog"
+          logger:
+            msg: "APPLIED: {{ PLAYBOOK_NAME }} on {{ inventory_hostname }} by {{ lookup('env', 'USER') }}"
+      tags: [audit]
+
+    # ==========================================================================
+    # PHASE 6: REPORT
+    # ==========================================================================
+    - name: "REPORT : Notify stakeholders or centralized logging"
+      block:
+        - name: "REPORT : Example debug report"
+          debug:
+            msg: "Successfully processed {{ inventory_hostname }}"
+      tags: [report]
+
+    # ==========================================================================
+    # PHASE 7: FINALIZE
+    # ==========================================================================
+    - name: "FINALIZE : Cleanup and exit"
+      block:
+        - name: "FINALIZE : Remove temporary files"
+          file:
+            path: /tmp/ansible-temp-data
+            state: absent
+      tags: [finalize]

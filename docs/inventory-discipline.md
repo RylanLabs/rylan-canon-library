@@ -47,6 +47,25 @@ rylan-inventory/
 
 ---
 
+## Tier Patterns (T1-T4)
+
+All infrastructure is classified into one of four tiers, defining its criticality and operational response (RTO).
+
+- **T1 (Critical)**: Core gateways, main controllers, backbone switches.
+  - *RTO*: < 1 hour.
+  - *Constraint*: Must have real-time backups and dual-homed power.
+- **T2 (Standard)**: Production servers, access points, access switches.
+  - *RTO*: < 4 hours.
+  - *Constraint*: Daily backups, standardized hardware.
+- **T3 (User)**: Personal workstations, shared printers, non-critical local services.
+  - *RTO*: Next Business Day.
+  - *Constraint*: User-managed state, canonical base image.
+- **T4 (Untrusted)**: IoT devices, Guest access, isolated testbeds.
+  - *RTO*: Best Effort.
+  - *Constraint*: Strictly isolated to VLAN 90.
+
+---
+
 ## device-manifest.yml — Canonical Format
 
 ```yaml
