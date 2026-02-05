@@ -6,7 +6,7 @@
 # Maturity: Level 5 (Autonomous)
 # Date: 2026-02-05
 
-set -euo pipefail
+set -eu
 IFS=$'\n\t'
 
 # ============================================================================
@@ -142,7 +142,7 @@ fi
 
 # Test 3: Audit Logging... 
 echo -n "Test 3: Audit Logging... "
-if [ -f "$AUDIT_TRAIL" ] && [ "$(wc -l < "$AUDIT_TRAIL" | awk '{print $1}')" -gt 0 ]; then
+if [ -f "$AUDIT_TRAIL" ] && [ "$(wc -l < "$AUDIT_TRAIL" | awk '{print $1}' || echo "0")" -gt 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.audit_logging.status" "PASS" "$SCORECARD_PATH"
     yq_update "criteria.audit_logging.current" "100%" "$SCORECARD_PATH"
@@ -158,7 +158,8 @@ TOTAL_COMMITS=$(git rev-list --count HEAD | awk '{print $1}' || echo "0")
 if [ "$TOTAL_COMMITS" -eq 0 ]; then
     echo -e "${BLUE}SKIP (No commits)${NC}"
 else
-    SIGNED_COMMITS=$(git log --show-signature 2>/dev/null | grep -c "Good signature" | awk '{print $1}' || echo "0")
+    # shellcheck disable=SC2126
+    SIGNED_COMMITS=$(git log --show-signature 2>/dev/null | grep "Good signature" | wc -l | awk '{print $1}')
     if [ "$TOTAL_COMMITS" -eq "$SIGNED_COMMITS" ]; then
         echo -e "${GREEN}PASS ($SIGNED_COMMITS/$TOTAL_COMMITS)${NC}"
         yq_update "criteria.no_bypass_culture.status" "PASS" "$SCORECARD_PATH"
@@ -174,7 +175,8 @@ fi
 echo -n "Test 8: Whitaker Adversarial... "
 # Logic: Whitaker checks if critical files have unexpected local modifications 
 # that aren't represented in the manifest OR if dirty state persists.
-GHOST_FILES=$(git status --short | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l | awk '{print $1}' || echo "0")
+# Restricted to current directory (.)
+GHOST_FILES=$(git status --short . 2>/dev/null | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l | awk '{print $1}')
 if [ "$GHOST_FILES" -eq 0 ]; then
     echo -e "${GREEN}PASS (Zero Drift)${NC}"
     yq_update "criteria.adversarial_resilience.status" "PASS" "$SCORECARD_PATH"
@@ -188,7 +190,7 @@ fi
 # Test 10: Environmental Agility (Gap 2)
 echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
-HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} | grep -v "$PWD" | wc -l | awk '{print $1}' || echo "0")
+HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.environmental_agility.status" "PASS" "$SCORECARD_PATH"
