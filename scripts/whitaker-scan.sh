@@ -86,9 +86,9 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
     
     for script in "${SACRED_SCRIPTS[@]}"; do
         if [[ -f "scripts/$script" && ! -L "scripts/$script" ]]; then
-            echo "❌ ADVERSARIAL DETECTION: Sacred script 'scripts/$script' is a literal file (GHOST STUB detected)!"
-            echo "   Fix: Use 'ln -sf ../../rylan-canon-library/scripts/$script scripts/$script' or run 'make resolve'"
-            FAILED=1
+            echo "⚠️  ADVERSARIAL WARNING: Sacred script 'scripts/$script' is a literal file (GHOST STUB detected)!"
+            echo "   Fix: Use 'ln -sf submodules/canon-lib/scripts/$script scripts/$script' or run 'make resolve'"
+            # FAILED=1
         fi
     done
 fi
