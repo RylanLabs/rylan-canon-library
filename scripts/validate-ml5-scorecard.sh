@@ -129,8 +129,8 @@ fi
 
 # Test 2: Error Handling (No bare excepts)
 echo -n "Test 2: Error Handling... "
-BARE_EXCEPTS=$(grep -r "except:" --include="*.py" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | xargs || echo "0")
-if [[ "$BARE_EXCEPTS" =~ ^[0-9]+$ ]] && [ "$BARE_EXCEPTS" -eq 0 ]; then
+BARE_EXCEPTS=$(grep -r "except:" --include="*.py" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | awk '{print $1}')
+if [ "$BARE_EXCEPTS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.error_handling.status" "PASS" "$SCORECARD_PATH"
     yq_update "criteria.error_handling.current" "100%" "$SCORECARD_PATH"
@@ -140,9 +140,9 @@ else
     EXIT_CODE=1
 fi
 
-# Test 3: Audit Logging
+# Test 3: Audit Logging... 
 echo -n "Test 3: Audit Logging... "
-if [ -f "$AUDIT_TRAIL" ] && [ "$(wc -l < "$AUDIT_TRAIL")" -gt 0 ]; then
+if [ -f "$AUDIT_TRAIL" ] && [ "$(wc -l < "$AUDIT_TRAIL" | awk '{print $1}')" -gt 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.audit_logging.status" "PASS" "$SCORECARD_PATH"
     yq_update "criteria.audit_logging.current" "100%" "$SCORECARD_PATH"
@@ -154,11 +154,11 @@ fi
 
 # Test 7: No-Bypass Culture (GPG)
 echo -n "Test 7: GPG Signing... "
-TOTAL_COMMITS=$(git rev-list --count HEAD || echo "0")
+TOTAL_COMMITS=$(git rev-list --count HEAD | awk '{print $1}' || echo "0")
 if [ "$TOTAL_COMMITS" -eq 0 ]; then
     echo -e "${BLUE}SKIP (No commits)${NC}"
 else
-    SIGNED_COMMITS=$(git log --show-signature 2>/dev/null | grep -c "Good signature" || echo "0")
+    SIGNED_COMMITS=$(git log --show-signature 2>/dev/null | grep -c "Good signature" | awk '{print $1}' || echo "0")
     if [ "$TOTAL_COMMITS" -eq "$SIGNED_COMMITS" ]; then
         echo -e "${GREEN}PASS ($SIGNED_COMMITS/$TOTAL_COMMITS)${NC}"
         yq_update "criteria.no_bypass_culture.status" "PASS" "$SCORECARD_PATH"
@@ -174,7 +174,7 @@ fi
 echo -n "Test 8: Whitaker Adversarial... "
 # Logic: Whitaker checks if critical files have unexpected local modifications 
 # that aren't represented in the manifest OR if dirty state persists.
-GHOST_FILES=$(git status --short | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l || echo "0")
+GHOST_FILES=$(git status --short | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l | awk '{print $1}' || echo "0")
 if [ "$GHOST_FILES" -eq 0 ]; then
     echo -e "${GREEN}PASS (Zero Drift)${NC}"
     yq_update "criteria.adversarial_resilience.status" "PASS" "$SCORECARD_PATH"
@@ -188,7 +188,7 @@ fi
 # Test 10: Environmental Agility (Gap 2)
 echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
-HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} | grep -v "$PWD" | wc -l || echo "0")
+HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} | grep -v "$PWD" | wc -l | awk '{print $1}' || echo "0")
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.environmental_agility.status" "PASS" "$SCORECARD_PATH"
