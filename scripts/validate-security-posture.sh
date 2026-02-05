@@ -38,7 +38,12 @@ check_firewall_default_deny() {
   log "Verifying default-deny posture..."
   # Placeholder: Checks for a default_posture variable in network_scheme
   if [[ -f "$NETWORK_SCHEME" ]]; then
-    posture=$(yq '.network_scheme.default_posture // "not-found"' "$NETWORK_SCHEME")
+    # Use raw output if supported by yq version
+    if yq --version 2>&1 | grep -q "yq 0.0.0"; then
+        posture=$(yq -r '.network_scheme.default_posture // "not-found"' "$NETWORK_SCHEME")
+    else
+        posture=$(yq e '.network_scheme.default_posture // "not-found"' "$NETWORK_SCHEME" | tr -d '"')
+    fi
     if [[ "$posture" != "deny-all" ]] && [[ "$posture" != "drop" ]]; then
       log "WARNING: Default posture is '$posture'. Recommended: 'deny-all'."
     fi

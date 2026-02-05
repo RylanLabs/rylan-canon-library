@@ -19,6 +19,9 @@ Read them. Internalise them. Apply them.
 
 ## Core Documents (Read in Order)
 
+0. **[architecture/TIERED_SATELLITE_MASTER_INDEX.md](architecture/TIERED_SATELLITE_MASTER_INDEX.md)** — **CANONICAL HIERARCHY**
+   The definitive guide to the RylanLabs Mesh. REQUIRED for all 2026 implementations.
+
 1. **[seven-pillars.md](seven-pillars.md)** — **REQUIRED FIRST**
    The Seven Pillars of Production-Grade Code.
    Foundation for all discipline. Non-negotiable.

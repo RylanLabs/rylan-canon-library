@@ -1,0 +1,43 @@
+# RylanLabs Trinity CI/CD Workflow (Canon Library)
+# Maturity: Level 5 (Autonomous)
+# Guardian: Bauer (Auditor)
+# Ministry: Configuration Management
+
+name: "Trinity CI/CD"
+
+on:
+  push:
+    branches: [main, develop, 'feat/**', 'fix/**']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  validate:
+    name: "Bauer/Whitaker Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest pyyaml
+
+      - name: Install Shell Tools
+        run: sudo apt-get update && sudo apt-get install -y shellcheck bc jq
+
+      - name: Run ML5 Drill
+        run: make ml5-validate
+
+      - name: Run Pytest Suite
+        run: make test
