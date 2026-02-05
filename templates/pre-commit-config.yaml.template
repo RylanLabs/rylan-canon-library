@@ -34,3 +34,17 @@ repos:
         entry: scripts/playbook-structure-linter.py
         language: python
         types: [yaml]
+  - repo: local
+    hooks:
+      - id: validate-naming-convention
+        name: Validate Repository Naming Convention
+        entry: scripts/validate-naming-convention.sh
+        language: script
+        pass_filenames: false
+        stages: [commit]
+      - id: validate-tier-declaration
+        name: Validate Tier Declaration in README
+        entry: bash -c 'grep -q "**Tier**:" README.md || (echo "ERROR: README.md missing tier declaration" && exit 1)'
+        language: system
+        files: README.md
+        stages: [commit]

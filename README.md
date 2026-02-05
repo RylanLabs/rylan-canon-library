@@ -4,12 +4,28 @@
 > Version: v2.1.0 (Mesh-Aligned)
 > Status: ✅ PRODUCTION
 
+## Repository Metadata
+
+| Attribute | Value |
+| :--- | :--- |
+| **Tier** | 0 (Canonical Standards) |
+| **Type** | Governance (rylan-*) |
+| **Naming Convention** | \`rylan-canon-library\` |
+| **Dependencies** | None (Root) |
+| **Maturity Level** | 5 (Autonomous) |
+| **Status** | Production |
+| **Guardian** | Trinity Council |
+| **Ministry** | Oversight |
+
 ## Overview
 
-The `rylan-canon-library` is the Tier 0 anchor for the RylanLabs Mesh. It defines the philosophical pillars, operational standards, and shared abstractions (common.mk) consumed by all other repositories in the mesh.
+The \`rylan-canon-library\` is the Tier 0 anchor for the RylanLabs Mesh. It defines the philosophical pillars,
+operational standards, and shared abstractions (\`common.mk\`) consumed by all other repositories in the mesh.
 
 ### The Paradigm Shift
-We have moved from static documentation to a **federated meta-GitOps mesh**. In this environment, the `Makefile` is the entry point, and `ansible` is the infrastructure execution layer.
+
+We have moved from static documentation to a **federated meta-GitOps mesh**. In this environment,
+the \`Makefile\` is the entry point, and \`ansible\` is the infrastructure execution layer.
 
 ---
 
@@ -38,16 +54,19 @@ We have moved from static documentation to a **federated meta-GitOps mesh**. In 
 ## Quick Start
 
 ### 1. Warm the session (Identity)
+
 ```bash
 make warm-session
 ```
 
 ### 2. Validate current state (Verification)
+
 ```bash
 make validate
 ```
 
 ### 3. Initialize a new Mesh repository
+
 ```bash
 ./scripts/repo-init.sh my-new-repo
 ```

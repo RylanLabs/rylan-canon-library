@@ -24,8 +24,35 @@ ministries:
   - rotation
   - validation  # Cross-cutting for linting/scripts
   - orchestration # Agent definitions and instructions
+  - architecture  # Tiered Satellite Hierarchy SSOT
 
 sacred_files:
+  architecture:
+    - src: docs/architecture/TIERED_SATELLITE_MASTER_INDEX.md
+      dest: docs/architecture/TIERED_SATELLITE_MASTER_INDEX.md
+      immutable: true
+      description: "Master index for the mesh; ties all documents together (Bauer: Verification)."
+    - src: docs/architecture/TIERED_SATELLITE_HIERARCHY_CANONICAL.md
+      dest: docs/architecture/TIERED_SATELLITE_HIERARCHY_CANONICAL.md
+      immutable: true
+      description: "Canonical technical specification for TSH (Carter: Identity; Bauer: Verification)."
+    - src: docs/architecture/TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md
+      dest: docs/architecture/TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md
+      immutable: true
+      description: "Executive summary for stakeholders; contains ASCII architecture (Carter: Standards)."
+    - src: docs/architecture/TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md
+      dest: docs/architecture/TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md
+      immutable: true
+      description: "Synthesis of Grok/Leo feedback and risk mitigations (Whitaker: Adversarial Risk)."
+    - src: docs/architecture/TIERED_SATELLITE_QUICK_REFERENCE.md
+      dest: docs/architecture/TIERED_SATELLITE_QUICK_REFERENCE.md
+      immutable: true
+      description: "Developer cheat sheet; contains naming conventions and shortcuts (Carter: Identity)."
+    - src: docs/architecture/TIERED_SATELLITE_ACTION_CHECKLIST.md
+      dest: docs/architecture/TIERED_SATELLITE_ACTION_CHECKLIST.md
+      immutable: true
+      description: "Engineering roadmap and checklist for migration (Lazarus: Recovery/Transition)."
+
   ansible:
     - src: docs/ansible-vault-discipline.md
       dest: docs/ansible-vault-discipline.md
@@ -89,6 +116,10 @@ sacred_files:
       dest: scripts/validate-rotation-readiness.sh
       immutable: true
       description: "Bash validator for backups, encryption, inventory refs (Bauer: CI green required; Beale: Fail on gaps)."
+    - src: scripts/vault-backup.sh
+      dest: scripts/vault-backup.sh
+      immutable: true
+      description: "Creates timestamped backups of Ansible Vaults (Eternal Glue: Resilience)."
 
   validation:
     - src: templates/pre-commit-config.yaml.template
@@ -123,6 +154,18 @@ sacred_files:
       dest: scripts/sentinel-expiry.sh
       immutable: true
       description: "Identity key expiry tracking (Sentinel: Security Guardian)."
+    - src: .gitleaks.toml
+      dest: .gitleaks.toml
+      immutable: true
+      description: "Gitleaks configuration for secret scanning."
+    - src: .gitleaksignore
+      dest: .gitleaksignore
+      immutable: true
+      description: "Ignore patterns/fingerprints for known false positives."
+    - src: scripts/ml5-report-helper.py
+      dest: scripts/ml5-report-helper.py
+      immutable: true
+      description: "Helper for ML5 compliance reporting (Bauer)."
     - src: templates/pyproject.toml.template
       dest: pyproject.toml
       immutable: false
