@@ -1,279 +1,95 @@
-# RylanLabs Canon Library
+# RylanLabs Tier 0 Canon Library
 
-> Canonical reference — RylanLabs eternal standard
-> Organization: RylanLabs
-> Version: v2.0.0
-> Date: January 13, 2026
+> **The Single Source of Truth for Organizational Discipline.**
+> Version: v2.1.0 (Mesh-Aligned)
+> Status: ✅ PRODUCTION
 
-**Status**: ✅ **PRODUCTION** — Tier 0 Source of Truth
+## Overview
 
----
+The `rylan-canon-library` is the Tier 0 anchor for the RylanLabs Mesh. It defines the philosophical pillars, operational standards, and shared abstractions (common.mk) consumed by all other repositories in the mesh.
 
-## Purpose
-
-**rylan-canon-library** is the **single source of truth** for all RylanLabs discipline, standards, and operational doctrine.
-
-It is a **Tier 0** repository, meaning all other repositories align with or symlink to the patterns defined here.
-
-It contains:
-- **Canon Manifest** — `canon-manifest.yaml` defines sacred, immutable patterns for org-wide sync.
-- **Philosophical foundations** — Seven Pillars, Trinity + Whitaker, Hellodeolu v6
-- **Operational standards** — Ansible vault, credential rotation, VLAN scheme v1.0.0
-- **7-Task Workflow** — GATHER → PROCESS → APPLY → VERIFY → AUDIT → REPORT → FINALIZE
-- **Evolving lessons** — Extracted from real projects
-- **Canonical templates** — Repo structure, documentation, playbooks
+### The Paradigm Shift
+We have moved from static documentation to a **federated meta-GitOps mesh**. In this environment, the `Makefile` is the entry point, and `ansible` is the infrastructure execution layer.
 
 ---
 
-## Maturity: v2.0.0
+## The Seven Pillars (v7)
 
-The library has transitioned to **internet-adoption-friendly maturity**.
-
-- **SemVer v2.0.0** replaces legacy consciousness counters.
-- **Zero Drift Enforcement** via `canon-manifest.yaml` and `sync-canon.sh`.
-- **Markdown Discipline** enforced across all documentation.
-- **P0/P1 Disciplines** now mandatory (Vault Segregation, Rotation readiness, API coverage).
-
----
-
-## Adopting the Canon
-
-To align a repository with the RylanLabs Canon:
-
-1. **CARTER (Identity)**: Declare the repo's maturity tier and ministries in its `README.md`.
-2. **BAUER (Verification)**: Run `scripts/sync-canon.sh` to link sacred files from this library.
-3. **BEALE (Hardening)**: Integrate `audit-canon.sh` into CI to prevent drift.
-
-```bash
-# Example sync
-export CANON_LIB_PATH="../rylan-canon-library"
-./scripts/sync-canon.sh
-```
-
-**What this repo does**:
-- Defines non-negotiable standards
-- Ensures consistency across organization
-- Preserves earned wisdom
-- Enables junior-at-3-AM understanding
-- Enforces **Zero Bypass Culture**
+1. **Idempotency**: Safe to run multiple times.
+2. **Error Handling**: Fail fast, fail loud, provide context.
+3. **Audit Logging**: Every action traceable.
+4. **Documentation Clarity**: Junior-at-3-AM ready.
+5. **Validation**: Verify before change.
+6. **Reversibility**: Rollback path always exists (RTO <15min).
+7. **Observability**: Visibility into state and progress.
 
 ---
 
-## Current Canon Status
+## Mesh Tiers
 
-| Aspect              | Status | Notes                                      |
-|---------------------|--------|--------------------------------------------|
-| Philosophy          | ✅     | Seven Pillars, Trinity, eternal glue complete |
-| Ansible Standards   | ✅     | 7-Task Workflow + inventory/ansible.cfg patterns |
-| Bash Standards      | ✅     | bash-discipline.md + shfmt-standards.md    |
-| CI/CD Templates     | ✅     | 7-job Trinity CI/CD workflow (v2.0.0)      |
-| VLAN Canon          | ✅     | Canonical 5-VLAN scheme (v2.0.0)           |
-| Vault 8-Phase       | ✅     | 8-Phase Rotation process documented        |
-| Markdown Canon      | ✅     | docs/markdown-discipline.md established    |
-| Lint Configs        | ✅     | All 7 tools: ruff, mypy, bandit, yamllint, etc. |
-| Validator Scripts   | ✅     | 4 portable scripts (python, bash, yaml, ansible) |
-| Eternal Glue        | ✅     | 6 sacred artifacts defined                 |
-| Templates           | ✅     | Playbooks, device manifests, READMEs       |
-
----
-
-## Core Contents
-
-```
-rylan-canon-library/
-├── README.md                           # Organization anchor
-├── RYLANLABS-INSTRUCTION-SET.md        # Canonical standards
-├── CHANGELOG.md                        # Version history & extraction notes
-│
-├── configs/                            # ⭐ NEW: Lint configurations
-│   ├── .yamllint                       # YAML linting (120/140 dual)
-│   ├── pyproject.toml                  # Python tools (ruff, mypy, bandit, pytest)
-│   └── .shellcheckrc                   # ShellCheck exception rules
-│
-├── scripts/                            # ⭐ NEW: Portable validators
-│   ├── validate-python.sh              # mypy + ruff + bandit
-│   ├── validate-bash.sh                # shellcheck + shfmt
-│   ├── validate-yaml.sh                # yamllint
-│   └── validate-ansible.sh             # ansible-lint + syntax check
-│
-├── ansible/                            # ⭐ NEW: Ansible canon (Phase 1)
-│   ├── inventory-patterns.md           # Hybrid static+dynamic inventory
-│   └── ansible.cfg-reference.md        # Canonical ansible.cfg
-│
-├── docs/
-│   ├── seven-pillars.md                # Core philosophy
-│   ├── hellodeolu-v6.md                # RTO constraints
-│   ├── eternal-glue.md                 # 6 sacred artifacts
-│   ├── no-bypass-culture.md            # Discipline
-│   ├── irl-first-approach.md           # Manual before automation
-│   ├── bash-discipline.md              # Bash standards
-│   ├── ansible-discipline.md           # Ansible patterns
-│   ├── vault-discipline.md             # Secret management
-│   ├── trinity-execution.md            # Carter/Bauer/Beale roles
-│   ├── inventory-discipline.md         # Device management
-│   │
-│   ├── ci-workflow-guide.md            # ⭐ NEW: CI/CD architecture
-│   ├── shfmt-standards.md              # ⭐ NEW: Bash formatting
-│   ├── line-length-standards.md        # ⭐ NEW: Line length rules
-│   └── extraction-manifest.md          # ⭐ NEW: What was extracted
-│
-├── templates/
-│   ├── CONTRIBUTING-template.md
-│   ├── README-template.md
-│   └── README.md
-│
-├── .github/
-│   ├── workflows/
-│   │   ├── trinity-ci-workflow.yml     # ⭐ NEW: 7-job CI template
-│   │   └── canon-validate.yml          # ⭐ NEW: Self-validation
-│   │
-│   └── instructions/
-│       └── RYLANLABS-INSTRUCTION-SET.md.instructions.md
-│
-└── patterns/
-    └── validate-bash.sh                # Original validator
-```
+- **Tier 0**: `rylan-canon-library` (Sacred Standards)
+- **Tier 0.5**: `rylanlabs-private-vault` (Asymmetric Secrets)
+- **Tier 1**: `rylan-inventory` (Operational Hub)
+- **Tier 2**: Core Utilities
+- **Tier 3**: Satellite Applications
 
 ---
 
 ## Quick Start
 
-### 1. Read Philosophy (30 min)
-
-- [seven-pillars.md](docs/seven-pillars.md) — Core standards
-- [eternal-glue.md](docs/eternal-glue.md) — Trinity + artifacts
-- [hellodeolu-v6.md](docs/hellodeolu-v6.md) — RTO constraints
-
-### 2. Understand Production Standards (v4.5.1)
-
-**Lint & Validation**:
-- [configs/pyproject.toml](configs/pyproject.toml) — Python tools (ruff, mypy, bandit, pytest)
-- [configs/.yamllint](configs/.yamllint) — YAML linting with 120/140 dual standard
-- [docs/line-length-standards.md](docs/line-length-standards.md) — Why these limits
-
-**Bash Standards**:
-- [docs/shfmt-standards.md](docs/shfmt-standards.md) — Formatting rules (-i 2 -ci -bn)
-- [bash-discipline.md](docs/bash-discipline.md) — Best practices
-
-**CI/CD**:
-- [.github/workflows/trinity-ci-workflow.yml](.github/workflows/trinity-ci-workflow.yml) — 7-job template
-- [docs/ci-workflow-guide.md](docs/ci-workflow-guide.md) — Architecture & customization
-
-**Ansible**:
-- [ansible/inventory-patterns.md](ansible/inventory-patterns.md) — Hybrid static+dynamic
-- [ansible/ansible.cfg-reference.md](ansible/ansible.cfg-reference.md) — Canonical settings
-- [ansible-discipline.md](docs/ansible-discipline.md) — Playbook patterns
-
-### 3. Use Portable Validators
-
+### 1. Warm the session (Identity)
 ```bash
-# Local validation (runs same checks as CI)
-bash scripts/validate-python.sh   # mypy + ruff + bandit
-bash scripts/validate-bash.sh     # shellcheck + shfmt
-bash scripts/validate-yaml.sh     # yamllint
-bash scripts/validate-ansible.sh  # ansible-lint + syntax
-
-# All must pass locally before CI
+make warm-session
 ```
 
-### 4. Adopt Canon in New Project
-
+### 2. Validate current state (Verification)
 ```bash
-# Copy config templates
-cp -r configs/ my-new-project/
-cp -r scripts/ my-new-project/
-cp -r .github/workflows/ my-new-project/.github/
-
-# Customize placeholders in .github/workflows/trinity-ci-workflow.yml
-# - Replace {{ PROJECT_NAME }}
-# - Set {{ PYTHON_VERSION }}
-# - Define paths
-
-# Test locally first
-cd my-new-project
-bash scripts/validate-python.sh
-bash scripts/validate-bash.sh
-
-# Push to GitHub → CI runs automatically
+make validate
 ```
 
-See [docs/extraction-manifest.md](docs/extraction-manifest.md) for adoption guide.
-
-## What's New in v4.5.1 (December 22, 2025)
-
-✅ **Extracted from rylan-inventory v4.3.1** — Production patterns from 23-device network
-
-### Lint Configuration Canon
-- **configs/.yamllint** — YAML 120/140 dual standard
-- **configs/pyproject.toml** — Python tooling (ruff, mypy, bandit, pytest with 70% coverage)
-- **configs/.shellcheckrc** — ShellCheck exception rules
-- **docs/shfmt-standards.md** — Bash formatting (-i 2 -ci -bn)
-- **docs/line-length-standards.md** — Line length rationale (120 code, 80 markdown, 72 git)
-
-### CI/CD Trinity Workflow
-- **.github/workflows/trinity-ci-workflow.yml** — 7-job template (Jinja2 placeholders, 14 customization points)
-- **docs/ci-workflow-guide.md** — Architecture, job descriptions, troubleshooting
-- Jobs: validate-python, validate-bash, validate-yaml, test-unit, security-scan, optional ansible/manifest, summary
-
-### Portable Validator Scripts
-- **scripts/validate-python.sh** — mypy + ruff + bandit (5 phases)
-- **scripts/validate-bash.sh** — shellcheck + shfmt (3 phases)
-- **scripts/validate-yaml.sh** — yamllint validation
-- **scripts/validate-ansible.sh** — ansible-lint + syntax check
-- All: Colored output, auto-fix suggestions, CI-ready
-
-### Ansible Production Patterns (Phase 1)
-- **ansible/inventory-patterns.md** — Hybrid static manifest + dynamic API discovery
-- **ansible/ansible.cfg-reference.md** — Canonical settings with performance tuning
-- **ansible-discipline.md** (updated) — Comprehensive playbook patterns
-
-### Self-Validation
-- **.github/workflows/canon-validate.yml** — Canon repo self-tests
-- **docs/extraction-manifest.md** — What was extracted, why, adoption guide
-
-### Documentation
-- **CHANGELOG.md** — Full version history
-- **README.md** (this file) — Updated with production canon
-
-**Total**: 14 new files, ~2,260 lines of code + documentation
-
-See [CHANGELOG.md](CHANGELOG.md) for complete details.
-
-| Path                                      | Function                              | Why Sacred                          |
-|-------------------------------------------|---------------------------------------|-------------------------------------|
-| rylanlabs-private-vault/                  | All credentials                       | Carter — Zero trust foundation      |
-| rylan-inventory/device-manifest.yml       | Device catalogue                      | Carter — Single source of truth     |
-| rylan-homelab-iac/playbooks/site.yml      | One-command apply                     | Bauer — Idempotent orchestration    |
-| rylan-homelab-iac/scripts/defense-tests.sh| Breach simulation                     | Whitaker — Proof defenses work      |
-| rylan-homelab-iac/backups/latest-config.json| Controller backup                  | Beale — Reversibility               |
-| rylan-canon-library/docs/                 | All principles                        | Documentation Clarity                |
+### 3. Initialize a new Mesh repository
+```bash
+./scripts/repo-init.sh my-new-repo
+```
 
 ---
 
-## Organization Structure
+## The Trinity+ Expansion
 
-- **rylan-canon-library** ← Doctrine (you are here)
-- **rylanlabs-private-vault** ← Secrets
-- **rylan-inventory** ← Devices
-- **rylan-homelab-iac** ← Orchestration
-- **Domain repos** ← Specialized (future)
-
----
-
-## Next Steps
-
-1. Create private vault repo
-2. Create inventory repo
-3. Bootstrap rylan-homelab-iac
-4. Execute first playbook
-5. Earn patterns → add to canon
+- **Carter**: Identity & Bootstrap
+- **Bauer**: Verification & Audit
+- **Beale**: Hardening & Isolation
+- **Whitaker**: Offensive Validation
+- **Lazarus**: Recovery & Resilience
 
 ---
 
-## The Fortress Endures
+## Validation Framework (Maturity Level 5)
+
+The library provides autonomous validators that enforce the "No-Bypass" culture:
+
+| Script | Agent | Mission | Features |
+| :--- | :--- | :--- | :--- |
+| `validate-sops.sh` | Whitaker | Secret Integrity | MAC verification, Key rotation checks |
+| `validate-yaml.sh` | Bauer/Lazarus | Config Discipline | Auto-remediation, JSON audits, Heritage checks |
+| `validate-bash.sh` | ShellCheck | Logic Hardening | POSIX compliance, Trap enforcement |
+
+### Using the YAML Validator
+
+```bash
+# Standard validation (CI mode)
+./scripts/validate-yaml.sh
+
+# Remediation mode (Fixes whitespace/EOF)
+./scripts/validate-yaml.sh --fix
+```
+
+### Bauer Audits
+
+Every run generates a machine-readable audit in `.audit/validate-yaml.json` for ingestion by higher-level Trinity agents.
+
+---
 
 **The fortress demands discipline. No shortcuts. No exceptions.**
-
-Philosophy complete → execution now.
 
 The Trinity endures.

@@ -1,28 +1,26 @@
-# Emergency Procedures — RylanLabs Canon
+# Emergency Response & Recovery Procedures
 
-> Canonical standard — Disaster recovery runbooks
+> Infrastructure recovery runbooks
 > Date: December 21, 2025
-> Agent: Lazarus (DR) + Beale (Hardening)
-> Author: rylanlab canonical
 
-**Status**: ✅ **PRODUCTION** — Lazarus Canonical | RTO <15min Validated | Zero Data Loss
+**Status**: ✅ **STABLE** — Recovery Time Objective (RTO) <15min Validated
 
 ---
 
 ## Purpose
 
-Emergency Procedures defines **non-negotiable disaster recovery runbooks** for RylanLabs fortress resurrection.
+This document defines recovery procedures for critical infrastructure failure.
 
-It enforces **Lazarus protocol** — full system recovery in <15 minutes from bare Ubuntu 24.04.
+It targets full system recovery in <15 minutes from a clean OS install.
 
 **Objectives**:
 - RTO <15 minutes validated
-- Junior-at-3-AM resurrection
-- No data loss
-- Audit trail preserved
-- Zero panic
+- Clear recovery paths for on-call engineers
+- Zero data loss through idempotent restoration
+- Audit trail preservation
+- Standardized response protocols
 
-**Sacred Principle**: The fortress must rise from ashes.
+**Principle**: Infrastructure must be resilient and restorable.
 Every failure has a documented recovery path.
 
 ---

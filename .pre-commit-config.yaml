@@ -55,6 +55,13 @@ repos:
         stages: [commit]
         files: ^ansible/playbook-templates/
 
+      - id: validate-sops
+        name: SOPS Secret Validation (Beale)
+        entry: bash scripts/validate-sops.sh
+        language: script
+        pass_filenames: false
+        stages: [commit]
+
       - id: validate-workflows
         name: Workflow validation (yamllint)
         entry: yamllint -d relax
@@ -100,4 +107,14 @@ repos:
       - id: check-added-large-files
         name: Check for large files
         args: ['--maxkb=1000']
+        stages: [commit]
+
+  # ============================================================================
+  # SECURITY SCANNING
+  # ============================================================================
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.2
+    hooks:
+      - id: gitleaks
+        name: Gitleaks (Beale)
         stages: [commit]

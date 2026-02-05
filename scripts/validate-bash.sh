@@ -60,7 +60,7 @@ trap cleanup EXIT
 
 log_section "Checking prerequisites"
 
-if ! command -v shellcheck >/dev/null 2>&1; then
+if ! command -v shellcheck > /dev/null 2>&1; then
   log_error "shellcheck not found"
   echo ""
   echo "Install with:"
@@ -70,7 +70,7 @@ if ! command -v shellcheck >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v shfmt >/dev/null 2>&1; then
+if ! command -v shfmt > /dev/null 2>&1; then
   log_error "shfmt not found"
   echo ""
   echo "Install from: https://github.com/mvdan/sh"
@@ -89,7 +89,7 @@ log_pass "shfmt: $(shfmt --version)"
 log_section "PHASE 1: Discovering bash scripts in: $BASH_PATHS"
 
 # Find all .sh files, handle empty results gracefully
-mapfile -t SCRIPTS < <(find "$BASH_PATHS" -type f -name "*.sh" 2>/dev/null || true)
+mapfile -t SCRIPTS < <(find "$BASH_PATHS" -type f -name "*.sh" 2> /dev/null || true)
 
 if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
   log_info "No bash scripts found in $BASH_PATHS"

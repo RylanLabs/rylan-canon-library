@@ -9,10 +9,9 @@ Date: 2026-01-13
 
 import os
 import sys
-from typing import List
 
 EXPECTED_VERSION: str = "2.0.0"
-FILES_TO_CHECK: List[str] = [
+FILES_TO_CHECK: list[str] = [
     "README.md",
     "CHANGELOG.md",
     "RYLANLABS-INSTRUCTION-SET.md",
@@ -25,7 +24,7 @@ def check_version(file_path: str) -> bool:
         print(f"✗ MISSING: {file_path}")
         return False
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content: str = f.read()
         if EXPECTED_VERSION in content:
             print(f"✓ {file_path}: Version {EXPECTED_VERSION} confirmed")

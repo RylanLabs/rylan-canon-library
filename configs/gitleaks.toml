@@ -1,0 +1,34 @@
+# .gitleaks.toml
+# RylanLabs Organizational Secret Detection
+# Guardian: Whitaker | Ministry: Oversight
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+    '''Makefile''',
+    '''docs/.*''',
+    '''\.audit/.*''',
+    '''scripts/lib/vault-env\.sh''',
+    '''ansible/roles/carter_identity/tasks/.*\.yml''',
+    '''inventory/group_vars/all/auth_mapping\.yml''',
+    '''ansible/playbooks/.*\.yml''',
+    '''inventory/group_vars/all/controller_vault\.yml\.template'''
+]
+
+[[rules]]
+description = "Ansible Vault Password"
+regex = '''ansible-vault-pass'''
+keywords = ["ansible-vault-pass"]
+
+[[rules]]
+description = "Generic Private Key"
+regex = '''-----BEGIN [A-Z ]+ PRIVATE KEY-----'''
+
+[[rules]]
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+
+[[rules]]
+description = "Generic Password/Secret"
+regex = '''(?i)(password|secret|token|key|pwd)\s*[:=]\s*['"]([A-Za-z0-9+/=]{16,})['"]'''
+entropy = 4.0

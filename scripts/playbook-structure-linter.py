@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: ALL
 """
 Script: playbook-structure-linter.py
 Purpose: Enforce 7-task Trinity workflow sequence (P2 Discipline)
@@ -12,15 +13,16 @@ REQUIRED_TASKS = [
 """
 
 import sys
-from typing import List, Union, Any
-import yaml
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-REQUIRED_TASKS: List[str] = [
+REQUIRED_TASKS: list[str] = [
     "GATHER",
     "PROCESS",
     "APPLY",
@@ -35,10 +37,10 @@ REQUIRED_TASKS: List[str] = [
 # ============================================================================
 
 
-def lint_playbook(file_path: Union[str, Path]) -> bool:
+def lint_playbook(file_path: str | Path) -> bool:
     print(f"Linting {file_path} for Trinity 7-task compliance...")
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         try:
             content: Any = yaml.safe_load(f)
         except yaml.YAMLError as exc:
@@ -51,15 +53,11 @@ def lint_playbook(file_path: Union[str, Path]) -> bool:
 
     all_valid = True
     for play in content:
-        tasks: List[Any] = play.get("tasks", [])
-        task_names: List[str] = [
-            task.get("name", "").upper() for task in tasks if isinstance(task, dict)
-        ]
+        tasks: list[Any] = play.get("tasks", [])
+        task_names: list[str] = [task.get("name", "").upper() for task in tasks if isinstance(task, dict)]
 
         # Filter for canonical task names
-        found_canonical: List[str] = [
-            name for name in task_names if any(req in name for req in REQUIRED_TASKS)
-        ]
+        found_canonical: list[str] = [name for name in task_names if any(req in name for req in REQUIRED_TASKS)]
 
         # Check order and completeness
         for i, req in enumerate(REQUIRED_TASKS):

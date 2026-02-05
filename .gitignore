@@ -65,9 +65,12 @@ test-results/
 coverage/
 .pytest_cache/
 .coverage
+test-satellite/
 
 # Local development
 .local/
 scratch/
 notes.txt
 TODO.local.md
+.audit/
+tasks/

@@ -6,9 +6,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [2.1.0-mesh] - 2026-02-04
+
+### ✨ Added: Mesh Infrastructure (Hellodeolu v7 Alignment)
+
+**Major Alignment**: Transitioned from documentation-heavy to **Functional Enforcement Mesh**.
+
+- **Sentinel Loop**: Implemented `sentinel-loop.yml` for continuous multi-repo audit and reconciliation.
+- **Mesh Governance**: Added `repo-governance.yml` to enforce signed commits and canonical substrate on PRs.
+- **Lazarus Remediation**: Functional `mesh-remediate.sh` for automatic drift correction via PR creation.
+- **Asymmetric Security**: Implemented SOPS policies in `.sops.yaml` and `validate-sops.sh`.
+- **Mesh-Man**: Auto-generated operational manual via `generate-mesh-man.sh`.
+- **Dynamic Substrate**: Transitioned to submodule-ready `.rylan/` structure for `common.mk`.
+- **Observability**: Established specs for Grafana metrics and Loki log aggregation for Whitaker agent.
+
+### Changed
+
+- Updated `Makefile` with functional Meta-GitOps targets (`cascade`, `org-audit`, `reconcile`).
+- Enhanced `scripts/validate.sh` to include SOPS and Gitleaks hard gates.
+- Refined `canon-manifest.yaml` to include mesh orchestration artifacts.
+
+---
+
 ## [2.0.0] - 2026-01-14
 
-### ✨ Added: Internet-Adoption Maturity (v2.0.0)
+### Added: Internet-Adoption Maturity (v2.0.0)
 
 **Major Alignment**: Transitioned from consciousness-based maturity (T3-ETERNAL) to **Internet-Adoption Maturity (Standard SemVer)**.
 

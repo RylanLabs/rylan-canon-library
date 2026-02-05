@@ -65,7 +65,7 @@ trap cleanup EXIT
 
 log_section "Checking prerequisites"
 
-if ! command -v ansible-playbook >/dev/null 2>&1; then
+if ! command -v ansible-playbook > /dev/null 2>&1; then
   log_error "ansible-playbook not found"
   echo ""
   echo "Install with:"
@@ -76,7 +76,7 @@ fi
 log_pass "ansible-playbook: $(ansible-playbook --version | head -1)"
 
 SKIP_LINT=0
-if ! command -v ansible-lint >/dev/null 2>&1; then
+if ! command -v ansible-lint > /dev/null 2>&1; then
   log_warn "ansible-lint not found - skipping linting phase"
   log_info "Install with: pip install ansible-lint"
   SKIP_LINT=1
@@ -97,7 +97,7 @@ if [[ ! -d "$PLAYBOOK_DIR" ]]; then
 fi
 
 # Find all playbook files
-mapfile -t PLAYBOOKS < <(find "$PLAYBOOK_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null || true)
+mapfile -t PLAYBOOKS < <(find "$PLAYBOOK_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2> /dev/null || true)
 
 if [[ ${#PLAYBOOKS[@]} -eq 0 ]]; then
   log_info "No playbooks found in $PLAYBOOK_DIR"

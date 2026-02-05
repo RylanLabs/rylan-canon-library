@@ -1,25 +1,60 @@
 #!/usr/bin/env bash
 # Script: verify-workflows.sh
-# Purpose: Verify GitHub Actions workflows before pushing
+# Purpose: Autonomous Workflow Verifier - Mesh Edition
 # Agent: Bauer (Auditor)
 # Ministry: Configuration Management
 # Guardian: Bauer
-# Maturity: v2.0.0
+# Maturity: v5.0.0 (ML5)
 # Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL v2.0.0
-# Date: 2026-01-13
-#
-# Usage:
-#   ./scripts/verify-workflows.sh          # Verify all workflows
-#   ./scripts/verify-workflows.sh --help   # Show help
+# Date: 2026-02-05
 
 set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# CONFIGURATION
+# SOVEREIGN GATES
 # ============================================================================
 
-WORKFLOWS_DIR=".github/workflows"
+# Whitaker Gate: Block on uncommitted or unsigned state
+if command -v whitaker-scan.sh &>/dev/null; then
+  whitaker-scan.sh
+elif [[ -f "./scripts/whitaker-scan.sh" ]]; then
+  bash ./scripts/whitaker-scan.sh
+fi
+
+# Sentinel Gate: Block on expiry <14 days
+if command -v sentinel-expiry.sh &>/dev/null; then
+  sentinel-expiry.sh
+elif [[ -f "./scripts/sentinel-expiry.sh" ]]; then
+  bash ./scripts/sentinel-expiry.sh
+fi
+
+# ============================================================================
+# CONFIGURATION & DYNAMIC DISCOVERY
+# ============================================================================
+
+AUDIT_DIR=".audit"
+AUDIT_FILE="$AUDIT_DIR/verify-workflows.json"
+CONFIG_FILE="canon-manifest.yaml"
+
+mkdir -p "$AUDIT_DIR"
+
+# Dynamic Config from canon-manifest.yaml with safe defaults
+if [[ -f "$CONFIG_FILE" ]] && command -v yq &>/dev/null; then
+  # Detect if it's the Go or Python version of yq
+  if yq --version 2>&1 | grep -q "version"; then
+    # Go version (mikefarah/yq)
+    WORKFLOWS_DIR=$(yq e '.global_config.workflows_dir // ".github/workflows"' "$CONFIG_FILE")
+    readarray -t REQUIRED_FIELDS < <(yq e '.global_config.required_workflow_fields[]' "$CONFIG_FILE")
+  else
+    # Python version (jq wrapper) - standard in common Linux distros
+    WORKFLOWS_DIR=$(yq -r '.global_config.workflows_dir // ".github/workflows"' "$CONFIG_FILE")
+    readarray -t REQUIRED_FIELDS < <(yq -r '.global_config.required_workflow_fields[]' "$CONFIG_FILE")
+  fi
+else
+  WORKFLOWS_DIR=".github/workflows"
+  REQUIRED_FIELDS=("name" "on" "jobs")
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -27,6 +62,35 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'  # No color
+
+# ============================================================================
+# TOOL ENFORCEMENT (No-Bypass)
+# ============================================================================
+
+install_if_missing() {
+  local tool=$1
+  local pkg=$2
+  
+  if ! command -v "$tool" &>/dev/null; then
+    log_warn "🔧 $tool missing. Attempting autonomous installation of '$pkg' (No-Bypass)..."
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+      if command -v apt-get &>/dev/null; then
+        sudo apt-get update && sudo apt-get install -y "$pkg"
+      elif command -v pip &>/dev/null; then
+        pip install --user "$pkg"
+      fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+      if command -v brew &>/dev/null; then
+        brew install "$pkg"
+      fi
+    fi
+    
+    if ! command -v "$tool" &>/dev/null; then
+      log_error "Critical dependency $tool could not be installed. Exiting."
+      exit 1
+    fi
+  fi
+}
 
 # ============================================================================
 # LOGGING FUNCTIONS
@@ -49,180 +113,144 @@ log_debug() {
 }
 
 # ============================================================================
-# ERROR HANDLING
+# ERROR HANDLING (Bauer Auditor)
 # ============================================================================
 
 cleanup() {
   local exit_code=$?
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  
+  # Structural Bauer Audit
+  cat <<EOF > "$AUDIT_FILE"
+{
+  "timestamp": "$timestamp",
+  "script": "verify-workflows.sh",
+  "agent": "Bauer",
+  "status": $((exit_code == 0 ? 1 : 0)),
+  "exit_code": $exit_code,
+  "metrics": {
+    "workflows_found": $(find "${WORKFLOWS_DIR:-.github/workflows}" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null | wc -l),
+    "environment": "$(uname -s)"
+  }
+}
+EOF
+
   if [[ $exit_code -ne 0 ]]; then
     log_error "Workflow verification failed with exit code $exit_code"
+    log_error "Audit trail preserved in $AUDIT_FILE"
+  else
+    log_info "Audit trail updated in $AUDIT_FILE"
   fi
-  exit $exit_code
+  
+  exit "$exit_code"
 }
 
-trap cleanup EXIT
+trap cleanup ERR EXIT
 
 # ============================================================================
-# VALIDATION FUNCTIONS
+# VALIDATION LOGIC
 # ============================================================================
 
-check_gh_cli() {
-  log_info "Phase 1: Checking gh CLI availability"
-  
-  if command -v gh &> /dev/null; then
-    local gh_version
-    gh_version=$(gh --version 2>/dev/null | head -1)
-    log_info "✓ gh CLI found: $gh_version"
+get_workflows() {
+  if [[ ! -d "$WORKFLOWS_DIR" ]]; then
     return 0
-  else
-    log_warn "gh CLI not found - skipping GitHub Actions verification"
-    log_warn "Install with: brew install gh (macOS) or apt-get install gh (Linux)"
-    log_warn "GitHub Actions workflows will still be validated with yamllint"
-    return 1
   fi
+  
+  # Safe discovery: excludes templates
+  find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) \
+    ! -path "*/templates/*" \
+    ! -name "*template*"
 }
 
 validate_workflows_with_gh() {
-  log_info "Phase 2: Validating GitHub Actions workflows with gh CLI"
+  log_info "Phase 1: Validating with gh CLI"
   
-  local workflows=()
+  local workflows
+  readarray -t workflows < <(get_workflows)
   local failed=0
-  
-  # Find all workflow files
-  if [[ ! -d "$WORKFLOWS_DIR" ]]; then
-    log_warn "Workflows directory not found: $WORKFLOWS_DIR"
-    return 1
-  fi
-  
-  while IFS= read -r workflow; do
-    # Skip templates
-    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
-      continue
-    fi
-    workflows+=("$workflow")
-  done < <(find "$WORKFLOWS_DIR" -type f -name "*.yml" -o -name "*.yaml" 2>/dev/null)
   
   if [[ ${#workflows[@]} -eq 0 ]]; then
     log_warn "No workflow files found in $WORKFLOWS_DIR"
-    return 1
+    return 0
   fi
   
-  log_info "Found ${#workflows[@]} workflow file(s)"
-  
   for workflow in "${workflows[@]}"; do
+    [[ -z "$workflow" ]] && continue
     local filename
     filename=$(basename "$workflow")
     
     if gh workflow view "$workflow" --json name &> /dev/null; then
-      log_info "✓ $filename: Valid"
+      log_info "✓ $filename: Validated by GitHub API"
     else
-      log_error "✗ $filename: Invalid"
+      log_error "✗ $filename: GitHub API validation failed"
       failed=$((failed + 1))
     fi
   done
   
-  if [[ $failed -gt 0 ]]; then
-    log_error "$failed workflow(s) failed validation"
-    return 1
-  fi
-  
-  return 0
+  return "$failed"
 }
 
 validate_workflow_yaml_syntax() {
-  log_info "Phase 3: Verifying workflow YAML syntax with yamllint"
+  log_info "Phase 2: Verifying YAML syntax (yamllint)"
   
-  local workflows=()
-  local failed=0
-  
-  if [[ ! -d "$WORKFLOWS_DIR" ]]; then
-    log_warn "Workflows directory not found: $WORKFLOWS_DIR"
+  local workflows
+  readarray -t workflows < <(get_workflows)
+  if [[ ${#workflows[@]} -eq 0 ]]; then return 0; fi
+
+  local yamllint_args=()
+  if [[ -f "configs/.yamllint" ]]; then
+    yamllint_args=("-c" "configs/.yamllint")
+  fi
+
+  # Bauer Auditing: Generate structured JSON report
+  if yamllint "${yamllint_args[@]}" --format json "${workflows[@]}" > "$AUDIT_DIR/yamllint.json" 2>/dev/null; then
+    log_info "✓ All workflows passed syntax validation"
+    return 0
+  else
+    log_error "✗ YAML syntax errors detected"
+    # Pretty-print top errors for human readability
+    yamllint "${yamllint_args[@]}" --format parsable "${workflows[@]}" | head -n 5
     return 1
   fi
-  
-  while IFS= read -r workflow; do
-    # Skip templates
-    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
-      continue
-    fi
-    workflows+=("$workflow")
-  done < <(find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null)
-  
-  if [[ ${#workflows[@]} -eq 0 ]]; then
-    log_warn "No workflow files found in $WORKFLOWS_DIR"
-    return 1
-  fi
-  
-  for workflow in "${workflows[@]}"; do
-    local filename
-    filename=$(basename "$workflow")
-    
-    if command -v yamllint &> /dev/null; then
-      if yamllint -d "{extends: relaxed}" "$workflow" > /dev/null 2>&1; then
-        log_info "✓ $filename: YAML valid"
-      else
-        log_error "✗ $filename: YAML invalid"
-        if yamllint -d "{extends: relaxed}" "$workflow" 2>&1 | head -3; then
-          true
-        fi
-        failed=$((failed + 1))
-      fi
-    else
-      log_warn "yamllint not found, skipping YAML syntax check for $filename"
-    fi
-  done
-  
-  if [[ $failed -gt 0 ]]; then
-    log_error "$failed workflow YAML file(s) have syntax errors"
-    return 1
-  fi
-  
-  return 0
 }
 
 check_required_workflow_fields() {
-  log_info "Phase 4: Checking for required workflow fields"
+  log_info "Phase 3: Deep-parsing required fields (yq)"
   
-  local workflows=()
+  local workflows
+  readarray -t workflows < <(get_workflows)
   local failed=0
   
-  if [[ ! -d "$WORKFLOWS_DIR" ]]; then
-    return 1
-  fi
-  
-  while IFS= read -r workflow; do
-    # Skip templates
-    if [[ "$workflow" == *"/templates/"* ]] || [[ "$(basename "$workflow")" == *"template"* ]]; then
-      continue
-    fi
-    workflows+=("$workflow")
-  done < <(find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null)
-  
-  if [[ ${#workflows[@]} -eq 0 ]]; then
-    return 1
-  fi
+  if [[ ${#workflows[@]} -eq 0 ]]; then return 0; fi
   
   for workflow in "${workflows[@]}"; do
+    [[ -z "$workflow" ]] && continue
     local filename
     filename=$(basename "$workflow")
+    local missing_fields=()
     
-    # Check for required fields in workflow
-    if grep -q "^name:" "$workflow" && \
-       grep -q "^on:" "$workflow" && \
-       grep -q "^jobs:" "$workflow"; then
-      log_info "✓ $filename: Has required fields (name, on, jobs)"
+    for field in "${REQUIRED_FIELDS[@]}"; do
+      if yq --version 2>&1 | grep -q "version"; then
+        if ! yq e "has(\"$field\")" "$workflow" | grep -q "true"; then
+          missing_fields+=("$field")
+        fi
+      else
+        if ! yq -e "has(\"$field\")" "$workflow" >/dev/null 2>&1; then
+          missing_fields+=("$field")
+        fi
+      fi
+    done
+    
+    if [[ ${#missing_fields[@]} -eq 0 ]]; then
+      log_info "✓ $filename: All required fields present"
     else
-      log_error "✗ $filename: Missing required fields"
+      log_error "✗ $filename: Missing fields: [${missing_fields[*]}]"
       failed=$((failed + 1))
     fi
   done
   
-  if [[ $failed -gt 0 ]]; then
-    log_error "$failed workflow(s) missing required fields"
-    return 1
-  fi
-  
-  return 0
+  return "$failed"
 }
 
 summary_report() {
@@ -233,21 +261,68 @@ summary_report() {
   echo ""
   log_info "Workflows checked:"
   
-  if [[ -d "$WORKFLOWS_DIR" ]]; then
-    find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null | while read -r workflow; do
-      local filename
-      filename=$(basename "$workflow")
-      log_info "  ✓ $filename"
-    done
-  fi
+  local workflows
+  readarray -t workflows < <(get_workflows)
+  for workflow in "${workflows[@]}"; do
+    [[ -z "$workflow" ]] && continue
+    log_info "  ✓ $(basename "$workflow")"
+  done
   
   echo ""
   log_info "Validation checks:"
-  log_info "  ✓ gh CLI verification"
-  log_info "  ✓ YAML syntax validation"
-  log_info "  ✓ Required field validation"
+  log_info "  ✓ Sovereignty (Whitaker/Sentinel)"
+  log_info "  ✓ GitHub API validation (gh)"
+  log_info "  ✓ Syntax validation (yamllint)"
+  log_info "  ✓ Field validation (yq)"
   echo ""
   log_info "========================================="
+}
+
+remediate_workflows() {
+  log_info "Phase 4: Lazarus Autonomous Remediation"
+  
+  local workflows
+  readarray -t workflows < <(get_workflows)
+  if [[ ${#workflows[@]} -eq 0 ]]; then return 0; fi
+  
+  for workflow in "${workflows[@]}"; do
+    [[ -z "$workflow" ]] && continue
+    local filename
+    filename=$(basename "$workflow")
+    log_info "🔧 Repairing ${workflow}..."
+    
+    # 1. Trailing whitespace and newline EOF (Lazarus standard)
+    sed -i 's/[[:space:]]*$//' "$workflow"
+    if [[ $(tail -c 1 "$workflow" | wc -l) -eq 0 ]]; then
+      echo "" >> "$workflow"
+    fi
+    
+    # Ensuring document start "---"
+    if ! head -n 1 "$workflow" | grep -q "^---"; then
+      log_info "  Adding document start '---' to $filename"
+      sed -i '1i---' "$workflow"
+    fi
+    
+    # 2. Add missing required fields with placeholders
+    for field in "${REQUIRED_FIELDS[@]}"; do
+      if yq --version 2>&1 | grep -q "version"; then
+        if ! yq e "has(\"$field\")" "$workflow" | grep -q "true"; then
+          log_warn "  Adding missing field: $field"
+          yq e -i ".$field = \"FIXME_AUTOGENERATED\"" "$workflow"
+        fi
+      else
+        if ! yq -e "has(\"$field\")" "$workflow" >/dev/null 2>&1; then
+          log_warn "  Adding missing field: $field"
+          yq -i -y ".$field = \"FIXME_AUTOGENERATED\"" "$workflow"
+        fi
+      fi
+    done
+  done
+  
+  # Hook into mesh-remediate if available
+  if command -v mesh-remediate.sh &>/dev/null; then
+    mesh-remediate.sh --pr-workflows
+  fi
 }
 
 # ============================================================================
@@ -255,110 +330,71 @@ summary_report() {
 # ============================================================================
 
 main() {
-  local yaml_check_passed=false
-  local field_check_passed=false
+  local mode="${1:-}"
   
   log_info "========================================="
-  log_info "GitHub Actions Workflow Verification"
+  log_info "Autonomous Workflow Verifier (ML5)"
   log_info "========================================="
-  echo ""
   
-  # Phase 1: Check gh CLI
-  if check_gh_cli; then
-    # Phase 2: Validate with gh CLI if available
-    if validate_workflows_with_gh; then
-      log_info "✓ All workflows passed gh CLI validation"
-    else
-      log_warn "Some workflows failed gh CLI validation"
-    fi
+  # Phase 0: Dependency Enforcement (No-Bypass)
+  install_if_missing gh gh
+  install_if_missing yamllint yamllint
+  install_if_missing yq yq
+
+  if [[ "$mode" == "--fix" ]]; then
+    remediate_workflows
+    log_info "✅ Remediation complete. Re-verifying..."
+    echo ""
   fi
   
+  local gh_passed=0
+  local yaml_passed=0
+  local fields_passed=0
+  
+  validate_workflows_with_gh || gh_passed=$?
+  echo ""
+  validate_workflow_yaml_syntax || yaml_passed=$?
+  echo ""
+  check_required_workflow_fields || fields_passed=$?
   echo ""
   
-  # Phase 3: Validate YAML syntax (always run)
-  if validate_workflow_yaml_syntax; then
-    yaml_check_passed=true
-    log_info "✓ All workflows have valid YAML syntax"
-  else
-    log_error "Some workflows have YAML syntax errors"
-  fi
-  
-  echo ""
-  
-  # Phase 4: Check required fields
-  if check_required_workflow_fields; then
-    field_check_passed=true
-    log_info "✓ All workflows have required fields"
-  else
-    log_error "Some workflows are missing required fields"
-  fi
-  
-  echo ""
-  
-  # Summary
   summary_report
   
-  # Determine exit code
-  if [[ "$yaml_check_passed" == true ]] && [[ "$field_check_passed" == true ]]; then
+  # Final Assessment
+  if [[ $gh_passed -eq 0 && $yaml_passed -eq 0 && $fields_passed -eq 0 ]]; then
     log_info "✅ All verification checks passed"
-    log_info "========================================="
-    log_info "Ready to push to GitHub!"
     log_info "The Trinity endures. Fortress eternal. 🛡️"
-    log_info "========================================="
     return 0
   else
-    log_error "❌ Verification failed"
-    log_error "========================================="
-    log_error "Fix errors and run this script again"
-    log_error "========================================="
+    log_error "❌ Verification failed [GH: $gh_passed, YAML: $yaml_passed, FIELDS: $fields_passed]"
+    log_error "Run with --fix for autonomous remediation."
     return 1
   fi
 }
 
-# Handle help flag
-if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
-  cat << 'HELP'
+# Help...
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  cat << HELP
 Usage: scripts/verify-workflows.sh [OPTIONS]
 
-Verify GitHub Actions workflows before pushing to GitHub.
+Autonomous Workflow Verifier - Mesh Edition (ML5)
 
 OPTIONS:
+  --fix         Execute Lazarus auto-remediation (whitespace, fields)
   --help, -h    Show this help message
 
 FEATURES:
-  - Check gh CLI availability
-  - Validate workflows with gh CLI (if available)
-  - Verify YAML syntax with yamllint
-  - Check for required workflow fields (name, on, jobs)
-
-EXIT CODES:
-  0 - All verification checks passed
-  1 - Some checks failed
-
-EXAMPLES:
-  # Verify all workflows
-  ./scripts/verify-workflows.sh
-
-  # Show this help
-  ./scripts/verify-workflows.sh --help
+  - Whitaker/Sentinel Sovereign Gates
+  - Manifest-driven discovery (canon-manifest.yaml)
+  - No-Bypass dependency enforcement
+  - YAML deep-parsing field validation
+  - Bauer structured auditing (.audit/verify-workflows.json)
+  - Lazarus self-healing (--fix)
 
 DEPENDENCIES:
-  - gh (GitHub CLI) - optional but recommended
-  - yamllint - for YAML syntax validation
-  - bash 4.0+
-
-INSTALLATION:
-  # Install gh CLI
-  brew install gh                    # macOS
-  apt-get install gh                 # Ubuntu/Debian
-  
-  # Install yamllint
-  pip install yamllint
-
-For more information, see: docs/pre-commit-setup.md
+  - gh, yamllint, yq (Auto-installed if possible)
 HELP
   exit 0
 fi
 
-# Run main function
-main
+main "$@"

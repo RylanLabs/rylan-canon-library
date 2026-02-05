@@ -1,0 +1,11 @@
+# RylanLabs ShellCheck Configuration
+# Agent: Bauer
+# Version: 1.0.0
+
+# Disable SC1091 (Not following sources) as many are dynamic in mesh
+disable=SC1091
+# Disable SC2034 (Unused variables) for template-heavy scripts
+disable=SC2034
+
+# Enforce bash
+shell=bash

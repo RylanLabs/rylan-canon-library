@@ -1,0 +1,5 @@
+# RylanLabs Gitleaks Ignore List
+# Fingerprints for documentation examples that trigger false positives
+
+# UNIFI_API_KEY example in history
+edf0d20300a500dceb3e7be2406a3d093265ca13:ansible/inventory-patterns.md::410
