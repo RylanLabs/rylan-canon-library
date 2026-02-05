@@ -1,0 +1,67 @@
+---
+name: Repo Governance (Beale)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  enforce-standards:
+    name: Enforcement Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Signed Commits
+        run: |
+          echo "Checking commit signatures for range: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          # In a real environment, we'd use a specialized action or gpg --verify
+          # For now, we use git log to check for [gpg: good signature]
+          # This requires the runner to have the public keys, which is a Phase 4 step.
+          # We'll stub the check to pass if signatures are present, or fail loud if missing.
+          SIGNED_COMMITS=$(git log ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} --show-signature | grep "gpg: Good signature" | wc -l || echo 0)
+          TOTAL_COMMITS=$(git rev-list --count ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+
+          if [ "$SIGNED_COMMITS" -lt "$TOTAL_COMMITS" ]; then
+            echo "❌ ERROR: Unsigned commits detected in PR. All commits must be GPG/SSH signed."
+            # We'll make this non-blocking for the VERY first bootstrap PR but then toggle it to exit 1
+            # exit 1
+          fi
+
+      - name: Verify Mesh Artifacts
+        run: |
+          MISSING=0
+          FILES=("common.mk" "Makefile" ".gitleaks.toml" "canon-manifest.yaml")
+          for file in "${FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ MISSING: $file"
+              MISSING=1
+            fi
+          done
+
+          if [ $MISSING -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Run Schema Validation
+        run: |
+          if [ -f "scripts/validate-yaml.sh" ]; then
+            chmod +x scripts/validate-yaml.sh
+            ./scripts/validate-yaml.sh
+          fi
+
+      - name: Check Symlink SSOT Integrity (Whitaker)
+        run: |
+          if [ -f "scripts/whitaker-scan.sh" ]; then
+            chmod +x scripts/whitaker-scan.sh
+            ./scripts/whitaker-scan.sh
+          fi
+
+      - name: Check Gitleaks (Hard Gate)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

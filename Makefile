@@ -1,102 +1,55 @@
-# RylanLabs Canonical Makefile
-# Version: 4.5.2
-# Purpose: Convenience targets for local development & validation
-# Usage: make help (show all targets)
-#        make validate (run all validators)
-#        make format (auto-fix formatting)
+# RylanLabs Repository Makefile
+# Anchor: rylan-canon-library
+# Guardian: Bauer | Ministry: Oversight
+# Maturity: Level 5 (Autonomous)
 
-.PHONY: help validate validate-python validate-bash validate-yaml validate-ansible \
-        ci-local lint-quick format clean
+-include common.mk
 
-# Default target
-help:
-	@echo "RylanLabs Canon Library - Make Targets"
-	@echo "======================================"
-	@echo ""
-	@echo "Validation Targets:"
-	@echo "  make validate            - Run ALL validators (python, bash, yaml, ansible)"
-	@echo "  make validate-python     - Python validation only (mypy + ruff + bandit)"
-	@echo "  make validate-bash       - Bash validation only (shellcheck + shfmt)"
-	@echo "  make validate-yaml       - YAML validation only (yamllint)"
-	@echo "  make validate-ansible    - Ansible validation only (ansible-lint + syntax)"
-	@echo ""
-	@echo "Development Targets:"
-	@echo "  make ci-local            - Simulate full CI: validators + pytest + coverage"
-	@echo "  make lint-quick          - Fast linting (ruff only, no mypy strict)"
-	@echo "  make format              - Auto-fix formatting (ruff + shfmt -i 2)"
-	@echo "  make clean               - Remove cache files (.venv, __pycache__, etc)"
-	@echo ""
-	@echo "Environment Variables:"
-	@echo "  PYTHON_VERSION=3.12      - Override Python version (default: 3)"
-	@echo "  VENV_DIR=.venv           - Override venv directory (default: .venv)"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make validate"
-	@echo "  make format && git add . && git commit"
-	@echo "  make ci-local"
+.PHONY: all help validate clean warm-session org-audit mesh-man mesh-remediate repo-init cascade publish fetch reconcile
 
-# Validate all (run all 4 validators sequentially)
-validate: validate-python validate-bash validate-yaml validate-ansible
-	@echo ""
-	@echo "✅ All validations passed"
+all: help
 
-# Python validation
-validate-python:
-	@echo "Running Python validation..."
-	@bash scripts/validate-python.sh
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# Bash validation
-validate-bash:
-	@echo "Running Bash validation..."
-	@bash scripts/validate-bash.sh
+warm-session: ## Establish 8-hour password-less GPG session (Asymmetric Warm)
+	@chmod +x scripts/warm-session.sh
+	@./scripts/warm-session.sh
 
-# YAML validation
-validate-yaml:
-	@echo "Running YAML validation..."
-	@bash scripts/validate-yaml.sh
+validate: ## Run Whitaker/Sentinel compliance gates (Security/Linter)
+	@chmod +x scripts/validate.sh
+	@./scripts/validate.sh
 
-# Ansible validation (optional - skip if no playbooks/)
-validate-ansible:
-	@if [ -d "playbooks" ]; then \
-		echo "Running Ansible validation..."; \
-		bash scripts/validate-ansible.sh; \
-	else \
-		echo "⊘ Ansible validation skipped (no playbooks/ directory)"; \
-	fi
+org-audit: ## Multi-repo compliance scan (Whitaker)
+	@chmod +x scripts/org-audit.sh
+	@./scripts/org-audit.sh
 
-# CI simulation (validators + tests)
-ci-local: validate
-	@echo ""
-	@echo "Running pytest with coverage..."
-	@if [ -d "tests" ]; then \
-		python3 -m pip install pytest pytest-cov >/dev/null 2>&1; \
-		python3 -m pytest tests/ --cov=scripts --cov-fail-under=70 --cov-report=term-missing; \
-	else \
-		echo "⊘ Pytest skipped (no tests/ directory)"; \
-	fi
-	@echo ""
-	@echo "✅ CI simulation complete"
+mesh-man: ## Generate MESH-MAN.md coverage documentation
+	@chmod +x scripts/generate-mesh-man.sh
+	@./scripts/generate-mesh-man.sh
 
-# Quick lint (no strict mypy)
-lint-quick:
-	@echo "Running quick linting (ruff only, no mypy strict)..."
-	@python3 -m pip install ruff >/dev/null 2>&1
-	@python3 -m ruff check .
-	@python3 -m ruff format --check .
+mesh-remediate: ## Force drift back to green (Lazarus)
+	@chmod +x scripts/mesh-remediate.sh
+	@./scripts/mesh-remediate.sh
 
-# Auto-fix formatting
-format:
-	@echo "Auto-fixing formatting..."
-	@python3 -m pip install ruff >/dev/null 2>&1 || true
-	@python3 -m ruff format . 2>&1 | grep -v "^warning:" || true
-	@find scripts -name "*.sh" -exec shfmt -i 2 -ci -bn -w {} \; 2>/dev/null || true
-	@echo "✅ Formatting complete"
+repo-init: ## Bootstrap new repositories to RylanLabs standards
+	@chmod +x scripts/repo-init.sh
+	@./scripts/repo-init.sh
 
-# Clean cache
-clean:
-	@echo "Cleaning cache files..."
-	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type f -name "*.pyc" -delete
-	@rm -rf .pytest_cache .mypy_cache .ruff_cache 2>/dev/null || true
-	@rm -rf .venv venv 2>/dev/null || true
-	@echo "✅ Cleanup complete"
+cascade: ## Topic-driven secret distribution (Beale)
+	@chmod +x scripts/publish-cascade.sh
+	@./scripts/publish-cascade.sh --cascade
+
+reconcile: ## Meta-GitOps: Declarative state reconciliation
+	@echo "Reconciling state via consensus engine..."
+	@python3 scripts/audit-consensus-engine.py
+
+publish: validate ## Heartbeat: Sign, Tag, and Push (Carter)
+	@git add .
+	@read -p "Commit message: " msg; \
+	git commit -S -m "$$msg"
+	@git tag -s v$$(date +%G.%V.%u) -m "Mesh heartbeat"
+	@git push origin main --tags
+
+clean: ## Clean local artifacts
+	@rm -rf .cache/ .tmp/ .audit/*

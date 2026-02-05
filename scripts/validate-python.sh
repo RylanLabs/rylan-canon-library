@@ -129,7 +129,7 @@ if ! ruff check "$RUFF_PATHS"; then
   log_warn "Auto-fix attempt:"
   echo "  ruff check --fix $RUFF_PATHS"
   echo ""
-  if ruff check --fix "$RUFF_PATHS" 2>/dev/null; then
+  if ruff check --fix "$RUFF_PATHS" 2> /dev/null; then
     log_info "Auto-fix successful - review changes and retry"
   fi
   exit 1

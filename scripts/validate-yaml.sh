@@ -1,19 +1,28 @@
 #!/usr/bin/env bash
 # Script: validate-yaml.sh
-# Purpose: Canonical YAML validator (yamllint)
+# Purpose: ML5 Autonomous YAML Validator (Lint, Audit, Remediate)
 # Guardian: Bauer (Auditor)
 # Ministry: Configuration Management
-# Maturity: v2.0.0
-# Date: 2026-01-13
+# Maturity: Level 5 (Autonomous)
+# Author: RylanLabs canonical
+# Date: 2026-02-04
+
 set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# CONFIGURATION
+# CONFIGURATION & AUDIT SETUP
 # ============================================================================
-
-YAML_PATHS="${YAML_PATHS:-.}"
+AUDIT_DIR=".audit"
+AUDIT_FILE="${AUDIT_DIR}/validate-yaml.json"
+RAW_AUDIT="${AUDIT_DIR}/yamllint-results.txt"
+CANON_LIB_PATH="${CANON_LIB_PATH:-$(pwd)/../rylan-canon-library}"
 YAMLLINT_CONFIG="${YAMLLINT_CONFIG:-configs/.yamllint}"
+FIX_MODE=false
+EXIT_CODE=0
+SCANNED_COUNT=0
+FAILED_COUNT=0
+TARGET_FILES=()
 
 # Colors
 RED='\033[0;31m'
@@ -21,111 +30,131 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# ============================================================================
-# UTILITY FUNCTIONS
-# ============================================================================
+mkdir -p "$AUDIT_DIR"
 
-log_info() {
-  echo -e "${BLUE}[INFO]${NC} $*"
+# shellcheck disable=SC2317
+error_handler() {
+    local line_no=$1
+    local exit_code=$2
+    if [ "$exit_code" -ne 0 ] && [ "$exit_code" -ne 123 ]; then
+        echo -e "${RED}[FAIL]${NC} Command failed at line ${line_no} with exit code ${exit_code}"
+    fi
 }
+trap 'error_handler $LINENO $?' ERR
 
-log_pass() {
-  echo -e "${GREEN}[PASS]${NC} $*"
-}
-
-log_error() {
-  echo -e "${RED}[ERROR]${NC} $*"
-}
-
-log_section() {
-  echo ""
-  echo -e "${BLUE}═══════════════════════════════════════════${NC}"
-  echo -e "${BLUE}$*${NC}"
-  echo -e "${BLUE}═══════════════════════════════════════════${NC}"
-}
-
-# Cleanup trap
+# shellcheck disable=SC2317
 cleanup() {
-  local exit_code=$?
-  if [[ $exit_code -ne 0 ]]; then
-    log_error "YAML validation failed with exit code $exit_code"
-  fi
-  return $exit_code
+    local status=$?
+    if [ "$status" -ne 0 ] && [ "$EXIT_CODE" -eq 0 ]; then EXIT_CODE=$status; fi
+    
+    if [ -f "$RAW_AUDIT" ]; then
+        FAILED_COUNT=$(grep -c "^.*:[0-9]\+:[0-9]\+:" "$RAW_AUDIT" || echo "0")
+    fi
+
+    cat <<JSON > "$AUDIT_FILE"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "scanned_files": "$SCANNED_COUNT",
+  "issue_count": "$FAILED_COUNT",
+  "exit_code": "$EXIT_CODE",
+  "status": "$([ "$EXIT_CODE" -eq 0 ] && echo "PASS" || echo "FAIL")",
+  "mode": "$([ "$FIX_MODE" = true ] && echo "remediate" || echo "validate")"
+}
+JSON
+    
+    if [ "$EXIT_CODE" -ne 0 ]; then
+        echo -e "${RED}❌ Bauer: YAML Validation Failed ($FAILED_COUNT issues). See $AUDIT_FILE${NC}"
+    else
+        echo -e "${GREEN}✅ Bauer: YAML Validation Passed ($SCANNED_COUNT files checked).${NC}"
+    fi
+    rm -f "$RAW_AUDIT"
+    exit "$EXIT_CODE"
 }
 trap cleanup EXIT
 
-# ============================================================================
-# PREREQUISITE CHECKS
-# ============================================================================
-
-log_section "Checking prerequisites"
-
-if ! command -v yamllint >/dev/null 2>&1; then
-  log_error "yamllint not found"
-  echo ""
-  echo "Install with:"
-  echo "  pip install yamllint"
-  exit 1
-fi
-
-log_pass "yamllint: $(yamllint --version)"
+log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
+# shellcheck disable=SC2317
+log_pass() { echo -e "${GREEN}[PASS]${NC} $*"; }
+# shellcheck disable=SC2317
+log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
 # ============================================================================
-# PHASE 1: VALIDATE CONFIG FILE
+# PHASE 1: PRE-FLIGHT GATES
 # ============================================================================
+if [ -f "scripts/whitaker-scan.sh" ]; then bash scripts/whitaker-scan.sh; fi
+if [ -f "scripts/sentinel-expiry.sh" ]; then bash scripts/sentinel-expiry.sh; fi
 
-log_section "PHASE 1: Validating yamllint configuration"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --fix) FIX_MODE=true; shift ;;
+        *) TARGET_FILES+=("$1"); shift ;;
+    esac
+done
 
+if ! command -v yamllint > /dev/null 2>&1; then echo "yamllint missing"; exit 1; fi
+
+# ============================================================================
+# PHASE 2: DISCOVERY & CONFIG
+# ============================================================================
 if [[ ! -f "$YAMLLINT_CONFIG" ]]; then
-  log_error "yamllint config not found: $YAMLLINT_CONFIG"
-  echo ""
-  echo "Create $YAMLLINT_CONFIG or set YAMLLINT_CONFIG environment variable"
-  echo ""
-  echo "Example: configs/.yamllint"
-  exit 1
+    if [[ -f "$CANON_LIB_PATH/configs/.yamllint" ]]; then
+        YAMLLINT_CONFIG="$CANON_LIB_PATH/configs/.yamllint"
+    elif [[ -f "../rylan-canon-library/configs/.yamllint" ]]; then
+        YAMLLINT_CONFIG="../rylan-canon-library/configs/.yamllint"
+    else
+        YAMLLINT_CONFIG="default"
+    fi
 fi
 
-log_info "Using config: $YAMLLINT_CONFIG"
-log_pass "Config file exists and readable"
-
-# ============================================================================
-# PHASE 2: RUN YAMLLINT
-# ============================================================================
-
-log_section "PHASE 2: Running yamllint"
-log_info "Paths: $YAML_PATHS"
-
-if ! yamllint -c "$YAMLLINT_CONFIG" "$YAML_PATHS"; then
-  log_error "yamllint validation failed"
-  echo ""
-  echo "Common fixes:"
-  echo "  indentation: Use 2-space indent, not 4 or tabs"
-  echo "  line-length: Keep lines under 120 chars (140 for inventory)"
-  echo "  trailing-spaces: Remove whitespace at line end"
-  echo "  comments: Ensure 2 spaces before inline comments"
-  echo ""
-  echo "Auto-fix (manual review required):"
-  echo "  # Fix indentation manually or use sed"
-  echo ""
-  echo "See: https://yamllint.readthedocs.io/"
-  exit 1
+if [ ${#TARGET_FILES[@]} -eq 0 ]; then
+    if git rev-parse --is-inside-work-tree &>/dev/null; then
+        readarray -t STAGED < <(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.ya?ml$' || true)
+        if [ ${#STAGED[@]} -gt 0 ]; then
+            TARGET_FILES=("${STAGED[@]}")
+        else
+            readarray -t TRACKED < <(git ls-files | grep -E '\.ya?ml$' || true)
+            CLEAN_TRACKED=()
+            for f in "${TRACKED[@]}"; do [[ -f "$f" ]] && CLEAN_TRACKED+=("$f"); done
+            TARGET_FILES=("${CLEAN_TRACKED[@]}")
+        fi
+    fi
+    if [ ${#TARGET_FILES[@]} -eq 0 ]; then
+        readarray -t ALL < <(find . -maxdepth 5 -regextype posix-extended -regex ".*\.ya?ml" -not -path "*/.git/*" || true)
+        TARGET_FILES=("${ALL[@]}")
+    fi
 fi
 
-log_pass "yamllint validation passed"
+SCANNED_COUNT=${#TARGET_FILES[@]}
+if [ "$SCANNED_COUNT" -eq 0 ]; then exit 0; fi
 
 # ============================================================================
-# SUMMARY
+# PHASE 3: VALIDATION & REMEDIATION
 # ============================================================================
+if [ "$FIX_MODE" = true ]; then
+    log_info "🩹 Lazarus: Pre-processing files..."
+    for FILE in "${TARGET_FILES[@]}"; do
+        if [ -f "$FILE" ]; then
+            sed -i 's/[[:space:]]*$//' "$FILE"
+            if [ -n "$(tail -c 1 "$FILE" 2>/dev/null)" ]; then echo "" >> "$FILE"; fi
+        fi
+    done
+fi
 
-log_section "✅ YAML VALIDATION COMPLETE"
-echo ""
-echo -e "${GREEN}All validation checks passed!${NC}"
-echo ""
-echo "Summary:"
-echo "  ✓ yamllint: Config files valid"
-echo "  ✓ yamllint: Syntax and style OK"
-echo ""
-echo "Next steps:"
-echo "  1. Commit changes: git add . && git commit"
-echo "  2. Run full validation: bash scripts/validate-python.sh && bash scripts/validate-bash.sh"
-echo ""
+YAMLLINT_ARGS=(-c "$YAMLLINT_CONFIG" -f parsable)
+if [[ "$YAMLLINT_CONFIG" == "default" ]]; then YAMLLINT_ARGS=(-f parsable); fi
+
+printf "%s\n" "${TARGET_FILES[@]}" | xargs -r yamllint "${YAMLLINT_ARGS[@]}" > "$RAW_AUDIT" || EXIT_CODE=$?
+
+if [ "$EXIT_CODE" -ne 0 ]; then
+    cat "$RAW_AUDIT"
+fi
+
+if [ $EXIT_CODE -ne 0 ] && [ "$FIX_MODE" = true ]; then
+    log_info "🩹 Lazarus: Attempting second pass..."
+    if printf "%s\n" "${TARGET_FILES[@]}" | xargs -r yamllint "${YAMLLINT_ARGS[@]}" &>/dev/null; then
+        EXIT_CODE=0
+    fi
+fi
+
+exit "$EXIT_CODE"

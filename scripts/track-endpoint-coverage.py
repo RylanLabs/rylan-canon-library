@@ -9,7 +9,7 @@ Maturity: v2.0.0
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 # ============================================================================
 # CONFIGURATION
@@ -23,10 +23,10 @@ MIN_COVERAGE_PCT: int = 80
 # ============================================================================
 
 
-def load_coverage() -> Dict[str, Any]:
+def load_coverage() -> dict[str, Any]:
     if not COVERAGE_FILE.exists():
         COVERAGE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        default_coverage: Dict[str, Any] = {
+        default_coverage: dict[str, Any] = {
             "total_endpoints": 0,
             "documented": 0,
             "coverage_pct": 0,
@@ -35,12 +35,12 @@ def load_coverage() -> Dict[str, Any]:
         }
         return default_coverage
 
-    with open(COVERAGE_FILE, "r") as f:
-        data: Dict[str, Any] = json.load(f)
+    with open(COVERAGE_FILE) as f:
+        data: dict[str, Any] = json.load(f)
         return data
 
 
-def validate_coverage(data: Dict[str, Any]) -> bool:
+def validate_coverage(data: dict[str, Any]) -> bool:
     total: int = data.get("total_endpoints", 0)
     documented: int = data.get("documented", 0)
 
@@ -70,7 +70,7 @@ def main() -> None:
     print("Starting API Coverage Audit (Maturity: v2.0.0)...")
 
     try:
-        data: Dict[str, Any] = load_coverage()
+        data: dict[str, Any] = load_coverage()
         if not validate_coverage(data):
             sys.exit(1)
 
@@ -78,7 +78,7 @@ def main() -> None:
         sys.exit(0)
 
     except Exception as e:
-        print(f"ERROR: Audit failed - {str(e)}")
+        print(f"ERROR: Audit failed - {e!s}")
         sys.exit(1)
 
 

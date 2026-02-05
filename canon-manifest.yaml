@@ -95,14 +95,34 @@ sacred_files:
       dest: .pre-commit-config.yaml
       immutable: false
       description: "Template for remote hooks (v2.0.0); includes ruff, mypy, ansible-lint, shellcheck."
+    - src: .sops.yaml
+      dest: .sops.yaml
+      immutable: true
+      description: "SOPS configuration for asymmetric encryption (Carter: Identity; Beale: Hardening)."
+    - src: scripts/validate-sops.sh
+      dest: scripts/validate-sops.sh
+      immutable: true
+      description: "Ensures secrets are encrypted before commit (Beale: Hardening)."
     - src: scripts/validate-bash.sh
       dest: scripts/validate-bash.sh
       immutable: true
-      description: "Portable Bash linter (shfmt, shellcheck); eternal glue for script discipline."
+      description: "Bash validation logic (Bauer: Verification)."
     - src: scripts/validate-ansible.sh
       dest: scripts/validate-ansible.sh
       immutable: true
       description: "Ansible playbook validator; ties to ansible-lint."
+    - src: scripts/validate.sh
+      dest: scripts/validate.sh
+      immutable: true
+      description: "Autonomous Mesh Orchestrator (Bauer: Auditor; Beale: Enforcement)."
+    - src: scripts/whitaker-scan.sh
+      dest: scripts/whitaker-scan.sh
+      immutable: true
+      description: "Adversarial scan for identity drift and GHOST STUBS (Whitaker: Offensive Validator)."
+    - src: scripts/sentinel-expiry.sh
+      dest: scripts/sentinel-expiry.sh
+      immutable: true
+      description: "Identity key expiry tracking (Sentinel: Security Guardian)."
     - src: templates/pyproject.toml.template
       dest: pyproject.toml
       immutable: false
@@ -113,6 +133,18 @@ sacred_files:
       description: "Markdown standards (MD022, MD031, etc.); for docs consistency."
 
   orchestration:
+    - src: common.mk
+      dest: common.mk
+      immutable: true
+      description: "Shared Makefile substrate for the Mesh (Bauer: Verification)."
+    - src: .rylan/common.mk
+      dest: .rylan/common.mk
+      immutable: true
+      description: "Substrate anchor for submodule-based inheritance."
+    - src: .github/workflows/sentinel-loop.yml
+      dest: .github/workflows/sentinel-loop.yml
+      immutable: true
+      description: "Continuous reconciliation logic (Sentinel)."
     - src: .github/agents/.agent.md
       dest: .github/agents/.agent.md
       immutable: true
@@ -134,3 +166,11 @@ enforcement:
   drift_detection:
     script: scripts/audit-canon.sh
     auto_patch: true  # Beale: Applies fixes for detected drifts.
+
+# Global Configuration (used by mesh validators)
+global_config:
+  workflows_dir: ".github/workflows"
+  required_workflow_fields:
+    - name
+    - on
+    - jobs

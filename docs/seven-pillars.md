@@ -1,13 +1,12 @@
 # Seven Pillars of Production-Grade Code
 
-> Canonical definition — RylanLabs standard
-> Version: v2.0.0
-> Date: 2026-01-13
-> Agent: Bauer (Verification) | Domain: Audit
+> Canonical definition — Infrastructure-as-Code standards
+> Version: v2.1.0 (Mesh-Aligned)
+> Date: 2026-02-04
 
 ---
 
-## The Pillars (Hellodeolu v6 — Non-Negotiable)
+## The Pillars (Production-Grade — Non-Negotiable)
 
 ### 1. Idempotency
 
@@ -16,13 +15,11 @@
 **Why**: Junior-at-3-AM must re-run safely. Prevents drift, enables automation.
 
 **Canon**:
-
 - Check state before action
 - Declarative source of truth (YAML/JSON)
 - No destructive ops without guard
 
 **Example**:
-
 ```bash
 # BAD — appends every run
 echo "key=value" >> /etc/config
@@ -33,8 +30,6 @@ if ! grep -q "^key=" /etc/config; then
 fi
 ```
 
-**Validation**: Run script twice — second run must change nothing.
-
 ---
 
 ### 2. Error Handling
@@ -44,175 +39,111 @@ fi
 **Why**: 3-AM failures need immediate actionable diagnosis.
 
 **Canon**:
-
-- `set -euo pipefail` mandatory
+- \`set -euo pipefail\` mandatory
 - Trap ERR + EXIT
-- Meaningful exit codes
+- Meaningful exit codes (0=pass, 1=err, 2=usage, 3=config, 4=net, 5=perm)
 - Actionable messages (what + how to fix)
 
 **Example**:
-
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'echo "ERROR at line \$LINENO (exit \$?)"; exit 1' ERR
 
-trap 'echo "ERROR at line $LINENO (exit $?)"; exit 1' ERR
-
-if [[ ! -f "$CONFIG" ]]; then
-  echo "❌ Config missing: $CONFIG" >&2
-  echo "   Create: cp config.example.yaml $CONFIG" >&2
+if [[ ! -f "\$CONFIG" ]]; then
+  echo "❌ Config missing: \$CONFIG" >&2
+  echo "   Create: cp config.example.yaml \$CONFIG" >&2
   exit 3
 fi
 ```
 
-**Exit Codes**:
-
-- 0 success
-- 1 generic error
-- 2 usage
-- 3 config
-- 4 network
-- 5 permission
-
 ---
 
-### 3. Functionality
-
-**Principle**: Does exactly one thing, perfectly.
-
-**Why**: Single responsibility → composable, testable, maintainable.
-
-**Canon**:
-
-- Clear purpose in header
-- `--help` + `--dry-run`
-- Manual test 3× before commit
-- Document inputs/outputs/prereqs
-
-**Example**:
-
-```bash
-#!/usr/bin/env bash
-# Purpose: Backup UniFi controller config
-# Usage: ./backup.sh [--dry-run]
-# Prereq: UNIFI_TOKEN set, curl/jq installed
-# Output: .backups/config-YYYYMMDD-HHMMSS.json
-```
-
----
-
-### 4. Audit Logging
+### 3. Audit Logging
 
 **Principle**: Every action traceable.
 
 **Why**: Forensics, compliance, blameless post-mortems.
 
 **Canon**:
-
 - Timestamped to stderr
 - Success + failure logged
-- Git commits explain WHY
-- Structured when complex
+- Git commits explain WHY (Conventional Commits)
+- Structured (JSON) when complex
 
 **Example**:
-
 ```bash
-log() { echo "[$(date -Iseconds)] $*" >&2; }
-
+log() { echo "[\$(date -Iseconds)] \$*" >&2; }
 log "Starting VLAN 10 creation"
 log_success "VLAN 10 created"
-log_error "Failed — check permissions"
 ```
 
 ---
 
-### 5. Failure Recovery
-
-**Principle**: Graceful degradation + clear recovery path.
-
-**Why**: Partial failures must not leave broken state.
-
-**Canon**:
-
-- Backup before destructive change
-- Trap cleanup
-- Rollback instructions in error
-- Stateful resume optional
-
-**Example**:
-
-```bash
-trap 'rm -f "$TEMP_FILE"' EXIT
-
-if [[ -f "$CONFIG" ]]; then
-  cp "$CONFIG" "$CONFIG.bak"
-  echo "Backup: $CONFIG.bak" >&2
-fi
-```
-
----
-
-### 6. Security Hardening
-
-**Principle**: Assume hostile environment.
-
-**Why**: Default secure > default convenient.
-
-**Canon**:
-
-- No cleartext secrets
-- Input validation
-- Least privilege
-- Secure temp files (`mktemp`)
-- No `eval`
-
-**Example**:
-
-```bash
-TEMP=$(mktemp)
-chmod 600 "$TEMP"
-trap 'rm -f "$TEMP"' EXIT
-```
-
----
-
-### 7. Documentation Clarity
+### 4. Documentation Clarity
 
 **Principle**: Junior at 3 AM can run and understand.
 
 **Why**: Knowledge transfer > clever code.
 
 **Canon**:
-
-- Header: purpose, usage, prereqs, output
+- Header: purpose, usage, prereqs, output, agent
 - Inline comments for non-obvious
-- Clear names
-- README quick-start
-- Examples
+- Clear naming (kebab-case files, snake_case functions)
+- README quick-start with examples
 
-**Example Header**:
+---
 
-```bash
-#!/usr/bin/env bash
-# Script: backup-unifi.sh
-# Purpose: Backup UniFi controller configuration
-# Agent:
-# Author: rylanlab canonical
-# Date: 19/12/2025
-```
+### 5. Validation
+
+**Principle**: Verify inputs, preconditions, and postconditions.
+
+**Why**: Prevent garbage-in-garbage-out; ensure state matches intent.
+
+**Canon**:
+- Pre-flight checks pass before change
+- Post-flight checks verify success
+- Multi-repo compliance (Whitaker)
+
+---
+
+### 6. Reversibility
+
+**Principle**: Rollback path always exists.
+
+**Why**: Partial failures must not leave broken state.
+
+**Canon**:
+- Backup before destructive change
+- Trap cleanup
+- Rollback instructions in error
+- RTO <15min (Lazarus)
+
+---
+
+### 7. Observability
+
+**Principle**: Visibility into state and progress.
+
+**Why**: Understanding "what is happening now" during execution.
+
+**Canon**:
+- Progress reporting
+- Debugging information available (VERBOSE=1)
+- Integration with mesh monitoring
 
 ---
 
 **Trinity Alignment**:
+1. **Carter**: Identity (Idempotency, Documentation)
+2. **Bauer**: Verification (Error Handling, Validation)
+3. **Beale**: Hardening (Audit Logging, Security)
+4. **Whitaker**: Offensive Validation (Observability)
+5. **Lazarus**: Recovery (Reversibility)
 
-- Carter: Identity (prereqs, auth)
-- Bauer: Verification (audit, validation)
-- Beale: Hardening (security, recovery)
-
-**Hellodeolu v6 Outcomes**:
-
+**Hellodeolu v7 Outcomes**:
 - Junior-at-3-AM deployable
-- Pre-commit 100% green
-- One-command resurrection
+- Maturity Level 5 (Autonomous)
+- Dynamic Mesh Reconciliation
 
 **The fortress demands these pillars. No exceptions.**
