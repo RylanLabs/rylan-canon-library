@@ -387,7 +387,7 @@ rylan-canon-library/
 ├── docs/
 │   ├── seven-pillars.md
 │   ├── ci-workflow-guide.md
-│   └── INTEGRATION_GUIDE.md (this file)
+│   └── integration-guide.md (this file)
 ├── templates/
 │   ├── CONTRIBUTING-template.md
 │   └── README-template.md
@@ -427,7 +427,7 @@ rylan-canon-library/
 ⊘ Trinity CI/CD (templates/trinity-ci-template.yml)
    - Disabled (no triggers)
    - Available as template for other projects
-   - Reference in docs/INTEGRATION_GUIDE.md
+   - Reference in docs/integration-guide.md
 ```
 
 ---

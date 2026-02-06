@@ -4,7 +4,7 @@
 title: Mesh-Man Operational Manual
 version: v2.2.0-mesh
 guardian: Bauer
-date: 2026-02-05
+date: 2026-02-06
 compliance: Hellodeolu v7, Seven Pillars
 ---
 
@@ -29,23 +29,27 @@ These targets are the 'Eternal Glue' used across the mesh.
 | `repo-init` | Bootstrap new repositories to RylanLabs standards | Lazarus | 2m |
 | `resolve` | Materialize symlinks for Windows/WSL/CI compatibility (Agnosticism Pattern) | Beale | 15s |
 | `rollback-canon` | Revert Phase 0 injection (Emergency Only) | N/A | Unknown |
+| `sync-deps` | Sync dependencies with tier cascade and GPG validation | Bauer | Unknown |
 | `test` | Run Bauer unit tests (Pytest) | Bauer | 30s |
 | `validate` | Run standard Whitaker gates (Validator Suite) | Whitaker | 30s |
 | `warm-session` | Establish 8-hour password-less GPG session (Asymmetric Warm) | N/A | Unknown |
 
-### 3. Secure Publishing (Ansible Galaxy)
+## 🔄 High-Fidelity Workflows
 
+### 1. The Daily Pivot (Routine Maintenance)
 ```bash
-make publish ARGS="--dry-run" # Build and validate without pushing
-make publish                  # Interactive prompt for token + [y/N] gate
+make resolve  # Materialize agnosticism
+make validate # Run Whitaker gates
+make publish  # Sync to mesh
 ```
 
-* **Gate**: Controlled by `scripts/publish-gate.sh`.
-* **Audit**: Logs results to `.audit/publish-gate.jsonl`.
-* **Safety**: Automatic CI detection (auto-confirms if `CI=true` and token present).
+### 2. Mesh-Wide Synchronization
+```bash
+make cascade  # Push state to all satellites
+make org-audit # Multi-repo scan
+```
 
 ## ⚖️ Compliance Standards
-
-* **Idempotency**: All targets must be safe to run repeatedly.
-* **Observability**: Every run produces an entry in `.audit/audit-trail.jsonl`.
-* **Junior-Deployable**: Descriptions must be clear enough for a Level 1 engineer.
+- **Idempotency**: All targets must be safe to run repeatedly.
+- **Observability**: Every run produces an entry in `.audit/audit-trail.jsonl`.
+- **Junior-Deployable**: Descriptions must be clear enough for a Level 1 engineer.
