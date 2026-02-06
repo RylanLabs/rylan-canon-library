@@ -10,6 +10,35 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# ============================================================================
+# BAUER COMPLIANCE ARTIFACTS
+# ============================================================================
+# shellcheck disable=SC2317
+cleanup() {
+  local status=$?
+  local bauer_status="pass"
+  local violations="[]"
+
+  if [ "$status" -ne 0 ] || [ "$FAILED" -ne 0 ]; then
+    bauer_status="fail"
+    violations='[{"severity": "critical", "type": "whitaker_adversarial_scan", "message": "Adversarial detection: Uncommitted secrets or identity drift"}]'
+  fi
+
+  mkdir -p .audit
+  cat <<JSON > ".audit/whitaker-scan.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "whitaker_adversarial_scan",
+  "status": "$bauer_status",
+  "scanned_files": $SCANNED_FILES,
+  "violations": $violations
+}
+JSON
+}
+
+trap cleanup EXIT
+
 FAILED=0
 SCANNED_FILES=0
 

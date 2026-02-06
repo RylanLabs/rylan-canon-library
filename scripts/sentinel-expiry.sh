@@ -14,7 +14,7 @@ IFS=$'\n\t'
 WARNING_WINDOW_DAYS=${WARNING_WINDOW_DAYS:-14}
 THRESHOLD_SECONDS=$((WARNING_WINDOW_DAYS * 86400))
 NOW=$(date +%s)
-IDENTITY_EMAIL=${IDENTITY_EMAIL:-security@rylan.local}
+IDENTITY_EMAIL=${GPG_KEY_ID:-${IDENTITY_EMAIL:-security@rylan.local}}
 
 echo "🔍 Running Expiry Sentinel ($IDENTITY_EMAIL)..."
 

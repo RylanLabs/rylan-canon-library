@@ -18,6 +18,7 @@ AUDIT_FILE="${AUDIT_DIR}/validate.json"
 EXIT_CODE=0
 GATES_RUN=0
 SCANNED_RESOURCES=0
+START_TIME=$(date +%s%3N)
 
 # Colors
 RED='\033[0;31m'
@@ -42,6 +43,10 @@ cleanup() {
     local status=$?
     if [ "$status" -ne 0 ] && [ "$EXIT_CODE" -eq 0 ]; then EXIT_CODE=$status; fi
     
+    local end_time
+    end_time=$(date +%s%3N)
+    local duration=$((end_time - START_TIME))
+
     # Generate structured Bauer Audit
     cat <<JSON > "$AUDIT_FILE"
 {
@@ -50,6 +55,7 @@ cleanup() {
   "scanned_repo": "$(basename "$(pwd)")",
   "gates_executed": $GATES_RUN,
   "scanned_resources": $SCANNED_RESOURCES,
+  "duration_ms": $duration,
   "status": "$([ "$EXIT_CODE" -eq 0 ] && echo "PASS" || echo "FAIL")",
   "exit_code": $EXIT_CODE
 }

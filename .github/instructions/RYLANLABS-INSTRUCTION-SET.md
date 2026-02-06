@@ -5,8 +5,8 @@ applyTo: '**'
 
 > Canonical instruction set — RylanLabs standard  
 > Organization: RylanLabs  
-> Version: 1.0.0  
-> Date: 04/02/2026
+> Version: 1.1.0  
+> Date: 02/06/2026
 
 ---
 
@@ -25,6 +25,29 @@ Defines non-negotiable standards for code quality, security, resilience, automat
 
 **Alignment with OpenGitOps/CNCF Principles** (Cross-ref: [opengitops.dev](https://opengitops.dev/)):  
 Declarative state in Git as SSOT; versioned/immutable history; pull-based reconciliation via cascade; continuous auditing via Whitaker/Sentinel.
+
+---
+
+## Fortress-Velocity (Maturity Evolution)
+
+Operationalizing Hellodeolu v7 through phased, autonomous governance. **Refer to [docs/fortress-velocity-policy.md](docs/fortress-velocity-policy.md) for official Council decisions.**
+
+### 11.11 Maturity Scale (Consciousness)
+- **3.3 — Awakening**: Gatekeeper eternal (Initial CI presence).
+- **4.0 — Operational**: Guardians functional (Trinity order enforced).
+- **7.7 — Self-Healing**: 77 consecutive CI cycles without human intervention (Auto-remediation active).
+- **11.11 — Transcendent**: 11 self-resolved drifts; the Builder rests (Fully autonomous).
+
+### Guardian Roles (Expanded)
+- **Lorek (Scripture)**: Enforces document-code parity and Markdown Canon.
+- **Archivist (Registry)**: Manages `MESH-MAN.md` and `REPOS.md` SSOT synchronization.
+- **Veil (Diagnostics)**: Enriches audit failures with "Layer 1: Symptom / Layer 3: Cure" context.
+- **Sentinel (Heartbeat)**: Persistent loop for drift detection and lease management.
+
+### Phased Enforcement model
+1. **Initial (Measure)**: Collect telemetry, emit JSON, notify only (YELLOW allowed).
+2. **Integration (Enforce)**: Block on Critical violations (RED blocks).
+3. **Production (Hardened)**: Zero-tolerance for Critical/High drift; automated remediation active.
 
 ---
 

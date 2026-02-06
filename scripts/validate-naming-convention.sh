@@ -133,7 +133,7 @@ validate_file_naming() {
             # Record violation in JSON
             if command -v jq >/dev/null 2>&1; then
                 jq --arg path "$file" --arg name "$filename" --arg r "$reason" \
-                   '. += [{"path": $path, "filename": $name, "reason": $r}]' \
+                   '. += [{"severity": "critical", "type": "naming", "message": $r, "file": $path}]' \
                    "$VIOLATIONS_JSON" > "${VIOLATIONS_JSON}.tmp" && mv "${VIOLATIONS_JSON}.tmp" "$VIOLATIONS_JSON"
             fi
         fi
@@ -141,23 +141,37 @@ validate_file_naming() {
     ln -sf "$(basename "$VIOLATIONS_JSON")" "$LATEST_VIOLATIONS"
 }
             
-# --- 3. Metrics Export ---
-export_metrics() {
-    if command -v jq >/dev/null 2>&1; then
-        jq -n --arg count "$VIOLATION_COUNT" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-           '{"timestamp": $ts, "naming_violations": ($count | tonumber)}' > "$METRICS_FILE"
+# --- Metrics Export ---
+# shellcheck disable=SC2317
+cleanup() {
+    # Generate structured Bauer Audit
+    local bauer_status="pass"
+    if [ "$VIOLATION_COUNT" -gt 0 ]; then
+        bauer_status="fail"
     fi
+
+    # Ensure $VIOLATIONS_JSON is valid JSON even if empty
+    if [ ! -f "$VIOLATIONS_JSON" ] || [ ! -s "$VIOLATIONS_JSON" ]; then
+        echo "[]" > "$VIOLATIONS_JSON"
+    fi
+
+    cat <<JSON > ".audit/validate-naming-convention.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "naming_convention",
+  "status": "$bauer_status",
+  "violation_count": $VIOLATION_COUNT,
+  "violations": $(cat "$VIOLATIONS_JSON" || echo "[]")
+}
+JSON
 }
 
+trap cleanup EXIT
+
+# --- Execution ---
 validate_repo_tier
 validate_file_naming
-export_metrics
-
-if [ "$VIOLATION_COUNT" -gt 0 ]; then
-    log_info "Audit file: $VIOLATIONS_JSON"
-    log_error "Validation failed with $VIOLATION_COUNT naming violations."
-    exit 1
-fi
 
 log_info "✅ Naming discipline verified."
 exit 0

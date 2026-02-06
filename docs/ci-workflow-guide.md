@@ -1,41 +1,47 @@
 # Trinity CI/CD Workflow Guide
 
 > Canonical CI/CD implementation for RylanLabs projects  
-> Version: 2.0.0  
+> Version: 2.1.0  
 > Guardian: Bauer (Auditor)  
 > Ministry: Configuration Management  
-> Compliance: Seven Pillars, Hellodeolu v6, T3-ETERNAL
+> Compliance: Seven Pillars, Hellodeolu v7, T3-ETERNAL
 
 ---
 
 ## Overview
 
-The Trinity CI/CD pattern provides **7 core validation jobs** aligned with the Seven Pillars of production code. Each job runs independently but declares dependencies to optimize feedback speed and resource usage.
+The Trinity CI/CD pattern provides **8 core validation jobs** aligned with the Seven Pillars of production code. Each job runs independently but declares dependencies to optimize feedback speed and resource usage.
 
-**Philosophy**: Local GREEN = CI GREEN (Hellodeolu v6)
+**Philosophy**: LOCAL GREEN = CI GREEN (Hellodeolu v7 / ML5)
 
 ---
 
 ## Architecture
 
-### Three-Phase Pipeline
+### Four-Phase Pipeline (Fortress-Velocity)
 
 ```
-PHASE 1: LINTING (Parallel, ~2-3 min total)
+PHASE 1: LINTING (Parallel)
 ├── validate-python (mypy + ruff)
 ├── validate-bash (shellcheck + shfmt)
 └── validate-yaml (yamllint)
 
       ↓ (all must pass)
 
-PHASE 2: TESTING & SECURITY (~10-15 min total)
+PHASE 2: TESTING & SECURITY
 ├── test-unit (pytest + coverage)
-└── security-scan (bandit) [parallel]
+└── security-scan (bandit)
 
       ↓ (all must pass)
 
-PHASE 3: SUMMARY (~1 min)
-└── ci-complete (aggregate results + PR comment)
+PHASE 3: AUDIT AGGREGATION (Bauer Substrate)
+├── bauer-parse-audit (Aggregate validator JSONs)
+└── validate-ml5-scorecard (Score maturity)
+
+      ↓ (all must pass on Critical)
+
+PHASE 4: TRINITY CONSENSUS GATE
+└── ci-complete (Post PR summary + Block/Merge decision)
 ```
 
 **Total Time**: ~15-20 minutes (includes setup)

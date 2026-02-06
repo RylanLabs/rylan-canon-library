@@ -24,6 +24,30 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$AUDIT_LOG"
 }
 
+# Cleanup trap for Bauer Audit
+cleanup() {
+    local exit_code=$?
+    local status="pass"
+    local violations="[]"
+    
+    if [ "$exit_code" -ne 0 ]; then
+        status="fail"
+        violations='[{"severity": "critical", "type": "rotation_readiness", "message": "Rotation readiness check failed (metadata/backups/encryption)"}]'
+    fi
+
+    mkdir -p .audit
+    cat <<JSON > ".audit/validate-rotation-readiness.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "rotation_readiness",
+  "status": "$status",
+  "violations": $violations
+}
+JSON
+}
+trap cleanup EXIT
+
 fail() {
     log "ERROR: $1"
     exit 1

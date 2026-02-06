@@ -1,0 +1,15 @@
+# RylanLabs CODEOWNERS
+# Guardian: Carter | Ministry: Identity & Manifest
+# Purpose: Prevent unauthorized modifications to critical mesh infrastructure.
+
+# All workflow changes require guardian approval
+.github/workflows/ @RylanLabs/guardians
+
+# Script modifications require review
+/scripts/ @RylanLabs/guardians
+
+# Core configuration
+/Makefile @RylanLabs/guardians
+/common.mk @RylanLabs/guardians
+/pyproject.toml @RylanLabs/guardians
+/canon-manifest.yaml @RylanLabs/guardians

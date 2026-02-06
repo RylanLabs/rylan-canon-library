@@ -26,6 +26,34 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # ============================================================================
+# BAUER COMPLIANCE ARTIFACTS
+# ============================================================================
+# shellcheck disable=SC2317
+cleanup() {
+  local status=$?
+  local bauer_status="pass"
+  local violations="[]"
+
+  if [ "$status" -ne 0 ]; then
+    bauer_status="fail"
+    violations='[{"severity": "critical", "type": "python_validation", "message": "Python static analysis failed (ruff/mypy/bandit)"}]'
+  fi
+
+  mkdir -p .audit
+  cat <<JSON > ".audit/validate-python.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "python_validation",
+  "status": "$bauer_status",
+  "violations": $violations
+}
+JSON
+}
+
+trap cleanup EXIT
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 
@@ -55,9 +83,27 @@ log_section() {
 # Cleanup trap
 cleanup() {
   local exit_code=$?
+  local status="pass"
+  local violations="[]"
+  
   if [[ $exit_code -ne 0 ]]; then
     log_error "Validation failed with exit code $exit_code"
+    status="fail"
+    violations='[{"severity": "critical", "type": "python_validation", "message": "Python validator failed (mypy/ruff/bandit)"}]'
   fi
+  
+  # Generate structured Bauer Audit
+  mkdir -p .audit
+  cat <<JSON > ".audit/validate-python.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "python_validation",
+  "status": "$status",
+  "violations": $violations
+}
+JSON
+
   return $exit_code
 }
 trap cleanup EXIT

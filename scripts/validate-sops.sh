@@ -29,7 +29,23 @@ mkdir -p "$AUDIT_DIR"
 cleanup() {
     local status=$?
     if [ "$status" -ne 0 ] && [ "$EXIT_CODE" -eq 0 ]; then EXIT_CODE=$status; fi
-    echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"Beale\", \"scanned\": \"$SCANNED_COUNT\", \"failed\": \"$FAILED_COUNT\", \"exit_code\": \"$EXIT_CODE\"}" > "$AUDIT_FILE"
+    
+    local violations="[]"
+    if [ "$EXIT_CODE" -ne 0 ]; then
+        violations="[{\"severity\": \"critical\", \"type\": \"sops_encryption\", \"message\": \"Unencrypted secrets or missing SOPS config detected\"}]"
+    fi
+
+    cat <<JSON > "$AUDIT_FILE"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "scanned_files": $SCANNED_COUNT,
+  "issue_count": $FAILED_COUNT,
+  "exit_code": $EXIT_CODE,
+  "status": "$([ "$EXIT_CODE" -eq 0 ] && echo "pass" || echo "fail")",
+  "violations": $violations
+}
+JSON
     if [ "$EXIT_CODE" -ne 0 ]; then echo "❌ Beale: SOPS Validation Failed."; else echo "✅ Beale: SOPS Validation Passed ($SCANNED_COUNT files checked)."; fi
     exit "$EXIT_CODE"
 }

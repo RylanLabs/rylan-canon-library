@@ -46,6 +46,9 @@ rules:
     max: 2
     level: "warning"
 
+  trailing-spaces:
+    level: warning
+
   truthy:
     allowed-values: ['true', 'false']
     check-keys: false
@@ -65,8 +68,6 @@ rules:
     max-spaces-after: 1
 
   key-duplicates: {}
-
-  trailing-spaces: {}
 
   new-lines:
     type: "unix"

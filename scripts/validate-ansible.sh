@@ -23,6 +23,34 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # ============================================================================
+# BAUER COMPLIANCE ARTIFACTS
+# ============================================================================
+# shellcheck disable=SC2317
+cleanup() {
+  local status=$?
+  local bauer_status="pass"
+  local violations="[]"
+
+  if [ "$status" -ne 0 ]; then
+    bauer_status="fail"
+    violations='[{"severity": "critical", "type": "ansible_validation", "message": "Ansible lint or syntax check failed"}]'
+  fi
+
+  mkdir -p .audit
+  cat <<JSON > ".audit/validate-ansible.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "ansible_validation",
+  "status": "$bauer_status",
+  "violations": $violations
+}
+JSON
+}
+
+trap cleanup EXIT
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 
@@ -52,9 +80,27 @@ log_section() {
 # Cleanup trap
 cleanup() {
   local exit_code=$?
+  local status="pass"
+  local violations="[]"
+  
   if [[ $exit_code -ne 0 ]]; then
     log_error "Ansible validation failed with exit code $exit_code"
+    status="fail"
+    violations='[{"severity": "critical", "type": "ansible_validation", "message": "Ansible validator failed (lint/syntax)"}]'
   fi
+
+  # Generate structured Bauer Audit
+  mkdir -p .audit
+  cat <<JSON > ".audit/validate-ansible.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "ansible_validation",
+  "status": "$status",
+  "violations": $violations
+}
+JSON
+
   return $exit_code
 }
 trap cleanup EXIT

@@ -8,6 +8,30 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# shellcheck disable=SC2317
+cleanup() {
+    local exit_code=$?
+    local status="pass"
+    local violations="[]"
+    
+    if [ "$exit_code" -ne 0 ]; then
+        status="fail"
+        violations='[{"severity": "critical", "type": "gitmodules_policy", "message": "Unauthorized submodule URLs detected (Beale Gate)"}]'
+    fi
+
+    mkdir -p .audit
+    cat <<JSON > ".audit/validate-gitmodules.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "gitmodules_policy",
+  "status": "$status",
+  "violations": $violations
+}
+JSON
+}
+trap cleanup EXIT
+
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [BEALE] $1"
 }

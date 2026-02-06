@@ -47,24 +47,52 @@ cleanup() {
     local status=$?
     if [ "$status" -ne 0 ] && [ "$EXIT_CODE" -eq 0 ]; then EXIT_CODE=$status; fi
     
+    local violations="[]"
+    local crit_count=0
+    local warn_count=0
+
     if [ -f "$RAW_AUDIT" ]; then
-        FAILED_COUNT=$(grep -c "^.*:[0-9]\+:[0-9]\+:" "$RAW_AUDIT" || echo "0")
+        crit_count=$(grep -c " \[error\] " "$RAW_AUDIT" || true)
+        warn_count=$(grep -c " \[warning\] " "$RAW_AUDIT" || true)
+        
+        # Ensure they are integers (handle empty strings if any)
+        crit_count=${crit_count:-0}
+        warn_count=${warn_count:-0}
+        
+        if [ "$crit_count" -gt 0 ]; then
+             violations="[{\"severity\": \"critical\", \"type\": \"yaml_lint\", \"message\": \"$crit_count YAML errors detected\"}]"
+        elif [ "$warn_count" -gt 0 ]; then
+             violations="[{\"severity\": \"warning\", \"type\": \"yaml_lint\", \"message\": \"$warn_count YAML warnings detected\"}]"
+        fi
+        FAILED_COUNT=$((crit_count + warn_count))
+    elif [ "$EXIT_CODE" -ne 0 ]; then
+        violations="[{\"severity\": \"critical\", \"type\": \"yaml_error\", \"message\": \"YAML validator failed with exit code $EXIT_CODE\"}]"
+        crit_count=1
+    fi
+
+    # Bauer Compliance: If there are critical errors, status is fail. 
+    # If only warnings, status can be pass (for now).
+    local bauer_status="pass"
+    if [ "$crit_count" -gt 0 ]; then
+        bauer_status="fail"
     fi
 
     cat <<JSON > "$AUDIT_FILE"
 {
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "agent": "Bauer",
-  "scanned_files": "$SCANNED_COUNT",
-  "issue_count": "$FAILED_COUNT",
-  "exit_code": "$EXIT_CODE",
-  "status": "$([ "$EXIT_CODE" -eq 0 ] && echo "PASS" || echo "FAIL")",
-  "mode": "$([ "$FIX_MODE" = true ] && echo "remediate" || echo "validate")"
+  "scanned_files": $SCANNED_COUNT,
+  "critical_count": $crit_count,
+  "warning_count": $warn_count,
+  "exit_code": $EXIT_CODE,
+  "status": "$bauer_status",
+  "mode": "$([ "$FIX_MODE" = true ] && echo "remediate" || echo "validate")",
+  "violations": $violations
 }
 JSON
     
-    if [ "$EXIT_CODE" -ne 0 ]; then
-        echo -e "${RED}❌ Bauer: YAML Validation Failed ($FAILED_COUNT issues). See $AUDIT_FILE${NC}"
+    if [ "$bauer_status" = "fail" ]; then
+        echo -e "${RED}❌ Bauer: YAML Validation Failed ($crit_count errors). See $AUDIT_FILE${NC}"
     else
         echo -e "${GREEN}✅ Bauer: YAML Validation Passed ($SCANNED_COUNT files checked).${NC}"
     fi

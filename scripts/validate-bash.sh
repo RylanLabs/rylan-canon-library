@@ -22,6 +22,34 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # ============================================================================
+# BAUER COMPLIANCE ARTIFACTS
+# ============================================================================
+# shellcheck disable=SC2317
+cleanup() {
+  local status=$?
+  local bauer_status="pass"
+  local violations="[]"
+
+  if [ "$status" -ne 0 ]; then
+    bauer_status="fail"
+    violations='[{"severity": "critical", "type": "bash_validation", "message": "Bash static analysis failed (shellcheck/shfmt)"}]'
+  fi
+
+  mkdir -p .audit
+  cat <<JSON > ".audit/validate-bash.json"
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "agent": "Bauer",
+  "type": "bash_validation",
+  "status": "$bauer_status",
+  "violations": $violations
+}
+JSON
+}
+
+trap cleanup EXIT
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 

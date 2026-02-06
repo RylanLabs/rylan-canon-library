@@ -1,14 +1,14 @@
 # Eternal Glue — RylanLabs Homelab Edition
-> Minimal immutable artifacts enforcing Hellodeolu v6 outcomes
+> Minimal immutable artifacts enforcing Hellodeolu v7 outcomes
 > Canonical standard — RylanLabs eternal standard
-> Date: December 20, 2025
+> Date: February 6, 2026
 > Agent: Trinity (Carter → Bauer → Beale)
 > Ministry: bootstrap + verification + hardening
 **Status**: 🔒 Locked — Trinity consensus required for changes
 
 ---
 ## Purpose
-The **Eternal Glue** defines the **minimal, immutable set of principles and artifacts** that must exist across all RylanLabs repositories. These standards are **sacred** — their presence and integrity guarantee Hellodeolu v6 outcomes and Seven Pillar compliance.
+The **Eternal Glue** defines the **minimal, immutable set of principles and artifacts** that must exist across all RylanLabs repositories. These standards are **sacred** — their presence and integrity guarantee Hellodeolu v7 outcomes and Seven Pillar compliance.
 They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive validation)** into a cohesive discipline framework while remaining small, verifiable, and junior-at-3-AM proof.
 **Why Eternal**:
 - **Minimalism**: Core principles distilled to essentials. No bloat.
@@ -52,7 +52,7 @@ They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive
 ### 3. Harden and Detect (Beale Ministry — hardening)
 **Principle**: Principle of least privilege. Disable unnecessary services. Detect breaches early.
 **Immutable Requirements**:
-- Firewall rules minimal and documented (≤10 rules per context)
+- Firewall rules minimal and documented (hardware-appropriate minimalism)
 - SSH hardening enforced (sshd -T runtime validation)
 - Services isolated by function (containers, VLANs, or network segmentation)
 - IDS/IPS active for lateral movement detection
@@ -124,8 +124,8 @@ They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive
 **Why Sacred**: Understanding is the foundation of discipline. Blind automation creates fragility.
 
 ---
-### 8. Hellodeolu v6 Alignment
-**Principle**: All repos target v6: Holistic Discipline.
+### 8. Hellodeolu v7 Alignment
+**Principle**: All repos target v7: Autonomous Discipline.
 **Immutable Requirements**:
 - Complete integration of all pillars, agents, and ministries
 - Human-centered confirmation gates for all critical operations
@@ -137,7 +137,12 @@ They bind the **Trinity (Carter → Bauer → Beale)** and **Whitaker (offensive
 - Script headers declare maturity level
 - CI validates maturity level requirements
 - Operational: RTO validated in production
-**Why Sacred**: Hellodeolu v6 is the target state. Everything else is scaffolding.
+**Why Sacred**: Hellodeolu v7 is the target state. Everything else is scaffolding.
+
+**Changelog (Consensus Date: 2026-02-06)**:
+- Migrated SSOT from v6 (Holistic) to v7 (Autonomous).
+- Removed static USG-3P rule count limits (≤10) in favor of hardware-appropriate minimalism.
+- Consensus reached by Trinity Council for Fortress-Velocity Phase -1.
 
 ---
 ## Enforcement Mechanisms

@@ -1,0 +1,18 @@
+# Whitaker-Ignore Manifest (Fortress-Velocity)
+# Whitelist of safe "ghost" files (untracked but expected)
+# Used by validate-ml5-scorecard.sh (Test 8)
+
+ignorable_paths:
+  - ".tmp/"
+  - "build/"
+  - ".pytest_cache/"
+  - ".mypy_cache/"
+  - ".ruff_cache/"
+  - "dist/"
+  - "*.pyc"
+  - "__pycache__/"
+  - ".audit/agent-run-last.json"
+  - ".audit/ci-summary.json"
+  - ".audit/audit-trail.jsonl"
+  - ".audit/audit-trail.jsonl.asc"
+  - ".audit/validate-*.json"

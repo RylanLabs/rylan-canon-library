@@ -2,10 +2,10 @@
 
 > Complete guide to adopting RylanLabs canon patterns, templates, and standards in your project
 
-**Version**: 4.6.0  
-**Last Updated**: 2025-12-22  
+**Version**: 4.7.0  
+**Last Updated**: 2026-02-06  
 **Guardian**: Trinity (Carter/Bauer/Beale)  
-**Compliance**: Seven Pillars, Hellodeolu v6, T3-ETERNAL v1.0.0  
+**Compliance**: Seven Pillars, Hellodeolu v7, T3-ETERNAL v1.1.0  
 
 ---
 
@@ -23,7 +23,9 @@
 
 ## Overview
 
-The canon library provides production-grade patterns and templates aligned with the **Seven Pillars** of code quality:
+The canon library provides production-grade patterns and templates aligned with the **Seven Pillars** of code quality.
+
+**Note**: This guide is currently being evolved under the **Fortress-Velocity** plan to support ML5 Autonomous governance and advanced Guardian summoning.
 
 | Pattern | Type | Location | Purpose |
 |---------|------|----------|---------|
