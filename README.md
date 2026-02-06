@@ -4,12 +4,28 @@
 > Version: v2.1.0 (Mesh-Aligned)
 > Status: ✅ PRODUCTION
 
+## Repository Metadata
+
+| Attribute | Value |
+| :--- | :--- |
+| **Tier** | 0 (Canonical Standards) |
+| **Type** | Governance (rylan-*) |
+| **Naming Convention** | \`rylan-canon-library\` |
+| **Dependencies** | None (Root) |
+| **Maturity Level** | 5 (Autonomous) |
+| **Status** | Production |
+| **Guardian** | Trinity Council |
+| **Ministry** | Oversight |
+
 ## Overview
 
-The `rylan-canon-library` is the Tier 0 anchor for the RylanLabs Mesh. It defines the philosophical pillars, operational standards, and shared abstractions (common.mk) consumed by all other repositories in the mesh.
+The \`rylan-canon-library\` is the Tier 0 anchor for the RylanLabs Mesh. It defines the philosophical pillars,
+operational standards, and shared abstractions (\`common.mk\`) consumed by all other repositories in the mesh.
 
 ### The Paradigm Shift
-We have moved from static documentation to a **federated meta-GitOps mesh**. In this environment, the `Makefile` is the entry point, and `ansible` is the infrastructure execution layer.
+
+We have moved from static documentation to a **federated meta-GitOps mesh**. In this environment,
+the \`Makefile\` is the entry point, and \`ansible\` is the infrastructure execution layer.
 
 ---
 
@@ -38,16 +54,25 @@ We have moved from static documentation to a **federated meta-GitOps mesh**. In 
 ## Quick Start
 
 ### 1. Warm the session (Identity)
+
 ```bash
 make warm-session
 ```
 
 ### 2. Validate current state (Verification)
+
 ```bash
 make validate
 ```
 
-### 3. Initialize a new Mesh repository
+### 3. Publish to Galaxy (Extraction)
+
+```bash
+make publish ARGS="--dry-run"
+```
+
+### 4. Initialize a new Mesh repository
+
 ```bash
 ./scripts/repo-init.sh my-new-repo
 ```
@@ -71,7 +96,10 @@ The library provides autonomous validators that enforce the "No-Bypass" culture:
 | Script | Agent | Mission | Features |
 | :--- | :--- | :--- | :--- |
 | `validate-sops.sh` | Whitaker | Secret Integrity | MAC verification, Key rotation checks |
+| `validate-gitmodules.sh` | Beale | Substrate Hardening | URL allow-listing (RylanLabs only) |
+| `whitaker-detached-head.sh` | Whitaker | Offense Discovery | Blocks detached HEAD commits; Lazarus recovery |
 | `validate-yaml.sh` | Bauer/Lazarus | Config Discipline | Auto-remediation, JSON audits, Heritage checks |
+| `sync-canon.sh` | Bauer | Cascade Sync | GPG verification, T0-T1 ordering, Audit trails |
 | `validate-bash.sh` | ShellCheck | Logic Hardening | POSIX compliance, Trap enforcement |
 
 ### Using the YAML Validator

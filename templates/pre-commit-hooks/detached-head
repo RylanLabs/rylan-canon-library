@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Auto-generated from rylan-canon-library
+# DO NOT EDIT - Sync via: make sync-deps
+
+# Deterministic Path Calculation
+CANON_LIB="${CANON_LIB_PATH:-.rylan/rylan-canon-library}"
+
+# Execute Whitaker Gate
+if [[ -f "$CANON_LIB/scripts/whitaker-detached-head.sh" ]]; then
+    bash "$CANON_LIB/scripts/whitaker-detached-head.sh"
+else
+    echo "⚠️  Whitaker Gate Warning: $CANON_LIB/scripts/whitaker-detached-head.sh not found."
+    echo "   Ensure CANON_LIB_PATH is correctly set in your environment or Makefile."
+fi

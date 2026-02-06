@@ -5,51 +5,57 @@
 
 -include common.mk
 
-.PHONY: all help validate clean warm-session org-audit mesh-man mesh-remediate repo-init cascade publish fetch reconcile
+.PHONY: all help warm-session mesh-man repo-init reconcile clean test
 
 all: help
-
-help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 warm-session: ## Establish 8-hour password-less GPG session (Asymmetric Warm)
 	@chmod +x scripts/warm-session.sh
 	@./scripts/warm-session.sh
 
-validate: ## Run Whitaker/Sentinel compliance gates (Security/Linter)
-	@chmod +x scripts/validate.sh
-	@./scripts/validate.sh
+sync-deps: ## Sync dependencies with tier cascade and GPG validation | guardian: Bauer
+	@$(call log_info, Syncing dependencies...)
+	@START=$$(date +%s%3N); \
+	chmod +x scripts/sync-canon.sh; \
+	./scripts/sync-canon.sh --gpg-verify --validate-cascade && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,sync-deps,Bauer,$$STATUS,$$((END-START)),Mesh dependencies synchronized); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-org-audit: ## Multi-repo compliance scan (Whitaker)
-	@chmod +x scripts/org-audit.sh
-	@./scripts/org-audit.sh
+mesh-man: ## Regenerate MESH-MAN.md operational manual | guardian: Carter | timing: 10s
+	@$(call log_info, Regenerating MESH-MAN.md)
+	@START=$$(date +%s%3N); \
+	chmod +x scripts/generate-mesh-man.sh; \
+	./scripts/generate-mesh-man.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,mesh-man,Carter,$$STATUS,$$((END-START)),MESH-MAN manual updated); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-mesh-man: ## Generate MESH-MAN.md coverage documentation
-	@chmod +x scripts/generate-mesh-man.sh
-	@./scripts/generate-mesh-man.sh
+repo-init: ## Bootstrap new repositories to RylanLabs standards | guardian: Lazarus | timing: 2m
+	@$(call log_info, Bootstrapping new repository)
+	@START=$$(date +%s%3N); \
+	chmod +x scripts/repo-init.sh; \
+	./scripts/repo-init.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,repo-init,Lazarus,$$STATUS,$$((END-START)),Repo scaffolded); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-mesh-remediate: ## Force drift back to green (Lazarus)
-	@chmod +x scripts/mesh-remediate.sh
-	@./scripts/mesh-remediate.sh
+naming-audit: ## Run organizational naming audit (Bauer) | timing: 10s
+	@chmod +x scripts/audit-naming-convention.sh
+	@./scripts/audit-naming-convention.sh
 
-repo-init: ## Bootstrap new repositories to RylanLabs standards
-	@chmod +x scripts/repo-init.sh
-	@./scripts/repo-init.sh
+naming-fix-interactive: ## Interactively fix naming violations (Whitaker) | timing: 30s
+	@chmod +x scripts/rename-to-kebab.sh
+	@./scripts/rename-to-kebab.sh --apply
 
-cascade: ## Topic-driven secret distribution (Beale)
-	@chmod +x scripts/publish-cascade.sh
-	@./scripts/publish-cascade.sh --cascade
+naming-fix-auto: ## Automated naming fix for CI (no-bypass) | timing: 30s
+	@chmod +x scripts/rename-to-kebab.sh
+	@RENAME_ASSUME_YES=true ./scripts/rename-to-kebab.sh --apply
 
-reconcile: ## Meta-GitOps: Declarative state reconciliation
-	@echo "Reconciling state via consensus engine..."
-	@python3 scripts/audit-consensus-engine.py
-
-publish: validate ## Heartbeat: Sign, Tag, and Push (Carter)
-	@git add .
-	@read -p "Commit message: " msg; \
-	git commit -S -m "$$msg"
-	@git tag -s v$$(date +%G.%V.%u) -m "Mesh heartbeat"
-	@git push origin main --tags
-
-clean: ## Clean local artifacts
-	@rm -rf .cache/ .tmp/ .audit/*
+clean: ## Remove temporary audit files and logs | guardian: Lazarus | timing: 5s
+	@$(call log_info, Cleaning temporary files)
+	@START=$$(date +%s%3N); \
+	rm -rf .audit/*.tmp .audit/audit-trail.jsonl && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,clean,Lazarus,$$STATUS,$$((END-START)),Cleanup completed); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi

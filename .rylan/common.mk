@@ -5,6 +5,7 @@
 # --- Constants ---
 DOMAIN_NAME := rylanlabs.io
 GPG_KEY_ID  := F5FFF5CB35A8B1F38304FC28AC4A4D261FD62D75
+CANON_ROOT  ?= .
 
 # --- Terminal Styling ---
 B_CYAN  := \033[1;36m
@@ -14,15 +15,15 @@ NC      := \033[0m
 
 # --- Shared Helpers ---
 define log_info
-	@echo "$(B_CYAN)[INFO]$(NC) $(1)"
+	echo "$(B_CYAN)[INFO]$(NC) $(1)"
 endef
 
 define log_success
-	@echo "$(B_GREEN)[OK]$(NC) $(1)"
+	echo "$(B_GREEN)[OK]$(NC) $(1)"
 endef
 
 define log_error
-	@echo "$(B_RED)[FAIL]$(NC) $(1)"
+	echo "$(B_RED)[FAIL]$(NC) $(1)"
 endef
 
 # --- Common Targets ---
@@ -32,36 +33,81 @@ help: ## Show shared targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(lastword $(MAKEFILE_LIST)) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 resolve: ## Materialize symlinks for Windows/WSL/CI compatibility (Agnosticism Pattern)
-	@$(call log_info, "Materializing symlinks to literal files...")
+	@$(call log_info, Materializing symlinks to literal files)
 	@find . -type l -not -path '*/.*' -exec bash -c 'target=$$(readlink -f "{}"); rm "{}"; cp -r "$$target" "{}"' \;
-	@$(call log_success, "Symlinks materialized.")
+	@$(call log_success, Symlinks materialized.)
 
 re-init: ## Re-sync repository with Canon Hub symlinks (Lazarus)
-	@$(call log_info, "Re-syncing with Canon Hub...")
+	@$(call log_info, Re-syncing with Canon Hub)
 	@../rylan-canon-library/scripts/auto-migrate.sh
 
-validate: ## Run standard Whitaker gates
-	@$(call log_info, "Checking mandatory files...")
-	@for file in Makefile README.md .gitleaks.toml; do \
-		if [ ! -f "$$file" ]; then \
-			$(call log_error, "Missing $$file"); \
-			exit 1; \
-		fi; \
-	done
-	@$(call log_success, "Basic scaffolding valid.")
+validate: ## Run standard Whitaker gates (Validator Suite)
+	@$(call log_info, Running Whitaker Compliance Gates...)
+	@if [ -x scripts/validate.sh ]; then \
+		./scripts/validate.sh; \
+	else \
+		$(call log_info, No scripts/validate.sh found, performing basic check...); \
+		for file in Makefile README.md .gitleaks.toml; do \
+			if [ ! -f "$$file" ]; then \
+				$(call log_error, Missing $$file); \
+				exit 1; \
+			fi; \
+		done; \
+		$(call log_success, Basic scaffolding valid.); \
+	fi
 
 publish: ## Sync state to mesh (Carter)
-	@$(call log_info, "Publishing state to mesh...")
+	@$(call log_info, Publishing state to mesh)
 	@./scripts/publish-cascade.sh
 
 cascade: ## Distribute secrets/state through mesh (Beale)
-	@$(call log_info, "Cascading mesh updates...")
+	@$(call log_info, Cascading mesh updates)
 	@./scripts/publish-cascade.sh --cascade
 
 org-audit: ## Multi-repo compliance scan (Whitaker)
-	@$(call log_info, "Starting organizational audit...")
+	@$(call log_info, Starting organizational audit)
 	@./scripts/org-audit.sh
 
 mesh-remediate: ## Force drift back to green (Lazarus)
-	@$(call log_info, "Remediating mesh drift...")
+	@$(call log_info, Remediating mesh drift)
 	@./scripts/mesh-remediate.sh
+
+##@ Maturity Level 5 Validation
+
+.PHONY: ml5-validate ml5-init ml5-report
+
+ml5-init: ## Initialize ML5 scorecard from template
+	@$(call log_info, Initializing ML5 Scorecard)
+	@mkdir -p .audit/
+	@if [ ! -f .audit/maturity-level-5-scorecard.yml ]; then \
+		cp templates/ml5-scorecard.yml .audit/maturity-level-5-scorecard.yml 2>/dev/null || cp $(CANON_ROOT)/templates/ml5-scorecard.yml .audit/maturity-level-5-scorecard.yml; \
+		repo_name=$$(basename "$$(pwd)"); \
+		sed -i "s/repository: .*/repository: $$repo_name/" .audit/maturity-level-5-scorecard.yml 2>/dev/null || true; \
+		sed -i "s/date_assessed: .*/date_assessed: $$(date -u +%Y-%m-%dT%H:%M:%SZ)/" .audit/maturity-level-5-scorecard.yml; \
+		$(call log_success, Scorecard initialized at .audit/maturity-level-5-scorecard.yml); \
+	else \
+		$(call log_info, Scorecard already exists.); \
+	fi
+
+ml5-validate: ## Run ML5 scorecard validation drill
+	@$(call log_info, Running ML5 Validation Drill)
+	@./scripts/validate-ml5-scorecard.sh .audit/maturity-level-5-scorecard.yml
+
+ml5-report: ## Generate ML5 compliance report
+	@$(call log_info, ML5 Compliance Report)
+	@if [ -f $(CANON_ROOT)/scripts/ml5-report-helper.py ]; then \
+		python3 $(CANON_ROOT)/scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml; \
+	elif [ -f scripts/ml5-report-helper.py ]; then \
+		python3 scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml; \
+	else \
+		$(call log_error, ml5-report-helper.py not found); \
+	fi
+
+##@ Resilience & Reversibility (Lazarus)
+
+.PHONY: rollback-canon
+
+rollback-canon: ## Revert Phase 0 injection (Emergency Only)
+	@$(call log_info, Reverting Phase 0 TSH injection)
+	@git checkout main -- docs/architecture/ docs/seven-pillars.md docs/README.md canon-manifest.yaml Makefile common.mk
+	@$(call log_success, Phase 0 injection reverted to main state.)

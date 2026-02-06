@@ -22,6 +22,22 @@ repos:
   # Local validators (from rylan-canon-library)
   - repo: local
     hooks:
+      - id: whitaker-detached-head
+        name: Whitaker Gate - Detached HEAD Protection
+        entry: bash scripts/whitaker-detached-head.sh
+        language: script
+        stages: [commit]
+        always_run: true
+        pass_filenames: false
+
+      - id: validate-naming-convention
+        name: Naming Convention - Kebab-Case Discipline
+        entry: bash scripts/validate-naming-convention.sh
+        language: script
+        files: \.md$
+        pass_filenames: false
+        stages: [commit]
+
       - id: validate-python
         name: Python validation (mypy + ruff + bandit)
         entry: bash scripts/validate-python.sh

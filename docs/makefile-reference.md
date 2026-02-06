@@ -128,22 +128,24 @@ Runs validators + pytest with coverage:
 **Usage**:
 ```bash
 make ci-local
-
-# Output:
-# Running Python validation...
-# ... validators ...
-# Running pytest with coverage...
-# ===== test session starts =====
-# collected X items
-# ... tests pass ...
-# ===== coverage report =====
-# TOTAL ... 70% (or higher)
-# ✅ CI simulation complete
 ```
 
-**When to use**: Before pushing to GitHub, to verify full CI pipeline locally.
+### Publishing Targets
 
-**Time**: ~1-2 minutes
+#### `make publish` — Sync state to mesh (Carter)
+
+High-assurance gate for Ansible Galaxy collection publishing or state distribution.
+
+**Options**:
+- `ARGS="--dry-run"`: Build artifacts and run pre-flight checks (linting, versioning) without pushing.
+- `ARGS="--force"`: Skip human confirmation gate (safe for automated drift correction).
+
+**Guardians**:
+- **Carter**: Handles identity and token discovery.
+- **Bauer**: Verifies artifacts and linting results.
+- **Beale**: Hardens the transmission process.
+
+**Audit**: Logs results to `.audit/publish-gate.jsonl`.
 
 ---
 

@@ -134,7 +134,24 @@ log_success "VLAN 10 created"
 
 ---
 
+### 8. Tiered Governance
+
+**Principle**: All repositories must align with the canonical Tiered Satellite Hierarchy (TSH).
+
+**Why**: Eliminates technical debt at scale by enforcing standardized naming, dependency management,
+and validation gates across the mesh.
+
+**Canon**:
+
+- **Tier Assignment**: Every repo declares its tier (0-4) in README.md.
+- **Dependency Management**: Use Git submodules for cross-tier dependencies.
+- **Naming Convention**: Follow \`rylan-labs-\` (infrastructure) or \`rylanlabs-\` (services).
+- **ML5 Compliance**: Quarterly scorecard validation for autonomous status.
+
+---
+
 **Trinity Alignment**:
+
 1. **Carter**: Identity (Idempotency, Documentation)
 2. **Bauer**: Verification (Error Handling, Validation)
 3. **Beale**: Hardening (Audit Logging, Security)
@@ -142,6 +159,7 @@ log_success "VLAN 10 created"
 5. **Lazarus**: Recovery (Reversibility)
 
 **Hellodeolu v7 Outcomes**:
+
 - Junior-at-3-AM deployable
 - Maturity Level 5 (Autonomous)
 - Dynamic Mesh Reconciliation

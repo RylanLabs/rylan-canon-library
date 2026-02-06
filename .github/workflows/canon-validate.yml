@@ -9,7 +9,7 @@
 #
 # ACTIVE WORKFLOW: Validates canon library meets its own standards before adoption
 # TEMPLATE REFERENCE: See .github/workflows/templates/trinity-ci-template.yml
-# INTEGRATION GUIDE: See docs/INTEGRATION_GUIDE.md for downstream adoption
+# INTEGRATION GUIDE: See docs/integration-guide.md for downstream adoption
 
 ---
 name: Canon Self-Validation

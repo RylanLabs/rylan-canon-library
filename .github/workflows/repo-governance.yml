@@ -23,7 +23,7 @@ jobs:
           # For now, we use git log to check for [gpg: good signature]
           # This requires the runner to have the public keys, which is a Phase 4 step.
           # We'll stub the check to pass if signatures are present, or fail loud if missing.
-          SIGNED_COMMITS=$(git log ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} --show-signature | grep "gpg: Good signature" | wc -l || echo 0)
+          SIGNED_COMMITS=$(git log ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} --show-signature | grep "gpg: Good signature" | wc -l || echo 0)  # noqa
           TOTAL_COMMITS=$(git rev-list --count ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
 
           if [ "$SIGNED_COMMITS" -lt "$TOTAL_COMMITS" ]; then

@@ -98,6 +98,10 @@ log_pass "Environment ready"
 log_section "PHASE 2: Running mypy strict type checking"
 log_info "Paths: $MYPY_PATHS"
 
+# Add repository root to PYTHONPATH so mypy can resolve local modules and collections
+PYTHONPATH="${PYTHONPATH:-}:$(pwd)"
+export PYTHONPATH
+
 if ! find "$MYPY_PATHS" -name "*.py" | grep -q .; then
   log_info "No Python files found, skipping mypy"
 else
@@ -123,13 +127,14 @@ log_pass "mypy validation passed"
 log_section "PHASE 3: Running ruff linting"
 log_info "Paths: $RUFF_PATHS"
 
-if ! ruff check "$RUFF_PATHS"; then
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+if ! ruff check "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"; then
   log_error "ruff linting failed"
   echo ""
   log_warn "Auto-fix attempt:"
   echo "  ruff check --fix $RUFF_PATHS"
   echo ""
-  if ruff check --fix "$RUFF_PATHS" 2> /dev/null; then
+  if ruff check --fix "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml" 2> /dev/null; then
     log_info "Auto-fix successful - review changes and retry"
   fi
   exit 1
@@ -144,13 +149,13 @@ log_pass "ruff linting passed"
 log_section "PHASE 4: Checking ruff formatting"
 log_info "Paths: $RUFF_PATHS"
 
-if ! ruff format --check "$RUFF_PATHS"; then
+if ! ruff format --check "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"; then
   log_error "ruff formatting check failed"
   echo ""
   log_warn "Auto-fix attempt:"
   echo "  ruff format $RUFF_PATHS"
   echo ""
-  ruff format "$RUFF_PATHS"
+  ruff format "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"
   log_info "Formatting applied - please review and retry"
   exit 1
 fi
@@ -164,7 +169,7 @@ log_pass "ruff formatting passed"
 log_section "PHASE 5: Running bandit security scan"
 log_info "Paths: $MYPY_PATHS (level: low-level only)"
 
-if bandit -r "$MYPY_PATHS" -ll --quiet; then
+if bandit -r "$MYPY_PATHS" -ll --exclude "tests/*,*/test_*.py" --quiet; then
   log_pass "bandit security scan passed"
 else
   log_warn "Potential security issues detected (low-level)"

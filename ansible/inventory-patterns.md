@@ -407,7 +407,7 @@ ansible-playbook -i scripts/unifi-dynamic-inventory.py playbooks/manage-vlans.ym
 
 ```bash
 export UNIFI_URL="https://192.168.1.50:8443"
-export UNIFI_API_KEY="REDACTED_RYLANLABS_TOKEN_v1"
+export UNIFI_API_KEY="<vault-managed-api-token>"
 export UNIFI_SITE_ID="default"
 ```
 

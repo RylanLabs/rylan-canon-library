@@ -1,0 +1,22 @@
+---
+devices:
+  CORE-GATEWAY:
+    hostname: "CORE-GATEWAY"
+    mac: "00:11:22:33:44:55"
+    ip: "192.168.1.1"
+    role: "gateway"
+    tier: "T1"
+
+  ACCESS-POINT-01:
+    hostname: "ACCESS-POINT-01"
+    mac: "AA:BB:CC:DD:EE:FF"
+    ip: "192.168.1.20"
+    role: "access-point"
+    tier: "T2"
+
+  IOT-DEVICE-01:
+    hostname: "IOT-DEVICE-01"
+    mac: "11:22:33:44:55:66"
+    ip: "10.0.90.100"
+    role: "iot"
+    tier: "T4"

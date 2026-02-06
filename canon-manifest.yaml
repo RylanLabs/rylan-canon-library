@@ -15,6 +15,10 @@
 
 manifest_version: "1.0.0"  # SemVer; bump on structural changes.
 
+# List of upstream repositories this repository inherits from.
+# Higher index = Higher priority (Cascading sync: T0 -> T0.5 -> T1 -> ...).
+dependencies: []
+
 ministries:
   - ansible
   - security
@@ -23,9 +27,36 @@ ministries:
   - playbook
   - rotation
   - validation  # Cross-cutting for linting/scripts
-  - orchestration # Agent definitions and instructions
+  - orchestration  # Agent definitions and instructions
+  - architecture  # Tiered Satellite Hierarchy SSOT
 
 sacred_files:
+  architecture:
+    - src: docs/architecture/tiered-satellite-master-index.md
+      dest: docs/architecture/tiered-satellite-master-index.md
+      immutable: true
+      description: "Master index for the mesh; ties all documents together (Bauer: Verification)."
+    - src: docs/architecture/tiered-satellite-hierarchy-canonical.md
+      dest: docs/architecture/tiered-satellite-hierarchy-canonical.md
+      immutable: true
+      description: "Canonical technical specification for TSH (Carter: Identity; Bauer: Verification)."
+    - src: docs/architecture/tiered-satellite-hierarchy-executive-summary.md
+      dest: docs/architecture/tiered-satellite-hierarchy-executive-summary.md
+      immutable: true
+      description: "Executive summary for stakeholders; contains ASCII architecture (Carter: Standards)."
+    - src: docs/architecture/tiered-satellite-synthesis-analysis.md
+      dest: docs/architecture/tiered-satellite-synthesis-analysis.md
+      immutable: true
+      description: "Synthesis of Grok/Leo feedback and risk mitigations (Whitaker: Adversarial Risk)."
+    - src: docs/architecture/tiered-satellite-quick-reference.md
+      dest: docs/architecture/tiered-satellite-quick-reference.md
+      immutable: true
+      description: "Developer cheat sheet; contains naming conventions and shortcuts (Carter: Identity)."
+    - src: docs/architecture/tiered-satellite-action-checklist.md
+      dest: docs/architecture/tiered-satellite-action-checklist.md
+      immutable: true
+      description: "Engineering roadmap and checklist for migration (Lazarus: Recovery/Transition)."
+
   ansible:
     - src: docs/ansible-vault-discipline.md
       dest: docs/ansible-vault-discipline.md
@@ -89,6 +120,10 @@ sacred_files:
       dest: scripts/validate-rotation-readiness.sh
       immutable: true
       description: "Bash validator for backups, encryption, inventory refs (Bauer: CI green required; Beale: Fail on gaps)."
+    - src: scripts/vault-backup.sh
+      dest: scripts/vault-backup.sh
+      immutable: true
+      description: "Creates timestamped backups of Ansible Vaults (Eternal Glue: Resilience)."
 
   validation:
     - src: templates/pre-commit-config.yaml.template
@@ -103,6 +138,14 @@ sacred_files:
       dest: scripts/validate-sops.sh
       immutable: true
       description: "Ensures secrets are encrypted before commit (Beale: Hardening)."
+    - src: scripts/validate-gitmodules.sh
+      dest: scripts/validate-gitmodules.sh
+      immutable: true
+      description: "Enforces URL allow-listing for submodules (Beale: Hardening)."
+    - src: scripts/whitaker-detached-head.sh
+      dest: scripts/whitaker-detached-head.sh
+      immutable: true
+      description: "Blocks commits in detached HEAD state (Whitaker: Adversarial)."
     - src: scripts/validate-bash.sh
       dest: scripts/validate-bash.sh
       immutable: true
@@ -123,6 +166,18 @@ sacred_files:
       dest: scripts/sentinel-expiry.sh
       immutable: true
       description: "Identity key expiry tracking (Sentinel: Security Guardian)."
+    - src: .gitleaks.toml
+      dest: .gitleaks.toml
+      immutable: true
+      description: "Gitleaks configuration for secret scanning."
+    - src: .gitleaksignore
+      dest: .gitleaksignore
+      immutable: true
+      description: "Ignore patterns/fingerprints for known false positives."
+    - src: scripts/ml5-report-helper.py
+      dest: scripts/ml5-report-helper.py
+      immutable: true
+      description: "Helper for ML5 compliance reporting (Bauer)."
     - src: templates/pyproject.toml.template
       dest: pyproject.toml
       immutable: false

@@ -1,0 +1,3 @@
+[submodule "rylan-labs-common"]
+	path = rylan-labs-common
+	url = https://github.com/RylanLabs/rylan-labs-common

@@ -6,6 +6,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [2.3.0-bauer] - 2026-02-06
+
+### ✨ Added: Submodule Substrate & Hardened Gates (Sprint 2)
+
+- **Carter Identity Anchoring**: GPG-signed baselines (`v1.0.0-canonical`) established for the mesh.
+- **Beale Hardening**: `validate-gitmodules.sh` enforces RylanLabs URL allow-listing for submodules.
+- **Whitaker Guard**: `whitaker-detached-head.sh` prevents orphaned commits and enforces branch discipline.
+- **Bauer Sync**: `sync-canon.sh` upgraded with `--gpg-verify`, cascade validation (T0-T1 ordering), and JSON audit trails.
+- **Sentinel Hot-Sync**: `sentinel-sync.yml` implemented for 15-minute autonomous drift remediation.
+- **Lazarus Resilience**: `lazarus-drill.sh` materialized for automated recovery testing.
+- **Documentation**: New `dependency-discipline.md` standard for "plug/unplug" inheritance.
+
+---
+
+## [2.2.0-common] - 2026-02-05
+
+### ✨ Added: Bauer/Carter Logic Extraction (Sprint 1)
+
+- **UniFi API Internalization**: Ported 2,000+ lines of production logic from `network-iac`.
+- **JWT Auth & Circuit Breaker**: Restored production-grade auth and resilience logic.
+- **Audit Substrate**: Materialized `rylan_audit_logger.py` for Pillar 4 compliance.
+- **Testing**: Reached 93% coverage on UniFi utilities and 100% on Audit Logger.
+- **Maturity**: Cross-mesh ML5 score reached 7.2 (Autonomous Threshold).
+
+---
+
 ## [2.1.0-mesh] - 2026-02-04
 
 ### ✨ Added: Mesh Infrastructure (Hellodeolu v7 Alignment)
@@ -183,7 +209,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
   - Performance considerations (caching)
   - Migration path from static-only inventory
 
-- **ansible/ansible.cfg-reference.md** (14.7K)
+- **ansible/ansible-cfg-reference.md** (14.7K)
   - Canonical ansible.cfg configuration
   - Connection and SSH optimization
   - Performance tuning (pipelining, caching, forks)
@@ -237,7 +263,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ### 🔒 Security Enhancements
 
-- ✅ Vault integration documented (ansible/ansible.cfg-reference.md)
+- ✅ Vault integration documented (ansible/ansible-cfg-reference.md)
 - ✅ SSH key management best practices (ED25519 recommended)
 - ✅ Bandit security scanning configured (low-level warnings only)
 - ✅ ShellCheck static analysis enabled (SC2086 quoting rules)

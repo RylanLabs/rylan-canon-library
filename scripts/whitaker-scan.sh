@@ -55,6 +55,22 @@ if [ -d "vaults/" ]; then
     done < <(find vaults/ -name "*.yml" -exec grep -l "sops" {} + 2>/dev/null || true)
 fi
 
+# 2.1 Gitmodules Integrity Check
+if [[ -f ".gitmodules" ]]; then
+    echo "🔍 Checking Gitmodules integrity..."
+    if ! bash scripts/validate-gitmodules.sh >/dev/null 2>&1; then
+        echo "❌ ADVERSARIAL DETECTION: Gitmodules URL Allow-list violation!"
+        FAILED=1
+    fi
+fi
+
+# 2.2 Naming Convention Checklist (Kebab-Case Discipline)
+echo "🔍 Checking naming conventions..."
+if ! bash scripts/validate-naming-convention.sh >/dev/null 2>&1; then
+    echo "❌ ADVERSARIAL DETECTION: Naming convention violation detected!"
+    FAILED=1
+fi
+
 # 3. Signature Enforcement (Last 5 commits)
 if git rev-parse --git-dir &>/dev/null; then
     echo "🔍 Checking recent commit signatures..."
@@ -64,6 +80,12 @@ if git rev-parse --git-dir &>/dev/null; then
             # Note: We warn but don't fail for signatures in local dev to avoid blocking bootstrap
         fi
     done
+
+    # 3.1 Detached HEAD Protection (Permit GITHUB_ACTIONS or explicit bypass)
+    if ! git symbolic-ref -q HEAD &>/dev/null && [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
+        echo "❌ ADVERSARIAL DETECTION: Detached HEAD state detected!"
+        FAILED=1
+    fi
 fi
 
 # 4. Symlink SSOT Enforcement (Sacred Scripts)
@@ -77,11 +99,14 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
       "validate-python.sh"
       "validate-ansible.sh"
       "validate-sops.sh"
+      "validate-gitmodules.sh"
       "whitaker-scan.sh"
       "sentinel-expiry.sh"
       "warm-session.sh"
       "playbook-structure-linter.py"
       "verify-workflows.sh"
+      "whitaker-anomaly-detector.py"
+      "whitaker-detached-head.sh"
     )
     
     for script in "${SACRED_SCRIPTS[@]}"; do
@@ -91,6 +116,14 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
             # FAILED=1
         fi
     done
+fi
+
+# 5. Live Anomaly Detection (UniFi)
+if [[ -f "scripts/whitaker-anomaly-detector.py" && -n "${UNIFI_HOST:-}" ]]; then
+    echo "🔍 Running Live Anomaly Detection..."
+    if ! python3 scripts/whitaker-anomaly-detector.py; then
+        FAILED=1
+    fi
 fi
 
 if [ "$FAILED" -ne 0 ]; then

@@ -3,10 +3,10 @@ name: Sentinel Loop (Bauer/Whitaker)
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Midnight UTC nightly
+    - cron: '0 0 * * *'  # Midnight UTC nightly
   repository_dispatch:
     types: [mesh-sync, satellite-drift]
-  workflow_dispatch: # Manual trigger for ad-hoc reconciliation
+  workflow_dispatch:  # Manual trigger for ad-hoc reconciliation
 
 jobs:
   reconcile:
@@ -31,7 +31,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Perform Mesh Remediation
-        if: always() # Run remediation if audit fails or finds drift
+        if: always()  # Run remediation if audit fails or finds drift
         run: ./scripts/mesh-remediate.sh
         env:
           GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
@@ -42,6 +42,21 @@ jobs:
           mkdir -p .audit
           # This will be populated by org-audit.sh in Phase 2
           echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"status\": \"completed\"}" > .audit/latest-run.json
+
+      - name: Emit Mesh Heartbeat (Zero Trust Pulse)
+        if: success()
+        run: ./scripts/mesh-heartbeat.sh --tag
+        env:
+          GPG_TTY: $(tty)
+          # Note: In CI, you would use a secret GPG key imported via gpg-agent
+
+      - name: Verify Audit Signatures
+        run: ./scripts/mesh-heartbeat.sh --verify
+
+      - name: Rotate Audit Logs
+        run: ./scripts/rotate-audit.sh
+        env:
+          RETENTION_DAYS: 14
 
       - name: Upload Audit Artifacts
         if: always()

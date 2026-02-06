@@ -71,15 +71,15 @@ def main() -> None:
 
     try:
         data: dict[str, Any] = load_coverage()
-        if not validate_coverage(data):
-            sys.exit(1)
-
-        print("SUCCESS: API Coverage within threshold.")
-        sys.exit(0)
-
-    except Exception as e:
-        print(f"ERROR: Audit failed - {e!s}")
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"ERROR: Failed to read coverage data: {e!s}")
         sys.exit(1)
+
+    if not validate_coverage(data):
+        sys.exit(1)
+
+    print("SUCCESS: API Coverage within threshold.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
