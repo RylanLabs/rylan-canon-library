@@ -389,8 +389,8 @@ rylan-canon-library/
 │   ├── ci-workflow-guide.md
 │   └── integration-guide.md (this file)
 ├── templates/
-│   ├── CONTRIBUTING-template.md
-│   └── README-template.md
+│   ├── contributing-template.md
+│   └── readme-template.md
 ├── .github/workflows/
 │   ├── canon-validate.yml (ACTIVE - validates canon)
 │   └── templates/

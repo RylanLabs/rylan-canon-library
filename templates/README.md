@@ -59,7 +59,7 @@ cp templates/script-template.sh my-new-script.sh
 
 ---
 
-### README-template.md
+### readme-template.md
 
 **Purpose**: Repository README with proper attribution and structure.
 
@@ -74,7 +74,7 @@ cp templates/script-template.sh my-new-script.sh
 
 **Usage**:
 ```bash
-cp templates/README-template.md ../your-new-repo/README.md
+cp templates/readme-template.md ../your-new-repo/README.md
 # Customize:
 # - Project name and purpose
 # - Installation steps
@@ -91,7 +91,7 @@ cp templates/README-template.md ../your-new-repo/README.md
 
 ---
 
-### CONTRIBUTING-template.md
+### contributing-template.md
 
 **Purpose**: Contribution guidelines for repositories using rylan-patterns.
 
@@ -105,7 +105,7 @@ cp templates/README-template.md ../your-new-repo/README.md
 
 **Usage**:
 ```bash
-cp templates/CONTRIBUTING-template.md ../your-new-repo/CONTRIBUTING.md
+cp templates/contributing-template.md ../your-new-repo/CONTRIBUTING.md
 # Customize:
 # - Project-specific requirements
 # - Review process details

@@ -57,8 +57,19 @@ validate_repo_tier() {
 validate_markdown_files() {
     log_info "Validating .md filenames..."
     
-    # Discovery: All .md files, excluding hidden dirs and submodules
-    FILES=$(find . -name "*.md" -not -path "*/.*" -not -path "./.rylan/*" -not -path "./rylan-labs-common/*")
+    # Discovery: All .md files, excluding hidden dirs, submodules, and transient artifacts
+    # We explicitly exclude rylan-labs-common (external repo) and test-satellite (test artifacts)
+    FILES=$(find . -maxdepth 4 -name "*.md" \
+        -not -path "*/.*" \
+        -not -path "./.rylan/*" \
+        -not -path "./rylan-labs-common/*" \
+        -not -path "./test-satellite/*" \
+        -not -path "./.tmp/*" \
+        -not -path "./.pytest_cache/*" \
+        -not -path "./builds/*" \
+        -not -path "*/node_modules/*" \
+        -not -path "*/venv/*" \
+        -not -path "*/.venv/*")
     
     echo "[]" > "$VIOLATIONS_JSON"
 
