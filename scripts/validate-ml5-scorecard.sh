@@ -88,6 +88,7 @@ log_audit() {
 JSON
 }
 
+# shellcheck disable=SC2317
 error_handler() {
     local line_no=$1
     local exit_code=$2
