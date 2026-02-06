@@ -22,9 +22,10 @@ These targets are the 'Eternal Glue' used across the mesh.
 | `inject-canon` | Inject Tier 0 Canon into satellite (Bootstrap) | N/A | Unknown |
 | `mesh-man` | Regenerate MESH-MAN.md operational manual | Carter | 10s |
 | `mesh-remediate` | Force drift back to green (Lazarus) | Lazarus | 5m |
-| `naming-audit` | Run organizational naming audit (Bauer) | N/A | 10s |
+| `naming-audit` | Run comprehensive naming audit (Bauer) | N/A | 15s |
 | `naming-fix-auto` | Automated naming fix for CI (no-bypass) | N/A | 30s |
-| `naming-fix-interactive` | Interactively fix naming violations (Whitaker) | N/A | 30s |
+| `naming-fix-interactive` | Interactive remediation UX (Whitaker) | N/A | 60s |
+| `naming-rollback` | Emergency rollback of naming changes | N/A | 30s |
 | `org-audit` | Multi-repo compliance scan (Whitaker) | Whitaker | 5m |
 | `publish` | Sync state to mesh (Carter) | Carter | 60s |
 | `re-init` | Re-sync repository with Canon Hub symlinks (Lazarus) | Lazarus | 20s |
@@ -56,5 +57,3 @@ make org-audit # Multi-repo scan
 - **Idempotency**: All targets must be safe to run repeatedly.
 - **Observability**: Every run produces an entry in `.audit/audit-trail.jsonl`.
 - **Junior-Deployable**: Descriptions must be clear enough for a Level 1 engineer.
-
-**Naming Discipline Status**: 0 violations as of 2026-02-06

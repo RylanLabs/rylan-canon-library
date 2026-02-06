@@ -21,7 +21,16 @@ echo "🛡️ Starting Mesh $MODE operation..."
 if [[ "$MODE" == "PUBLISH" ]]; then
     make validate
     make mesh-man
-    echo "✅ Published locally. Use --cascade to propagate to satellites."
+
+    echo "🚀 Syncing Canon Library to remote (main)..."
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "$CURRENT_BRANCH" == "main" ]]; then
+        git push origin main
+        echo "✅ Published mesh-wide (Audit: Unified)."
+    else
+        echo "⚠️ Not on main branch ($CURRENT_BRANCH). Skipping push to origin."
+        echo "✅ Published locally. Merge to main and run 'make publish' to sync mesh."
+    fi
     exit 0
 fi
 
