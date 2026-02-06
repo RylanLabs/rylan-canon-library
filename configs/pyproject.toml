@@ -51,6 +51,9 @@ lint.ignore = [
     "D100",  # Missing module docstring (acceptable in small modules)
     "D104",  # Missing docstring in public package
     "E501",  # Line too long (handled by formatter)
+    "S101",  # Use of assert detected (allowed in tests)
+    "S603",  # subprocess call (reviewed subprocess calls)
+    "S607",  # partial executable path (allowed in tests)
 ]
 
 # Per-file ignores
