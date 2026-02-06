@@ -28,9 +28,16 @@ def main() -> None:
     """Execute Whitaker anomaly detection protocol."""
     print("🛡️  Whitaker Protocol: AI-augmented Anomaly Detection...")
 
-    manifest_path = os.getenv("DEVICE_MANIFEST", "test-satellite/manifests/argocd/satellite-app.yaml") # Placeholder
+    manifest_path = os.getenv(
+        "DEVICE_MANIFEST", "test-satellite/manifests/argocd/satellite-app.yaml"
+    )  # Placeholder
     # Search for actual manifest
-    for p in ["inventory/device-manifest.yml", "test-satellite/manifests/device-manifest.yml", "templates/device-manifest-template.yml"]:
+    manifest_paths = [
+        "inventory/device-manifest.yml",
+        "test-satellite/manifests/device-manifest.yml",
+        "templates/device-manifest-template.yml",
+    ]
+    for p in manifest_paths:
         if os.path.exists(p):
             manifest_path = p
             break
