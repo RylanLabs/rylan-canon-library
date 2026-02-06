@@ -17,6 +17,9 @@ These targets are the 'Eternal Glue' used across the mesh.
 | Target | Purpose | Guardian | Timing Estimate |
 |:-------|:--------|:---------|:----------------|
 | `cascade` | Distribute secrets/state through mesh (Beale) | Beale | 2m |
+| `ci-audit` | Aggregate audit logs for CI (Bauer) | N/A | Unknown |
+| `ci-report` | Generate human-readable CI report | N/A | Unknown |
+| `ci-validate-all` | Run all validators + generate CI summary | N/A | Unknown |
 | `clean` | Remove temporary audit files and logs | Lazarus | 5s |
 | `help` | Show shared targets | Bauer | <5s |
 | `inject-canon` | Inject Tier 0 Canon into satellite (Bootstrap) | N/A | Unknown |
@@ -33,6 +36,7 @@ These targets are the 'Eternal Glue' used across the mesh.
 | `repo-init` | Bootstrap new repositories to RylanLabs standards | Lazarus | 2m |
 | `resolve` | Materialize symlinks for Windows/WSL/CI compatibility (Agnosticism Pattern) | Beale | 15s |
 | `rollback-canon` | Revert Phase 0 injection (Emergency Only) | N/A | Unknown |
+| `snapshot` | Create canonical baseline snapshot (Lorek) | Lorek | 10s |
 | `sync-deps` | Sync dependencies with tier cascade and GPG validation | Bauer | Unknown |
 | `test` | Run Bauer unit tests (Pytest) | Bauer | 30s |
 | `validate` | Run standard Whitaker gates (Validator Suite) | Whitaker | 30s |

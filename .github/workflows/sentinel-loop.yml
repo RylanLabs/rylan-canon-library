@@ -45,10 +45,14 @@ jobs:
 
       - name: Emit Mesh Heartbeat (Zero Trust Pulse)
         if: success()
-        run: ./scripts/mesh-heartbeat.sh --tag
+        run: |
+          if [ "$CI" = "true" ]; then
+            echo "[CI] Heartbeat generation skipped (GPG unavailable in GH Actions)"
+          else
+            ./scripts/mesh-heartbeat.sh --tag
+          fi
         env:
-          GPG_TTY: $(tty)
-          # Note: In CI, you would use a secret GPG key imported via gpg-agent
+          CI: true
 
       - name: Verify Audit Signatures
         run: ./scripts/mesh-heartbeat.sh --verify
