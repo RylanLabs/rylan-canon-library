@@ -55,16 +55,20 @@ map_violations() {
         dir=$(dirname "$old_path")
         base=$(basename "$old_path")
         
-        # Kebab transformation logic
-        # 1. Lowercase
-        # 2. Convert underscores/spaces/CamelCase to hyphens
-        # 3. Strip insecure chars (already handled by validator, but redundancy is good)
-        new_base=$(echo "$base" | iconv -f UTF-8 -t UTF-8//TRANSLIT 2>/dev/null | \
+        # Kebab transformation logic (Strict Hellodeolu v7/Raptor/Grok compliant)
+        # 1. NFKC/Translit to clean chars
+        # 2. Convert CamelCase to kebab
+        # 3. Lowercase everything
+        # 4. Replace ALL non-alphanumeric (except last dot) with hyphens
+        # 5. Collapse multiple hyphens
+        
+        core_name="${base%.md}"
+        new_core=$(echo "$core_name" | iconv -f UTF-8 -t UTF-8//TRANSLIT 2>/dev/null | \
                    sed -r 's/([a-z0-9])([A-Z])/\1-\2/g' | \
                    tr '[:upper:]' '[:lower:]' | \
-                   sed -e 's/[^a-z0-9.]/-/g' -e 's/-\+/-/g' -e 's/^-//g' -e 's/-$//g' | \
-                   sed 's/-md$/.md/')
+                   sed -e 's/[^a-z0-9]/-/g' -e 's/-\+/-/g' -e 's/^-//g' -e 's/-$//g')
         
+        new_base="${new_core}.md"
         new_path="${dir}/${new_base}"
         
         if [[ "$old_path" == "$new_path" ]]; then continue; fi
@@ -89,8 +93,12 @@ apply_changes() {
         return 0
     fi
 
-    log_info "Creating migration branch: $BRANCH_NAME"
-    git checkout -b "$BRANCH_NAME"
+    log_info "Ensuring migration branch: $BRANCH_NAME"
+    if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+        log_info "Branch $BRANCH_NAME already exists, continuing..."
+    else
+        git checkout -b "$BRANCH_NAME"
+    fi
 
     while IFS= read -r old_path; do
         new_path=$(jq -r --arg old "$old_path" '.[$old]' "$MAPPING_FILE")
