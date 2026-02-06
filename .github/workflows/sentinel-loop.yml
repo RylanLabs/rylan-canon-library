@@ -43,6 +43,16 @@ jobs:
           # This will be populated by org-audit.sh in Phase 2
           echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"status\": \"completed\"}" > .audit/latest-run.json
 
+      - name: Emit Mesh Heartbeat (Zero Trust Pulse)
+        if: success()
+        run: ./scripts/mesh-heartbeat.sh --tag
+        env:
+          GPG_TTY: $(tty)
+          # Note: In CI, you would use a secret GPG key imported via gpg-agent
+
+      - name: Verify Audit Signatures
+        run: ./scripts/mesh-heartbeat.sh --verify
+
       - name: Upload Audit Artifacts
         if: always()
         uses: actions/upload-artifact@v4
