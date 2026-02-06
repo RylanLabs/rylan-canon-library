@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ruff: noqa: ALL
+# noqa: F401, F841
 """
 Script: playbook-structure-linter.py
 Purpose: Enforce 7-task Trinity workflow sequence (P2 Discipline)
