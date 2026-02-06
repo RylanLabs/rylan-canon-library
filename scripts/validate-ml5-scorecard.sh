@@ -45,6 +45,7 @@ with open('$file', 'w') as f:
 "
 }
 
+# shellcheck disable=SC2317
 yq_read() {
     local key=$1
     local file=$2
@@ -129,6 +130,7 @@ fi
 
 # Test 2: Error Handling (No bare excepts)
 echo -n "Test 2: Error Handling... "
+# shellcheck disable=SC2126
 BARE_EXCEPTS=$(grep -r "except:" --include="*.py" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | awk '{print $1}')
 if [ "$BARE_EXCEPTS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
@@ -176,6 +178,7 @@ echo -n "Test 8: Whitaker Adversarial... "
 # Logic: Whitaker checks if critical files have unexpected local modifications 
 # that aren't represented in the manifest OR if dirty state persists.
 # Restricted to current directory (.)
+# shellcheck disable=SC2126
 GHOST_FILES=$(git status --short . 2>/dev/null | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l | awk '{print $1}')
 if [ "$GHOST_FILES" -eq 0 ]; then
     echo -e "${GREEN}PASS (Zero Drift)${NC}"
@@ -190,6 +193,7 @@ fi
 # Test 10: Environmental Agility (Gap 2)
 echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
+# shellcheck disable=SC2126
 HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
