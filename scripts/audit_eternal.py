@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script: audit-eternal.py
+Script: audit_eternal.py
 Purpose: Ensure no drift in versioning and core patterns across the canon library
 Agent: Bauer
 Author: rylanlab canonical

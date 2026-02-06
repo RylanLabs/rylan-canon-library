@@ -29,7 +29,7 @@ SACRED_SCRIPTS=(
   "whitaker-scan.sh"
   "sentinel-expiry.sh"
   "warm-session.sh"
-  "playbook-structure-linter.py"
+  "playbook_structure_linter.py"
   "verify-workflows.sh"
   "whitaker-detached-head.sh"
 )

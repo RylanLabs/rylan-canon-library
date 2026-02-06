@@ -8,26 +8,32 @@
 set -euo pipefail
 
 # --- Configuration ---
-# Regex for kebab-case (lowercase, numbers, hyphens only, starting/ending with alphanumeric)
 MD_REGEX='^[a-z0-9]+(-[a-z0-9]+)*\.md$'
+SH_REGEX='^[a-z0-9]+(-[a-z0-9]+)*\.sh$'
+PY_REGEX='^[a-z0-9]+(_[a-z0-9]+)*\.py$'
+
 METRICS_FILE=".audit/metrics.json"
-VIOLATIONS_JSON=".audit/naming-violations.json"
+ISO_DATE=$(date +%Y%m%d)
+VIOLATIONS_JSON=".audit/naming-violations-${ISO_DATE}.json"
+# Symlink current violations for audit script
+LATEST_VIOLATIONS=".audit/naming-violations.json"
 
 # --- Initialization ---
 mkdir -p .audit
 REPO_NAME=$(basename "$(git rev-parse --show-toplevel)")
 VIOLATION_COUNT=0
+declare -A SEEN_LOWERCASE
 
 log_info() { echo -e "\033[1;36m[INFO]\033[0m $*"; }
 log_error() { echo -e "\033[1;31m[FAIL]\033[0m $*"; }
 
-echo "=== Naming Convention Validation (Kebab-Case Discipline) ==="
+echo "=== Naming Convention Validation (Canonical Discipline) ==="
 echo "Repository: $REPO_NAME"
 
 # --- 1. Repository Tier Validation ---
 validate_repo_tier() {
     if [ -f "README.md" ]; then
-        TIER=$(grep -oP '(?<=\*\*Tier\*\*: )\d+' README.md || echo "UNKNOWN")
+        TIER=$(grep -oP '(?<=\*\*Tier\*\*: )\d+(\.\d+)?' README.md || echo "UNKNOWN")
         case "$TIER" in
             0) EXPECTED="^rylan-canon-library$" ;;
             0.5) EXPECTED="^rylanlabs-.*-vault$" ;;
@@ -53,14 +59,12 @@ validate_repo_tier() {
     fi
 }
 
-# --- 2. Markdown Filename Validation (The Duck/Grok Logic) ---
-validate_markdown_files() {
-    log_info "Validating .md filenames..."
+# --- 2. Advanced Discipline Validation (.md, .sh, .py) ---
+validate_file_naming() {
+    log_info "Validating mesh-wide filenames..."
     
-    # Discovery: All .md files, excluding hidden dirs and transient artifacts
-    # We include rylan-labs-common as it must follow mesh-wide naming discipline.
-    # Exclude test-satellite (test artifacts), .tmp, and common env dirs.
-    FILES=$(find . -maxdepth 4 -name "*.md" \
+    # Discovery: .md, .sh, .py excluding hidden dirs and transient artifacts
+    FILES=$(find . -maxdepth 4 \( -name "*.md" -o -name "*.sh" -o -name "*.py" \) \
         -not -path "*/.*" \
         -not -path "./.rylan/*" \
         -not -path "./test-satellite/*" \
@@ -75,40 +79,66 @@ validate_markdown_files() {
 
     for file in $FILES; do
         filename=$(basename "$file")
+        ext="${filename##*.}"
         
-        # NFKC Normalization and Sanitization (PromptPwnd Mitigation)
-        # We strip chars that are not alphanumeric, dot, or hyphen
-        sanitized=$(echo "$filename" | iconv -f UTF-8 -t UTF-8//TRANSLIT 2>/dev/null | sed 's/[^a-zA-Z0-9.-]//g' || echo "$filename")
-        
-        if [[ "$filename" != "$sanitized" ]]; then
-             log_error "Insecure characters detected: $file"
+        # NFKC Normalization Check (Python helper for reliability)
+        if ! python3 -c "import sys, unicodedata; f='$filename'; sys.exit(0 if unicodedata.is_normalized('NFKC', f) else 1)" 2>/dev/null; then
+             log_error "Unicode normalization (NFKC) violation: $file"
              ((VIOLATION_COUNT+=1))
              continue
         fi
 
-        if [[ ! "$filename" =~ $MD_REGEX ]]; then
-            # Special exceptions for root metadata
-            if [[ "$filename" =~ ^(README|CHANGELOG|MESH-MAN)\.md$ ]]; then
-                continue
-            fi
-            
-            # Allow common suffixes like .v2.1.0.md for checklists if they follow the pattern
-            # But the regex ^[a-z0-9]+(-[a-z0-9]+)*\.md$ is strict. 
-            # We'll stick to strict kebab for now as per Raptor's rules.
-            
-            log_error "Non-compliant naming: $file"
+        # Case-insensitive collision detection
+        lower_name=$(echo "$filename" | tr '[:upper:]' '[:lower:]')
+        if [[ -n "${SEEN_LOWERCASE[$lower_name]:-}" && "${SEEN_LOWERCASE[$lower_name]}" != "$filename" ]]; then
+            log_error "Case-insensitive collision detected: $file conflicts with ${SEEN_LOWERCASE[$lower_name]}"
+            ((VIOLATION_COUNT+=1))
+            continue
+        fi
+        SEEN_LOWERCASE[$lower_name]="$filename"
+
+        # Regex Validation
+        valid=true
+        case "$ext" in
+            md) 
+                if [[ ! "$filename" =~ $MD_REGEX ]]; then
+                    if [[ ! "$filename" =~ ^(README|CHANGELOG|MESH-MAN)\.md$ ]]; then
+                        valid=false
+                        reason="Not kebab-case (MD)"
+                    fi
+                fi
+                ;;
+            sh)
+                if [[ ! "$filename" =~ $SH_REGEX ]]; then
+                    valid=false
+                    reason="Not kebab-case (SH)"
+                fi
+                ;;
+            py)
+                if [[ ! "$filename" =~ $PY_REGEX ]]; then
+                    if [[ ! "$filename" =~ ^(__init__|test_.*)\.py$ ]]; then
+                        valid=false
+                        reason="Not snake_case (PY)"
+                    fi
+                fi
+                ;;
+        esac
+
+        if [ "$valid" = false ]; then
+            log_error "Non-compliant naming: $file [Reason: $reason]"
             ((VIOLATION_COUNT+=1))
             
             # Record violation in JSON
             if command -v jq >/dev/null 2>&1; then
-                jq --arg path "$file" --arg name "$filename" \
-                   '. += [{"path": $path, "filename": $name, "reason": "Not kebab-case"}]' \
+                jq --arg path "$file" --arg name "$filename" --arg r "$reason" \
+                   '. += [{"path": $path, "filename": $name, "reason": $r}]' \
                    "$VIOLATIONS_JSON" > "${VIOLATIONS_JSON}.tmp" && mv "${VIOLATIONS_JSON}.tmp" "$VIOLATIONS_JSON"
             fi
         fi
     done
+    ln -sf "$(basename "$VIOLATIONS_JSON")" "$LATEST_VIOLATIONS"
 }
-
+            
 # --- 3. Metrics Export ---
 export_metrics() {
     if command -v jq >/dev/null 2>&1; then
@@ -118,10 +148,11 @@ export_metrics() {
 }
 
 validate_repo_tier
-validate_markdown_files
+validate_file_naming
 export_metrics
 
 if [ "$VIOLATION_COUNT" -gt 0 ]; then
+    log_info "Audit file: $VIOLATIONS_JSON"
     log_error "Validation failed with $VIOLATION_COUNT naming violations."
     exit 1
 fi

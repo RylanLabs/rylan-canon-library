@@ -375,7 +375,7 @@ Whitaker (Phase 4) collaborates across the fortress:
 
 **Bauer → Whitaker**: Pre-test verification of system state
 ```bash
-./scripts/audit-eternal.py --pre-flight || exit 1
+./scripts/audit_eternal.py --pre-flight || exit 1
 ./scripts/defense-tests.sh
 ```
 

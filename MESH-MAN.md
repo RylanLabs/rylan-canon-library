@@ -56,3 +56,5 @@ make org-audit # Multi-repo scan
 - **Idempotency**: All targets must be safe to run repeatedly.
 - **Observability**: Every run produces an entry in `.audit/audit-trail.jsonl`.
 - **Junior-Deployable**: Descriptions must be clear enough for a Level 1 engineer.
+
+**Naming Discipline Status**: 0 violations as of 2026-02-06

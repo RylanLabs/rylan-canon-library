@@ -33,7 +33,7 @@ else
         echo "  ... and $((VIOLATION_COUNT - 20)) more (See $VIOLATIONS_FILE)"
     fi
     echo "------------------------------------------------------------"
-    echo "Remediation: Run 'make naming-fix-interactive' or 'scripts/rename-to-kebab.sh --apply'"
+    echo "Remediation: Run 'make naming-fix-interactive' or 'scripts/rename-to-standard.sh --apply'"
 fi
 
 # Update MESH-MAN.md (Pillar 7: Observability)

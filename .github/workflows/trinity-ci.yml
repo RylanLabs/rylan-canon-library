@@ -16,8 +16,22 @@ env:
   PYTHON_VERSION: "3.12"
 
 jobs:
+  naming-validation:
+    name: "Naming Discipline Audit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run Naming Audit
+        run: make naming-audit
+
   validate:
     name: "Bauer/Whitaker Validation"
+    needs: naming-validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project

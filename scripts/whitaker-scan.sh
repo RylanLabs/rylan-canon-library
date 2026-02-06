@@ -103,9 +103,9 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
       "whitaker-scan.sh"
       "sentinel-expiry.sh"
       "warm-session.sh"
-      "playbook-structure-linter.py"
+      "playbook_structure_linter.py"
       "verify-workflows.sh"
-      "whitaker-anomaly-detector.py"
+      "whitaker_anomaly_detector.py"
       "whitaker-detached-head.sh"
     )
     
@@ -119,9 +119,9 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
 fi
 
 # 5. Live Anomaly Detection (UniFi)
-if [[ -f "scripts/whitaker-anomaly-detector.py" && -n "${UNIFI_HOST:-}" ]]; then
+if [[ -f "scripts/whitaker_anomaly_detector.py" && -n "${UNIFI_HOST:-}" ]]; then
     echo "🔍 Running Live Anomaly Detection..."
-    if ! python3 scripts/whitaker-anomaly-detector.py; then
+    if ! python3 scripts/whitaker_anomaly_detector.py; then
         FAILED=1
     fi
 fi

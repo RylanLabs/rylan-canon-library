@@ -48,9 +48,17 @@ naming-fix-interactive: ## Interactively fix naming violations (Whitaker) | timi
 	@chmod +x scripts/rename-to-kebab.sh
 	@./scripts/rename-to-kebab.sh --apply
 
+naming-audit: ## Run comprehensive naming audit (Bauer) | timing: 15s
+	@./scripts/validate-naming-convention.sh
+
+naming-fix-interactive: ## Interactive remediation UX (Whitaker) | timing: 60s
+	@./scripts/rename-to-standard.sh --apply
+
 naming-fix-auto: ## Automated naming fix for CI (no-bypass) | timing: 30s
-	@chmod +x scripts/rename-to-kebab.sh
-	@RENAME_ASSUME_YES=true ./scripts/rename-to-kebab.sh --apply
+	@./scripts/rename-to-standard.sh --apply --auto
+
+naming-rollback: ## Emergency rollback of naming changes | timing: 30s
+	@./scripts/rename-to-standard.sh --rollback
 
 clean: ## Remove temporary audit files and logs | guardian: Lazarus | timing: 5s
 	@$(call log_info, Cleaning temporary files)

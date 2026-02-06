@@ -34,7 +34,7 @@ repos:
         name: Naming Convention - Kebab-Case Discipline
         entry: bash scripts/validate-naming-convention.sh
         language: script
-        files: \.md$
+        files: \.(md|py|sh)$
         pass_filenames: false
         stages: [commit]
 

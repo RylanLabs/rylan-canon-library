@@ -96,14 +96,14 @@ sacred_files:
       dest: docs/api-coverage-discipline.md
       immutable: true
       description: "Tracking endpoint coverage for DR runbooks (Bauer: Min 80% coverage; pre-commit blocks low coverage)."
-    - src: scripts/track-endpoint-coverage.py
-      dest: scripts/track-endpoint-coverage.py
+    - src: scripts/track_endpoint_coverage.py
+      dest: scripts/track_endpoint_coverage.py
       immutable: true
       description: "Python script for .audit/api/coverage.json updates; enforces guardian mappings."
 
   playbook:
-    - src: scripts/playbook-structure-linter.py
-      dest: scripts/playbook-structure-linter.py
+    - src: scripts/playbook_structure_linter.py
+      dest: scripts/playbook_structure_linter.py
       immutable: true
       description: "Enforces 7-task Trinity workflow (GATHER-PROCESS-APPLY-VERIFY-AUDIT-REPORT-FINALIZE); CI/pre-commit integration."
     - src: docs/trinity-execution.md
@@ -174,8 +174,8 @@ sacred_files:
       dest: .gitleaksignore
       immutable: true
       description: "Ignore patterns/fingerprints for known false positives."
-    - src: scripts/ml5-report-helper.py
-      dest: scripts/ml5-report-helper.py
+    - src: scripts/ml5_report_helper.py
+      dest: scripts/ml5_report_helper.py
       immutable: true
       description: "Helper for ML5 compliance reporting (Bauer)."
     - src: templates/pyproject.toml.template
