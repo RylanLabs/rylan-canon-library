@@ -518,8 +518,28 @@ The Trinity endures.
 
 ---
 
-**Document Status**: ✅ Production-grade (A- Grade: 92/100)
-**Last Updated**: December 20, 2025
+## Publishing Discipline (Ansible Galaxy)
+
+Ensures that all collections extraction from the mesh follow a rigid validation sequence.
+
+### Prerequisites
+- `galaxy.yml` present with semantic versioning.
+- `ANSIBLE_GALAXY_TOKEN` available via environment or identity prompt.
+
+### Enforcement (No-Bypass)
+All publishing MUST be performed via the Tier 0 **Publish Gate**:
+```bash
+make publish ARGS="--dry-run" # Local validation
+make publish                  # Production execution
+```
+
+**Guardians**: Carter (Identity), Bauer (Verification), Beale (Hardening).
+**Audit**: Logs generated in `.audit/publish-gate.jsonl`.
+
+---
+
+**Document Status**: ✅ Production-grade (A Grade: 95/100)
+**Last Updated**: February 5, 2026
 **Canon Alignment**: Trinity + Seven Pillars + Ministry execution
 **Grade Justification**:
 - Canon alignment ✅

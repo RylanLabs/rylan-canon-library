@@ -56,4 +56,14 @@ if [ "$FAIL" -ne 0 ]; then
 fi
 
 echo "✅ All identity keys within compliance window."
+
+# --- Zero Trust Heartbeat ---
+# If sentinel-expiry passes, we record a signed "Still-Valid" attestation.
+HEARTBEAT_SCRIPT="$(dirname "$0")/mesh-heartbeat.sh"
+if [[ -x "$HEARTBEAT_SCRIPT" ]]; then
+    "$HEARTBEAT_SCRIPT" --identity "$IDENTITY_EMAIL"
+else
+    echo "⚠️  Heartbeat script not found or not executable. Posture check incomplete."
+fi
+
 exit 0

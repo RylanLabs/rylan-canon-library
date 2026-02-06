@@ -40,6 +40,41 @@ PHASE 3: SUMMARY (~1 min)
 
 **Total Time**: ~15-20 minutes (includes setup)
 
+### 6. publish-gate
+
+**Purpose**: Pre-flight validation and secure push to Ansible Galaxy  
+**Tools**: ansible-galaxy, publish-gate.sh  
+**Pillars**: Validation, Error Handling, Idempotency  
+**Duration**: 1-2 minutes  
+
+**Workflow**:
+
+```mermaid
+graph TD
+    A[make publish] --> B{--dry-run?}
+    B -- Yes --> C[Build Only]
+    B -- No --> D{ANSIBLE_GALAXY_TOKEN?}
+    D -- No --> E[Prompt User / SOPS]
+    D -- Yes --> F{CI Environment?}
+    F -- Yes --> G[Auto-Confirm]
+    F -- No --> H[[y/N] Confirmation]
+    G --> I[ansible-galaxy publish]
+    H --> I
+    E --> I
+```
+
+---
+
+## Galaxy Token Management
+
+The `ANSIBLE_GALAXY_TOKEN` is required for all remote publishing. It is sourced in order of precedence:
+
+1. `ANSIBLE_GALAXY_TOKEN` environment variable (Primary for CI)
+2. Interactive user prompt (Manual execution)
+3. SOPS-encrypted vaults (Provisioning mode)
+
+**Note**: For security, tokens are never stored in the repository. They must be configured as **GitHub Secrets** for CI/CD operations.
+
 ---
 
 ## Markdown Canon

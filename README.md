@@ -65,7 +65,13 @@ make warm-session
 make validate
 ```
 
-### 3. Initialize a new Mesh repository
+### 3. Publish to Galaxy (Extraction)
+
+```bash
+make publish ARGS="--dry-run"
+```
+
+### 4. Initialize a new Mesh repository
 
 ```bash
 ./scripts/repo-init.sh my-new-repo

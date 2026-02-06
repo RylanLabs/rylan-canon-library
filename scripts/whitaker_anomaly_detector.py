@@ -14,15 +14,19 @@ import yaml
 # Add collection to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 try:
-    from ansible_collections.rylanlabs.unifi.plugins.module_utils.unifi_api import UnifiAPI
+    from ansible_collections.rylanlabs.unifi.plugins.module_utils.unifi_api import (
+        UnifiAPI,
+    )
 except ImportError:
     UnifiAPI = None  # type: ignore
+
 
 def load_manifest(path: str) -> dict[str, Any]:
     if not os.path.exists(path):
         return {}
     with open(path) as f:
         return yaml.safe_load(f) or {}
+
 
 def main() -> None:
     """Execute Whitaker anomaly detection protocol."""
@@ -45,28 +49,41 @@ def main() -> None:
     manifest = load_manifest(manifest_path)
     devices_manifest = manifest.get("devices", {})
     if isinstance(devices_manifest, list):
-        manifest_macs = { (d.get("mac") or "").lower() for d in devices_manifest if d.get("mac") }
+        manifest_macs = {
+            (d.get("mac") or "").lower() for d in devices_manifest if d.get("mac")
+        }
     else:
-        manifest_macs = { (v.get("mac") or "").lower() for k, v in devices_manifest.items() if v.get("mac") }
+        manifest_macs = {
+            (v.get("mac") or "").lower()
+            for k, v in devices_manifest.items()
+            if v.get("mac")
+        }
 
     host = os.getenv("UNIFI_HOST")
     user = os.getenv("UNIFI_USER")
     password = os.getenv("UNIFI_PASS")
 
-    if not all([host, user, password]):
+    if not host or not user or not password:
         print("⚠️  Skipping UniFi live check (Missing credentials)")
         return
+
+    # Narrow Optional[str] -> str for static type checking
+    assert host is not None and user is not None and password is not None
 
     if UnifiAPI is None:
         print("❌ Error: UnifiAPI library not found")
         sys.exit(1)
 
-    api: Any = UnifiAPI(  # type: ignore
-        host=host, username=user, password=password, verify_ssl=False
-    )
+    api = UnifiAPI(host=host, username=user, password=password, verify_ssl=False)
+
+    import requests
+
     try:
         live_devices = api.get_devices()
         live_clients = api.get_clients()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Network error connecting to UniFi: {e}")
+        sys.exit(1)
     except Exception as e:
         print(f"❌ Error connecting to UniFi: {e}")
         sys.exit(1)
@@ -75,7 +92,9 @@ def main() -> None:
     for dev in live_devices:
         mac = (dev.get("mac") or "").lower()
         if mac and mac not in manifest_macs:
-            rogues.append({"name": dev.get("name"), "mac": mac, "type": "Infrastructure"})
+            rogues.append(
+                {"name": dev.get("name"), "mac": mac, "type": "Infrastructure"}
+            )
 
     for client in live_clients:
         mac = (client.get("mac") or "").lower()
@@ -91,6 +110,7 @@ def main() -> None:
         sys.exit(1)
     else:
         print("✅ No rogue infrastructure detected.")
+
 
 if __name__ == "__main__":
     main()
