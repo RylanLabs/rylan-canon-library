@@ -104,15 +104,21 @@ apply_changes() {
         new_path=$(jq -r --arg old "$old_path" '.[$old]' "$MAPPING_FILE")
         
         log_info "Moving: $old_path -> $new_path"
-        git mv "$old_path" "$new_path"
+        if ! git mv "$old_path" "$new_path" 2>/dev/null; then
+            log_info "Fallback to standard mv for $old_path"
+            mv "$old_path" "$new_path"
+        fi
         
         # Reference fixer (Simple sed for markdown files)
         log_info "Updating internal references..."
         old_base=$(basename "$old_path")
         new_base=$(basename "$new_path")
         
-        # Search and replace in all .md files
-        find . -name "*.md" -not -path "./.rylan/*" -exec sed -i "s/$old_base/$new_base/g" {} +
+        # Search and replace in all .md, .yaml, and .yml files
+        find . -maxdepth 3 \( -name "*.md" -o -name "*.yaml" -o -name "*.yml" \) \
+            -not -path "./.rylan/*" \
+            -not -path "./rylan-labs-common/*" \
+            -exec sed -i "s/$old_base/$new_base/g" {} +
         
     done < <(jq -r 'keys[]' "$MAPPING_FILE")
 

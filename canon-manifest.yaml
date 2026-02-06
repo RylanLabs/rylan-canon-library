@@ -32,28 +32,28 @@ ministries:
 
 sacred_files:
   architecture:
-    - src: docs/architecture/TIERED_SATELLITE_MASTER_INDEX.md
-      dest: docs/architecture/TIERED_SATELLITE_MASTER_INDEX.md
+    - src: docs/architecture/tiered-satellite-master-index.md
+      dest: docs/architecture/tiered-satellite-master-index.md
       immutable: true
       description: "Master index for the mesh; ties all documents together (Bauer: Verification)."
-    - src: docs/architecture/TIERED_SATELLITE_HIERARCHY_CANONICAL.md
-      dest: docs/architecture/TIERED_SATELLITE_HIERARCHY_CANONICAL.md
+    - src: docs/architecture/tiered-satellite-hierarchy-canonical.md
+      dest: docs/architecture/tiered-satellite-hierarchy-canonical.md
       immutable: true
       description: "Canonical technical specification for TSH (Carter: Identity; Bauer: Verification)."
-    - src: docs/architecture/TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md
-      dest: docs/architecture/TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md
+    - src: docs/architecture/tiered-satellite-hierarchy-executive-summary.md
+      dest: docs/architecture/tiered-satellite-hierarchy-executive-summary.md
       immutable: true
       description: "Executive summary for stakeholders; contains ASCII architecture (Carter: Standards)."
-    - src: docs/architecture/TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md
-      dest: docs/architecture/TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md
+    - src: docs/architecture/tiered-satellite-synthesis-analysis.md
+      dest: docs/architecture/tiered-satellite-synthesis-analysis.md
       immutable: true
       description: "Synthesis of Grok/Leo feedback and risk mitigations (Whitaker: Adversarial Risk)."
-    - src: docs/architecture/TIERED_SATELLITE_QUICK_REFERENCE.md
-      dest: docs/architecture/TIERED_SATELLITE_QUICK_REFERENCE.md
+    - src: docs/architecture/tiered-satellite-quick-reference.md
+      dest: docs/architecture/tiered-satellite-quick-reference.md
       immutable: true
       description: "Developer cheat sheet; contains naming conventions and shortcuts (Carter: Identity)."
-    - src: docs/architecture/TIERED_SATELLITE_ACTION_CHECKLIST.md
-      dest: docs/architecture/TIERED_SATELLITE_ACTION_CHECKLIST.md
+    - src: docs/architecture/tiered-satellite-action-checklist.md
+      dest: docs/architecture/tiered-satellite-action-checklist.md
       immutable: true
       description: "Engineering roadmap and checklist for migration (Lazarus: Recovery/Transition)."
 
