@@ -6,6 +6,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [2.3.0-bauer] - 2026-02-06
+
+### ✨ Added: Submodule Substrate & Hardened Gates (Sprint 2)
+
+- **Carter Identity Anchoring**: GPG-signed baselines (`v1.0.0-canonical`) established for the mesh.
+- **Beale Hardening**: `validate-gitmodules.sh` enforces RylanLabs URL allow-listing for submodules.
+- **Whitaker Guard**: `whitaker-detached-head.sh` prevents orphaned commits and enforces branch discipline.
+- **Bauer Sync**: `sync-canon.sh` upgraded with `--gpg-verify`, cascade validation (T0-T1 ordering), and JSON audit trails.
+- **Sentinel Hot-Sync**: `sentinel-sync.yml` implemented for 15-minute autonomous drift remediation.
+- **Lazarus Resilience**: `lazarus-drill.sh` materialized for automated recovery testing.
+- **Documentation**: New `dependency-discipline.md` standard for "plug/unplug" inheritance.
+
+---
+
 ## [2.2.0-common] - 2026-02-05
 
 ### ✨ Added: Bauer/Carter Logic Extraction (Sprint 1)

@@ -1,0 +1,73 @@
+---
+name: Sentinel Hot Sync (15m Loop)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # 15-minute intervals for autonomous state
+  workflow_dispatch:        # Allow manual "Sync Now"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync-mesh:
+    name: Hot Reconciliation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      security-events: write
+
+    steps:
+      - name: Checkout Tier 0 Canon
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          token: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Identity (Carter)
+        run: |
+          git config --global user.name "Rylan Sentinel (Bauer)"
+          git config --global user.email "sentinel@rylanlabs.io"
+
+      - name: Run Whitaker/Beale Safety Gates
+        run: |
+          chmod +x scripts/*.sh
+          echo "::: Validating Submodule Substrate :::"
+          ./scripts/validate-gitmodules.sh
+          echo "::: Checking for Detached HEADs :::"
+          ./scripts/whitaker-detached-head.sh || {
+            if [ "$LAZARUS_AUTO_REMEDIATE" = "true" ]; then
+               echo "Lazarus mode active. Attempting remediation..."
+               ./scripts/whitaker-detached-head.sh --remediate
+            else
+               exit 1
+            fi
+          }
+        env:
+          LAZARUS_AUTO_REMEDIATE: "true"
+
+      - name: Canonical Sync (Zero Drift)
+        run: |
+          # Sync dependencies and core canon
+          make sync-deps
+          ./scripts/sync-canon.sh --validate-cascade
+        env:
+          GPG_SIGNING_DISABLED: "true" # CI often uses PATs for auth, gpg handled separately if needed
+
+      - name: Detect and Push Drift
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            echo "Drift detected. Reconciling..."
+            git add .
+            git commit -m "sentinel: automated drift remediation [skip ci]"
+            git push origin HEAD:${{ github.ref }}
+          else
+            echo "Mesh in sync. Ground truth maintained."
+          fi
+
+      - name: Emit Heartbeat
+        run: ./scripts/mesh-heartbeat.sh
+        if: always()
