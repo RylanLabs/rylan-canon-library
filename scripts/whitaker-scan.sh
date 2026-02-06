@@ -55,6 +55,15 @@ if [ -d "vaults/" ]; then
     done < <(find vaults/ -name "*.yml" -exec grep -l "sops" {} + 2>/dev/null || true)
 fi
 
+# 2.1 Gitmodules Integrity Check
+if [[ -f ".gitmodules" ]]; then
+    echo "🔍 Checking Gitmodules integrity..."
+    if ! bash scripts/validate-gitmodules.sh >/dev/null 2>&1; then
+        echo "❌ ADVERSARIAL DETECTION: Gitmodules URL Allow-list violation!"
+        FAILED=1
+    fi
+fi
+
 # 3. Signature Enforcement (Last 5 commits)
 if git rev-parse --git-dir &>/dev/null; then
     echo "🔍 Checking recent commit signatures..."
@@ -64,6 +73,12 @@ if git rev-parse --git-dir &>/dev/null; then
             # Note: We warn but don't fail for signatures in local dev to avoid blocking bootstrap
         fi
     done
+
+    # 3.1 Detached HEAD Protection
+    if ! git symbolic-ref -q HEAD &>/dev/null; then
+        echo "❌ ADVERSARIAL DETECTION: Detached HEAD state detected!"
+        FAILED=1
+    fi
 fi
 
 # 4. Symlink SSOT Enforcement (Sacred Scripts)
@@ -77,12 +92,14 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
       "validate-python.sh"
       "validate-ansible.sh"
       "validate-sops.sh"
+      "validate-gitmodules.sh"
       "whitaker-scan.sh"
       "sentinel-expiry.sh"
       "warm-session.sh"
       "playbook-structure-linter.py"
       "verify-workflows.sh"
       "whitaker_anomaly_detector.py"
+      "whitaker-detached-head.sh"
     )
     
     for script in "${SACRED_SCRIPTS[@]}"; do

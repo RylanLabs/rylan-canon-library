@@ -138,6 +138,14 @@ sacred_files:
       dest: scripts/validate-sops.sh
       immutable: true
       description: "Ensures secrets are encrypted before commit (Beale: Hardening)."
+    - src: scripts/validate-gitmodules.sh
+      dest: scripts/validate-gitmodules.sh
+      immutable: true
+      description: "Enforces URL allow-listing for submodules (Beale: Hardening)."
+    - src: scripts/whitaker-detached-head.sh
+      dest: scripts/whitaker-detached-head.sh
+      immutable: true
+      description: "Blocks commits in detached HEAD state (Whitaker: Adversarial)."
     - src: scripts/validate-bash.sh
       dest: scripts/validate-bash.sh
       immutable: true

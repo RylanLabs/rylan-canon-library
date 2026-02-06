@@ -25,11 +25,13 @@ SACRED_SCRIPTS=(
   "validate-python.sh"
   "validate-ansible.sh"
   "validate-sops.sh"
+  "validate-gitmodules.sh"
   "whitaker-scan.sh"
   "sentinel-expiry.sh"
   "warm-session.sh"
   "playbook-structure-linter.py"
   "verify-workflows.sh"
+  "whitaker-detached-head.sh"
 )
 
 # Sacred Configs (Must be symlinked to Shared-Configs if available, else Canon)
