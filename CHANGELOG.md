@@ -209,7 +209,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
   - Performance considerations (caching)
   - Migration path from static-only inventory
 
-- **ansible/ansible.cfg-reference.md** (14.7K)
+- **ansible/ansible-cfg-reference.md** (14.7K)
   - Canonical ansible.cfg configuration
   - Connection and SSH optimization
   - Performance tuning (pipelining, caching, forks)
@@ -263,7 +263,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ### 🔒 Security Enhancements
 
-- ✅ Vault integration documented (ansible/ansible.cfg-reference.md)
+- ✅ Vault integration documented (ansible/ansible-cfg-reference.md)
 - ✅ SSH key management best practices (ED25519 recommended)
 - ✅ Bandit security scanning configured (low-level warnings only)
 - ✅ ShellCheck static analysis enabled (SC2086 quoting rules)

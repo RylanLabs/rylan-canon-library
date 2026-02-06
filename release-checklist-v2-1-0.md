@@ -67,7 +67,7 @@
   - [ ] Python code examples: Yes ✅
   - [ ] Migration path: Yes ✅
 
-- [x] **ansible/ansible.cfg-reference.md** (14.7K)
+- [x] **ansible/ansible-cfg-reference.md** (14.7K)
   - [ ] Markdown valid: Yes ✅
   - [ ] Full configuration: Yes ✅
   - [ ] Inline comments: Yes ✅
