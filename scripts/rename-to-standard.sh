@@ -90,8 +90,10 @@ map_violations() {
 fix_references() {
     local old_path=$1
     local new_path=$2
-    local old_base=$(basename "$old_path")
-    local new_base=$(basename "$new_path")
+    local old_base
+    old_base=$(basename "$old_path")
+    local new_base
+    new_base=$(basename "$new_path")
 
     log_info "Updating references: $old_base -> $new_base"
 
@@ -106,7 +108,8 @@ fix_references() {
 # --- 3. Apply Changes ---
 apply_changes() {
     local COMMIT_MSG="discipline: automated naming remediation (Whitaker-class)"
-    local BRANCH_NAME="fix/naming-standard-remediation-$(date +%Y%m%d-%H%M)"
+    local BRANCH_NAME
+    BRANCH_NAME="fix/naming-standard-remediation-$(date +%Y%m%d-%H%M)"
 
     if [[ "$AUTO_APPLY" == "false" ]]; then
         read -p "Proceed with applying changes in branch $BRANCH_NAME? (y/N): " -r

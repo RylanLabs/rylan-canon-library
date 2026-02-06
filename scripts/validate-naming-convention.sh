@@ -33,7 +33,9 @@ echo "Repository: $REPO_NAME"
 # --- 1. Repository Tier Validation ---
 validate_repo_tier() {
     if [ -f "README.md" ]; then
-        TIER=$(grep -oP '(?<=\*\*Tier\*\*: )\d+(\.\d+)?' README.md || echo "UNKNOWN")
+        # Handle both table format | **Tier** | 0 | and line format **Tier**: 0
+        # Using \K to reset match start instead of variable-length lookbehind
+        TIER=$(grep -oP '\*\*Tier\*\*[ |:]+\K\d+(\.\d+)?' README.md | head -n 1 || echo "UNKNOWN")
         case "$TIER" in
             0) EXPECTED="^rylan-canon-library$" ;;
             0.5) EXPECTED="^rylanlabs-.*-vault$" ;;
