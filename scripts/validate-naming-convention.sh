@@ -57,12 +57,12 @@ validate_repo_tier() {
 validate_markdown_files() {
     log_info "Validating .md filenames..."
     
-    # Discovery: All .md files, excluding hidden dirs, submodules, and transient artifacts
-    # We explicitly exclude rylan-labs-common (external repo) and test-satellite (test artifacts)
+    # Discovery: All .md files, excluding hidden dirs and transient artifacts
+    # We include rylan-labs-common as it must follow mesh-wide naming discipline.
+    # Exclude test-satellite (test artifacts), .tmp, and common env dirs.
     FILES=$(find . -maxdepth 4 -name "*.md" \
         -not -path "*/.*" \
         -not -path "./.rylan/*" \
-        -not -path "./rylan-labs-common/*" \
         -not -path "./test-satellite/*" \
         -not -path "./.tmp/*" \
         -not -path "./.pytest_cache/*" \
