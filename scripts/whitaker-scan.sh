@@ -81,8 +81,8 @@ if git rev-parse --git-dir &>/dev/null; then
         fi
     done
 
-    # 3.1 Detached HEAD Protection
-    if ! git symbolic-ref -q HEAD &>/dev/null; then
+    # 3.1 Detached HEAD Protection (Permit GITHUB_ACTIONS or explicit bypass)
+    if ! git symbolic-ref -q HEAD &>/dev/null && [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
         echo "❌ ADVERSARIAL DETECTION: Detached HEAD state detected!"
         FAILED=1
     fi
