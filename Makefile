@@ -13,6 +13,15 @@ warm-session: ## Establish 8-hour password-less GPG session (Asymmetric Warm)
 	@chmod +x scripts/warm-session.sh
 	@./scripts/warm-session.sh
 
+sync-deps: ## Sync dependencies with tier cascade and GPG validation | guardian: Bauer
+	@$(call log_info, Syncing dependencies...)
+	@START=$$(date +%s%3N); \
+	chmod +x scripts/sync-canon.sh; \
+	./scripts/sync-canon.sh --gpg-verify --validate-cascade && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,sync-deps,Bauer,$$STATUS,$$((END-START)),Mesh dependencies synchronized); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
+
 mesh-man: ## Regenerate MESH-MAN.md operational manual | guardian: Carter | timing: 10s
 	@$(call log_info, Regenerating MESH-MAN.md)
 	@START=$$(date +%s%3N); \
