@@ -81,6 +81,13 @@ ALL Tier 4 repos include:
 Included via: make resolve (materializes files, zero symlinks)
 ```
 
+### 🧠 Submodule Wisdom (Avoiding Hell)
+
+1. **Never commit in a detached HEAD**: Always `git checkout branch` before local edits.
+2. **Push the child first**: Use `git push --recurse-submodules=check` to prevent broken references.
+3. **Flat is better**: Keep all submodules in `.rylan/` or `submodules/`. Avoid nesting.
+4. **The Cascade Rule**: Sync Tiers 0 → 0.5 → 1 sequentially. Lower-tier standards are foundational.
+
 ---
 
 ## Validation Gates (5-Gate Trinity System)

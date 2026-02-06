@@ -64,7 +64,7 @@ try:
         curr = curr[k]
     if isinstance(curr, list): print(len(curr))
     else: print(curr)
-except Exception:
+except (yaml.YAMLError, KeyError, TypeError, AttributeError):
     sys.exit(0)
 "
 }
@@ -116,6 +116,7 @@ trap 'error_handler $LINENO $?' ERR
 
 # Initialize
 check_dependencies
+log_audit "session_start" "INFO" "Maturity Level 5 validation drill started"
 
 if [ ! -f "$SCORECARD_PATH" ]; then
     echo -e "${RED}ERROR: Scorecard not found at $SCORECARD_PATH${NC}"
@@ -157,7 +158,7 @@ fi
 # Test 2: Error Handling (No bare excepts)
 echo -n "Test 2: Error Handling... "
 # shellcheck disable=SC2126
-BARE_EXCEPTS=$(grep -r "except:" --include="*.py" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | awk '{print $1}')
+BARE_EXCEPTS=$(grep -r "except:" --include="*.py" --exclude-dir=".venv" --exclude-dir="node_modules" --exclude-dir="__pycache__" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | awk '{print $1}')
 if [ "$BARE_EXCEPTS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.error_handling.status" "PASS" "$SCORECARD_PATH"

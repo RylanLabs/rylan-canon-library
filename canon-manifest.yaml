@@ -15,6 +15,10 @@
 
 manifest_version: "1.0.0"  # SemVer; bump on structural changes.
 
+# List of upstream repositories this repository inherits from.
+# Higher index = Higher priority (Cascading sync: T0 -> T0.5 -> T1 -> ...).
+dependencies: []
+
 ministries:
   - ansible
   - security

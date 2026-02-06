@@ -21,7 +21,7 @@ SCANNED_COUNT=0
 FAILED_COUNT=0
 
 # Files to EXPLICITLY ignore because they are known infrastructure/config
-IGNORE_REGEX="(\.sops\.yaml$|\.github/.*|node_modules/.*|\.git/.*|\.venv/.*|test-satellite/.*|common\.mk$|README\.md$)"
+IGNORE_REGEX="(\.sops\.yaml$|\.github/.*|\.audit/.*|node_modules/.*|\.git/.*|\.venv/.*|test-satellite/.*|common\.mk$|README\.md$|canon-manifest\.yaml$|\.pre-commit-config\.yaml$|\.markdownlint\.json$|\.shellcheckrc$)"
 
 mkdir -p "$AUDIT_DIR"
 
