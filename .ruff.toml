@@ -1,0 +1,11 @@
+[lint]
+ignore = [
+    "S101",  # Use of assert detected (allowed in tests)
+    "S603",  # subprocess call (reviewed subprocess calls)
+    "S607",  # partial executable path (allowed in tests)
+]
+
+per-file-ignores = {
+    "**test*.py" = ["S101", "S607"],
+    "**/tests/**" = ["S101", "S607"],
+}
