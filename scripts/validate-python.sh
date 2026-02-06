@@ -164,7 +164,10 @@ log_pass "ruff formatting passed"
 log_section "PHASE 5: Running bandit security scan"
 log_info "Paths: $MYPY_PATHS (level: low-level only)"
 
-if bandit -r "$MYPY_PATHS" -ll --quiet; then
+# Exclude test files from bandit scanning (they commonly use assert and subprocess)
+BANDIT_EXCLUDE="--exclude tests/*,*/test_*.py"
+
+if bandit -r "$MYPY_PATHS" -ll --quiet $BANDIT_EXCLUDE; then
   log_pass "bandit security scan passed"
 else
   log_warn "Potential security issues detected (low-level)"

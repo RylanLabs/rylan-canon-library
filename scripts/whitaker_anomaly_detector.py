@@ -7,8 +7,9 @@ against the Carter Device Manifest.
 
 import os
 import sys
+from typing import Any
+
 import yaml
-from typing import Dict, Any, List
 
 # Add collection to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -17,7 +18,7 @@ try:
 except ImportError:
     UnifiAPI = None  # type: ignore
 
-def load_manifest(path: str) -> Dict[str, Any]:
+def load_manifest(path: str) -> dict[str, Any]:
     if not os.path.exists(path):
         return {}
     with open(path) as f:
@@ -26,14 +27,14 @@ def load_manifest(path: str) -> Dict[str, Any]:
 def main() -> None:
     """Execute Whitaker anomaly detection protocol."""
     print("🛡️  Whitaker Protocol: AI-augmented Anomaly Detection...")
-    
+
     manifest_path = os.getenv("DEVICE_MANIFEST", "test-satellite/manifests/argocd/satellite-app.yaml") # Placeholder
     # Search for actual manifest
     for p in ["inventory/device-manifest.yml", "test-satellite/manifests/device-manifest.yml", "templates/device-manifest-template.yml"]:
         if os.path.exists(p):
             manifest_path = p
             break
-            
+
     manifest = load_manifest(manifest_path)
     devices_manifest = manifest.get("devices", {})
     if isinstance(devices_manifest, list):

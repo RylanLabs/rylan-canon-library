@@ -8,6 +8,8 @@ paths = [
     '''Makefile''',
     '''docs/.*''',
     '''\.audit/.*''',
+    '''\.venv/.*''',
+    '''test-satellite/.*''',
     '''scripts/lib/vault-env\.sh''',
     '''ansible/roles/carter_identity/tasks/.*\.yml''',
     '''inventory/group_vars/all/auth_mapping\.yml''',

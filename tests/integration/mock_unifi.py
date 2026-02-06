@@ -1,6 +1,7 @@
 
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
 
 class MockUnifiHandler(BaseHTTPRequestHandler):
     def do_POST(self):
