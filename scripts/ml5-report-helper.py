@@ -16,7 +16,7 @@ def get_report(file_path: str) -> None:
 
     criteria: dict[str, Any] = data.get('criteria', {})
     statuses = []
-    for key, value in sorted(criteria.items()):
+    for _, value in sorted(criteria.items()):
         status = value.get('status', 'PENDING')
         statuses.append(status)
         # print(f"{status}: {key}") # Optional detailed view
