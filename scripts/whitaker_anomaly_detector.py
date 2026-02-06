@@ -84,8 +84,15 @@ def main() -> None:
     except requests.exceptions.RequestException as e:
         print(f"❌ Network error connecting to UniFi: {e}")
         sys.exit(1)
-    except Exception as e:
-        print(f"❌ Error connecting to UniFi: {e}")
+    except (ValueError, KeyError, AttributeError) as e:
+        print(f"❌ Data structure or Auth error in UniFi API: {e}")
+        sys.exit(1)
+    except Exception:
+        # Rationale: Top-level catch-all to ensure auditable failure in Whitaker scans.
+        import traceback
+
+        print("❌ CRITICAL: Unexpected failure during anomaly detection.")
+        traceback.print_exc()
         sys.exit(1)
 
     rogues = []

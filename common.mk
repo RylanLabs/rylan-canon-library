@@ -13,6 +13,8 @@ SHELL := /usr/bin/bash
 
 # --- Pathing & Identity ---
 CANON_ROOT ?= .
+VAULT_ROOT ?= $(shell realpath ../rylanlabs-private-vault 2>/dev/null || echo "../rylanlabs-private-vault")
+GPG_KEY_ID ?= security@rylan.local
 
 # --- Global Mesh Gates (No-Bypass) ---
 # Check for unsigned commits and identity expiry on every invocation

@@ -39,6 +39,9 @@ Read them. Internalise them. Apply them.
 5. **[bash-discipline.md](bash-discipline.md)**
    Production-grade Bash standards: headers, error handling, style, validation.
 
+6. **[dependency-discipline.md](dependency-discipline.md)**
+   Managing repo inheritance, submodules, and the "plug/unplug" mesh framing.
+
 ---
 
 ## Usage Guide

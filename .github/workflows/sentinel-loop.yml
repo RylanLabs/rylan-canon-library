@@ -53,6 +53,11 @@ jobs:
       - name: Verify Audit Signatures
         run: ./scripts/mesh-heartbeat.sh --verify
 
+      - name: Rotate Audit Logs
+        run: ./scripts/rotate-audit.sh
+        env:
+          RETENTION_DAYS: 14
+
       - name: Upload Audit Artifacts
         if: always()
         uses: actions/upload-artifact@v4

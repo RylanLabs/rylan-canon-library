@@ -36,6 +36,13 @@ repos:
         types: [yaml]
   - repo: local
     hooks:
+      - id: whitaker-detached-head
+        name: Whitaker Gate - Detached HEAD Protection
+        entry: scripts/whitaker-detached-head.sh
+        language: script
+        stages: [commit]
+        always_run: true
+        pass_filenames: false
       - id: validate-naming-convention
         name: Validate Repository Naming Convention
         entry: scripts/validate-naming-convention.sh
