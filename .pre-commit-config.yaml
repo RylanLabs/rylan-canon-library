@@ -30,6 +30,14 @@ repos:
         always_run: true
         pass_filenames: false
 
+      - id: validate-naming-convention
+        name: Naming Convention - Kebab-Case Discipline
+        entry: bash scripts/validate-naming-convention.sh
+        language: script
+        files: \.md$
+        pass_filenames: false
+        stages: [commit]
+
       - id: validate-python
         name: Python validation (mypy + ruff + bandit)
         entry: bash scripts/validate-python.sh

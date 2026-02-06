@@ -19,6 +19,7 @@ DRY_RUN=false
 NAMESPACE="rylanlabs"
 COLLECTION=""
 FORCE=false
+ASSUME_YES="${PUBLISH_ASSUME_YES:-false}"
 
 # --- Terminal Styling ---
 B_CYAN='\033[1;36m'
@@ -119,6 +120,12 @@ if [[ "$DRY_RUN" == "false" && -z "$GALAXY_TOKEN" ]]; then
             exit 1
         fi
         
+        # TTY Guard
+        if [[ ! -t 0 ]]; then
+            log_error "Non-interactive environment and token missing. Aborting."
+            exit 1
+        fi
+
         log_warn "ANSIBLE_GALAXY_TOKEN is unset."
         read -rsp "Enter Galaxy API Token (or Ctrl+C to abort): " GALAXY_TOKEN
         echo
@@ -171,11 +178,17 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 # 5. Human Confirmation Gate
-if [[ "${CI:-}" != "true" && "$FORCE" == "false" ]]; then
+if [[ "${CI:-}" != "true" && "$FORCE" == "false" && "$ASSUME_YES" == "false" ]]; then
+    # TTY Guard for interactive prompt
+    if [[ ! -t 0 ]]; then
+        log_warn "Non-interactive environment detected. Skipping prompt, assuming NO."
+        exit 0
+    fi
+
     echo -ne "${B_YELLOW}[PROMPT]${NC} Publish $ARTIFACT to Galaxy? [y/N]: "
-    read -r confirm
+    read -r -t 30 confirm || confirm="N" # 30s timeout
     if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-        log_warn "Publish aborted by user."
+        log_warn "Publish aborted (User declined or timeout)."
         log_audit "ABORT" "$ACTION" "User declined confirmation" 0
         exit 0
     fi

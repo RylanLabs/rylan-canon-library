@@ -64,6 +64,13 @@ if [[ -f ".gitmodules" ]]; then
     fi
 fi
 
+# 2.2 Naming Convention Checklist (Kebab-Case Discipline)
+echo "🔍 Checking naming conventions..."
+if ! bash scripts/validate-naming-convention.sh >/dev/null 2>&1; then
+    echo "❌ ADVERSARIAL DETECTION: Naming convention violation detected!"
+    FAILED=1
+fi
+
 # 3. Signature Enforcement (Last 5 commits)
 if git rev-parse --git-dir &>/dev/null; then
     echo "🔍 Checking recent commit signatures..."

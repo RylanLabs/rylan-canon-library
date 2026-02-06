@@ -40,6 +40,18 @@ repo-init: ## Bootstrap new repositories to RylanLabs standards | guardian: Laza
 	$(call log_audit,repo-init,Lazarus,$$STATUS,$$((END-START)),Repo scaffolded); \
 	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
+naming-audit: ## Run organizational naming audit (Bauer) | timing: 10s
+	@chmod +x scripts/audit-naming-convention.sh
+	@./scripts/audit-naming-convention.sh
+
+naming-fix-interactive: ## Interactively fix naming violations (Whitaker) | timing: 30s
+	@chmod +x scripts/rename-to-kebab.sh
+	@./scripts/rename-to-kebab.sh --apply
+
+naming-fix-auto: ## Automated naming fix for CI (no-bypass) | timing: 30s
+	@chmod +x scripts/rename-to-kebab.sh
+	@RENAME_ASSUME_YES=true ./scripts/rename-to-kebab.sh --apply
+
 clean: ## Remove temporary audit files and logs | guardian: Lazarus | timing: 5s
 	@$(call log_info, Cleaning temporary files)
 	@START=$$(date +%s%3N); \
