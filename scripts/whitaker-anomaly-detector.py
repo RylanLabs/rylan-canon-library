@@ -17,8 +17,10 @@ try:
     from ansible_collections.rylanlabs.unifi.plugins.module_utils.unifi_api import (
         UnifiAPI,
     )
-except ImportError:
-    UnifiAPI = None  # type: ignore
+except (ImportError, ModuleNotFoundError):
+
+    class UnifiAPI:  # type: ignore
+        pass
 
 
 def load_manifest(path: str) -> dict[str, Any]:
