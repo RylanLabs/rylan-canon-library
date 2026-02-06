@@ -29,6 +29,23 @@ lint.select = [
     "S",    # flake8-bandit (Security)
 ]
 
+lint.ignore = [
+    "S101",  # Use of assert detected (allowed in tests)
+    "S607",  # Starting a process with a partial executable path (allowed in tests)
+]
+
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+]
+
+per-file-ignores = {
+    "tests/**" = ["S101", "S607"],
+    "*/test_*.py" = ["S101", "S607"],
+}
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
