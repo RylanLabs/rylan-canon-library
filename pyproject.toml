@@ -28,7 +28,11 @@ lint.select = [
     "RUF",  # Ruff-specific rules
 ]
 
-lint.ignore = []
+lint.ignore = [
+    "S101",  # Use of assert detected
+    "S603",  # subprocess call
+    "S607",  # partial executable path
+]
 
 lint.exclude = [
     ".git",
@@ -36,13 +40,6 @@ lint.exclude = [
     "build",
     "dist",
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "S607"]
-"**/test_*.py" = ["S101", "S607"]
-"tests/**" = ["S101", "S607"]
-"test_*.py" = ["S101", "S607"]
-"**/plugins/inventory/unifi_inventory.py" = ["S603"]
 
 [tool.mypy]
 python_version = "3.11"
