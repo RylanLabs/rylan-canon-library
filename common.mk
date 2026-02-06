@@ -78,11 +78,12 @@ refresh-readme: ## Auto-generate README tier metadata from canon-manifest
 	@if [ -f canon-manifest.yaml ]; then \
 		RESULTS=$$(python3 -c "import yaml; d=yaml.safe_load(open('canon-manifest.yaml')); print(f\"{d.get('tier','0')}|{d.get('tier_name','UNKNOWN')}|{','.join(d.get('dependencies', []))}|{d.get('maturity_level','0')}|{d.get('guardian','UNKNOWN')}\")" 2>/dev/null || echo "0|UNKNOWN|None|0|UNKNOWN"); \
 		IFS='|' read -r TIER TIER_NAME DEPS MATURITY GUARDIAN <<< "$$RESULTS"; \
-		printf "## Repository Metadata\n\n| Attribute | Value |\n| :--- | :--- |\n| **Tier** | %s (%s) |\n| **Dependencies** | %s |\n| **Maturity Level** | %s |\n| **Guardian** | %s |\n| **Last Updated** | %s |\n\n---\n" \
-			"$$TIER" "$$TIER_NAME" "$$DEPS" "$$MATURITY" "$$GUARDIAN" "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+		ML5_SCORE=$$([ -f .audit/maturity-level-5-scorecard.yml ] && python3 -c "import yaml; d=yaml.safe_load(open('.audit/maturity-level-5-scorecard.yml')); print(d.get('overall_score', '0.0/10'))" 2>/dev/null || echo "N/A"); \
+		printf "## Repository Metadata\n\n| Attribute | Value |\n| :--- | :--- |\n| **Tier** | %s (%s) |\n| **Dependencies** | %s |\n| **Maturity Level** | %s |\n| **ML5 Compliance** | %s |\n| **Guardian** | %s |\n| **Last Updated** | %s |\n\n---\n" \
+			"$$TIER" "$$TIER_NAME" "$$DEPS" "$$MATURITY" "$$ML5_SCORE" "$$GUARDIAN" "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 			> .audit/readme-metadata.tmp; \
 		if grep -q "<!-- METADATA_START -->" README.md; then \
-			sed -i '/<!-- METADATA_START -->/,/<!-- METADATA_END -->/c\<!-- METADATA_START -->\n'"$$(cat .audit/readme-metadata.tmp)"'\n<!-- METADATA_END -->' README.md; \
+			python3 -c "import sys; content=open('.audit/readme-metadata.tmp').read(); readme=open('README.md').read(); start='<!-- METADATA_START -->'; end='<!-- METADATA_END -->'; import re; new_readme = re.sub(f'{start}.*?{end}', f'{start}\\n{content}\\n{end}', readme, flags=re.DOTALL); open('README.md', 'w').write(new_readme)" 2>/dev/null; \
 			$(call log_success, README metadata refresh); \
 		fi; \
 		rm -f .audit/readme-metadata.tmp; \
