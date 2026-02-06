@@ -82,6 +82,7 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
       "warm-session.sh"
       "playbook-structure-linter.py"
       "verify-workflows.sh"
+      "whitaker_anomaly_detector.py"
     )
     
     for script in "${SACRED_SCRIPTS[@]}"; do
@@ -91,6 +92,14 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
             FAILED=1
         fi
     done
+fi
+
+# 5. Live Anomaly Detection (UniFi)
+if [[ -f "scripts/whitaker_anomaly_detector.py" && -n "${UNIFI_HOST:-}" ]]; then
+    echo "🔍 Running Live Anomaly Detection..."
+    if ! python3 scripts/whitaker_anomaly_detector.py; then
+        FAILED=1
+    fi
 fi
 
 if [ "$FAILED" -ne 0 ]; then

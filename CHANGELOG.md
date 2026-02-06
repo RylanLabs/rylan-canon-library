@@ -6,6 +6,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) with [Semantic Ve
 
 ---
 
+## [2.2.0-common] - 2026-02-05
+
+### ✨ Added: Bauer/Carter Logic Extraction (Sprint 1)
+
+- **UniFi API Internalization**: Ported 2,000+ lines of production logic from `network-iac`.
+- **JWT Auth & Circuit Breaker**: Restored production-grade auth and resilience logic.
+- **Audit Substrate**: Materialized `rylan_audit_logger.py` for Pillar 4 compliance.
+- **Testing**: Reached 93% coverage on UniFi utilities and 100% on Audit Logger.
+- **Maturity**: Cross-mesh ML5 score reached 7.2 (Autonomous Threshold).
+
+---
+
 ## [2.1.0-mesh] - 2026-02-04
 
 ### ✨ Added: Mesh Infrastructure (Hellodeolu v7 Alignment)

@@ -1,0 +1,9 @@
+---
+plugin: rylanlabs.unifi.unifi_inventory
+host: "localhost"
+port: 8080
+username: "admin"
+password: "password"
+site: "default"
+verify_ssl: false
+manifest_path: "/home/egx570/repos/rylan-canon-library/tests/integration/device-manifest.yml"
