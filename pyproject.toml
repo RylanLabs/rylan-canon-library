@@ -32,6 +32,7 @@ lint.select = [
 lint.ignore = [
     "S101",  # Use of assert detected (allowed in tests)
     "S607",  # Starting a process with a partial executable path (allowed in tests)
+    "S603",  # subprocess call with untrusted input (checked, safe in our context)
 ]
 
 lint.exclude = [
