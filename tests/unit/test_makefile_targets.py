@@ -1,7 +1,9 @@
 import os
-import subprocess
-import pytest
 import shutil
+import subprocess
+
+import pytest
+
 
 @pytest.fixture
 def clean_audit():

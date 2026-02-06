@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-from typing import Any, Dict
-import yaml
-import sys
 import os
+import sys
+from typing import Any
+
+import yaml
+
 
 def get_report(file_path: str) -> None:
     if not os.path.exists(file_path):
         print(f"Error: Scorecard not found at {file_path}")
         sys.exit(1)
-    
-    with open(file_path, 'r') as f:
+
+    with open(file_path) as f:
         data: Any = yaml.safe_load(f)
-    
-    criteria: Dict[str, Any] = data.get('criteria', {})
+
+    criteria: dict[str, Any] = data.get('criteria', {})
     statuses = []
     for key, value in sorted(criteria.items()):
         status = value.get('status', 'PENDING')
@@ -23,7 +25,7 @@ def get_report(file_path: str) -> None:
     counts = Counter(statuses)
     for status, count in sorted(counts.items()):
         print(f"{count:7} {status}")
-    
+
     print(f"\nOverall Score: {data.get('overall_score', '0.0/10')}")
     print(f"Status: {data.get('status', 'PENDING')}")
 

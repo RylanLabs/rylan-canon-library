@@ -41,3 +41,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 # Coverage disabled for canon-library as it is primarily bash/makefile
 addopts = "-v"
+
+[tool.bandit]
+exclude_dirs = [".venv", "build", "dist", ".git"]
+skips = ["B101", "B607"]  # Skip assert_used and partial_executable_path in tests
