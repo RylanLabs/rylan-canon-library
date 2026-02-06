@@ -53,7 +53,9 @@ def main() -> None:
         print("❌ Error: UnifiAPI library not found")
         sys.exit(1)
 
-    api: Any = UnifiAPI(host=host, username=user, password=password, verify_ssl=False)
+    api: Any = UnifiAPI(  # type: ignore
+        host=host, username=user, password=password, verify_ssl=False
+    )
     try:
         live_devices = api.get_devices()
         live_clients = api.get_clients()

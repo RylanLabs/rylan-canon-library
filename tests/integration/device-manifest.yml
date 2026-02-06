@@ -6,7 +6,7 @@ devices:
     ip: "192.168.1.1"
     role: "gateway"
     tier: "T1"
-  
+
   ACCESS-POINT-01:
     hostname: "ACCESS-POINT-01"
     mac: "AA:BB:CC:DD:EE:FF"
