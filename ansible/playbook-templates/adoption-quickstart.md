@@ -695,7 +695,7 @@ Execution order: **Carter → Bauer → Beale → Whitaker**
 
 ## Document Metadata
 
-- **Document**: ADOPTION_QUICKSTART.md
+- **Document**: adoption-quickstart.md
 - **Version**: 4.5.2-adoption
 - **Status**: 🔒 Locked — Production-ready
 - **Last Updated**: 2025-12-22

@@ -36,4 +36,4 @@ See `.audit/maturity-level-5-scorecard.yml` for detailed metrics.
 
 ---
 
-**Canonical Reference**: [Tiered Satellite Hierarchy](docs/architecture/TIERED_SATELLITE_HIERARCHY_CANONICAL.md)
+**Canonical Reference**: [Tiered Satellite Hierarchy](docs/architecture/tiered-satellite-hierarchy-canonical.md)
