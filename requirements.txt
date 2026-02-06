@@ -1,4 +1,5 @@
 # Development / validation helpers
 # Add packages required to run the validator toolchain locally
 types-requests
+types-PyYAML
 mypy

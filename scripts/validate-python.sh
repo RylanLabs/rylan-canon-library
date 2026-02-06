@@ -98,6 +98,10 @@ log_pass "Environment ready"
 log_section "PHASE 2: Running mypy strict type checking"
 log_info "Paths: $MYPY_PATHS"
 
+# Add repository root to PYTHONPATH so mypy can resolve local modules and collections
+PYTHONPATH="${PYTHONPATH:-}:$(pwd)"
+export PYTHONPATH
+
 if ! find "$MYPY_PATHS" -name "*.py" | grep -q .; then
   log_info "No Python files found, skipping mypy"
 else
