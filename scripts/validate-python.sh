@@ -123,13 +123,14 @@ log_pass "mypy validation passed"
 log_section "PHASE 3: Running ruff linting"
 log_info "Paths: $RUFF_PATHS"
 
-if ! ruff check "$RUFF_PATHS"; then
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+if ! ruff check "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"; then
   log_error "ruff linting failed"
   echo ""
   log_warn "Auto-fix attempt:"
   echo "  ruff check --fix $RUFF_PATHS"
   echo ""
-  if ruff check --fix "$RUFF_PATHS" 2> /dev/null; then
+  if ruff check --fix "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml" 2> /dev/null; then
     log_info "Auto-fix successful - review changes and retry"
   fi
   exit 1
@@ -144,13 +145,13 @@ log_pass "ruff linting passed"
 log_section "PHASE 4: Checking ruff formatting"
 log_info "Paths: $RUFF_PATHS"
 
-if ! ruff format --check "$RUFF_PATHS"; then
+if ! ruff format --check "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"; then
   log_error "ruff formatting check failed"
   echo ""
   log_warn "Auto-fix attempt:"
   echo "  ruff format $RUFF_PATHS"
   echo ""
-  ruff format "$RUFF_PATHS"
+  ruff format "$RUFF_PATHS" --config "$REPO_ROOT/.ruff.toml"
   log_info "Formatting applied - please review and retry"
   exit 1
 fi
