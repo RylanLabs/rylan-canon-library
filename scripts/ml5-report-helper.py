@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
+from typing import Any, Dict
 import yaml
 import sys
 import os
 
-def get_report(file_path):
+def get_report(file_path: str) -> None:
     if not os.path.exists(file_path):
         print(f"Error: Scorecard not found at {file_path}")
         sys.exit(1)
     
     with open(file_path, 'r') as f:
-        data = yaml.safe_load(f)
+        data: Any = yaml.safe_load(f)
     
-    criteria = data.get('criteria', {})
+    criteria: Dict[str, Any] = data.get('criteria', {})
     statuses = []
     for key, value in sorted(criteria.items()):
         status = value.get('status', 'PENDING')

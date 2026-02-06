@@ -23,7 +23,7 @@ ministries:
   - playbook
   - rotation
   - validation  # Cross-cutting for linting/scripts
-  - orchestration # Agent definitions and instructions
+  - orchestration  # Agent definitions and instructions
   - architecture  # Tiered Satellite Hierarchy SSOT
 
 sacred_files:

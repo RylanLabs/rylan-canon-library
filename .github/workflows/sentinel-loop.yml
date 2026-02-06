@@ -3,10 +3,10 @@ name: Sentinel Loop (Bauer/Whitaker)
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Midnight UTC nightly
+    - cron: '0 0 * * *'  # Midnight UTC nightly
   repository_dispatch:
     types: [mesh-sync, satellite-drift]
-  workflow_dispatch: # Manual trigger for ad-hoc reconciliation
+  workflow_dispatch:  # Manual trigger for ad-hoc reconciliation
 
 jobs:
   reconcile:
@@ -31,7 +31,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Perform Mesh Remediation
-        if: always() # Run remediation if audit fails or finds drift
+        if: always()  # Run remediation if audit fails or finds drift
         run: ./scripts/mesh-remediate.sh
         env:
           GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
