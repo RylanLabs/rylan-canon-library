@@ -75,6 +75,7 @@ beale_integrity_check() {
 
 verify_gpg_signatures() {
     log "Carter Gate: Verifying submodule signatures..."
+    # shellcheck disable=SC2016
     git submodule foreach --quiet '
         if ! git verify-commit HEAD &>/dev/null; then
             echo "🚨 CARTER GATE: Unsigned commit in submodule $name"
