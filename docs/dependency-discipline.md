@@ -38,15 +38,20 @@ Git submodules are powerful but "forgive no typos." Follow these rules to avoid 
 *   **The "Dirty Submodule" ghost**: Sometimes a submodule shows as modified even if you changed nothing.
     *   *Correction*: Run `git submodule update --init --recursive` to reset it to the recorded commit.
 
-### Proactive Best Practices
-*   **Flat Structure**: Always place submodules in `.rylan/` (e.g., `.rylan/rylan-inventory`). Avoid nested submodules (submodules within submodules) to keep the dependency graph readable.
-*   **Deterministic Versioning**: Submodules pin a repository to a specific SHA. This ensures that a build working today will work in six months, even if the upstream library moves forward.
-*   **Deterministic Sync (The Cascade)**: Inheritance MUST happen in sequence:
-    1.  **Tier 0** (Library)
-    2.  **Tier 0.5** (Vaults)
-    3.  **Tier 1** (Inventory)
-    4.  **Tier 2+** (Services)
-    *Why?* Higher tiers may override lower-tier defaults. The last sync wins.
+### Proactive Best Practices & Hardened Gates (Bauer/Beale/Whitaker)
+
+* **Flat Structure**: Always place submodules in `.rylan/` (e.g., `.rylan/rylan-inventory`).
+    Keep the dependency graph readable by avoiding nesting.
+* **Deterministic Versioning**: Submodules pin a repository to a specific SHA.
+    This ensures builds remain consistent over time.
+* **Deterministic Sync (The Cascade)**: Inheritance MUST happen in sequence:
+    1. Tier 0 (Library) -> 2. Tier 0.5 (Vaults) -> 3. Tier 1 (Inventory) -> 4. Tier 2+ (Services).
+* **Beale Allow-List**: Every submodule URL must be explicitly authorized within the RylanLabs organization.
+    External URLs are blocked by default to prevent supply chain poisoning.
+* **Whitaker Head Protection**: Commits on "Detached HEADs" are blocked.
+    The `whitaker-detached-head.sh` hook ensures you are on a branch before making changes.
+* **Lazarus Remediation**: When drift or corruption is detected, `sentinel-sync.yml` can automatically
+    attempt to re-anchor the repository to the canonical ground truth.
 
 ---
 
@@ -55,9 +60,10 @@ Git submodules are powerful but "forgive no typos." Follow these rules to avoid 
 > "If a Jr Dev can't fix it at 3 AM with one command, the automation has failed."
 
 We do not expect developers to remember complex `git submodule` flags.
-*   **Initialization**: `make resolve` (internalizes submodules and copies sacred files).
-*   **Validation**: `make validate` (runs audit-canon.sh to ensure zero-drift).
-*   **Update**: `make update-deps` (safely pulls latest canonical versions).
+
+* **Initialization**: `make resolve` (internalizes submodules and copies sacred files).
+* **Validation**: `make validate` (runs audit-canon.sh to ensure zero-drift).
+* **Update**: `make sync-deps` (safely pulls latest canonical versions with GPG verification).
 
 ---
 
@@ -73,11 +79,11 @@ We do not expect developers to remember complex `git submodule` flags.
 
 ## Checklist for Implementation
 
-- [ ] Repository added to `dependencies` in `canon-manifest.yaml`.
-- [ ] Submodule added: `git submodule add <url> .rylan/<name>`.
-- [ ] `CANON_LIB_PATH` points to `.rylan/rylan-canon-library` in `Makefile`.
-- [ ] GPG signature verification enabled for submodule pulls.
-- [ ] `make validate` returns green.
+* [ ] Repository added to `dependencies` in `canon-manifest.yaml`.
+* [ ] Submodule added: `git submodule add <url> .rylan/<name>`.
+* [ ] `CANON_LIB_PATH` points to `.rylan/rylan-canon-library` in `Makefile`.
+* [ ] GPG signature verification enabled for submodule pulls.
+* [ ] `make validate` returns green.
 
 ---
 

@@ -96,7 +96,10 @@ The library provides autonomous validators that enforce the "No-Bypass" culture:
 | Script | Agent | Mission | Features |
 | :--- | :--- | :--- | :--- |
 | `validate-sops.sh` | Whitaker | Secret Integrity | MAC verification, Key rotation checks |
+| `validate-gitmodules.sh` | Beale | Substrate Hardening | URL allow-listing (RylanLabs only) |
+| `whitaker-detached-head.sh` | Whitaker | Offense Discovery | Blocks detached HEAD commits; Lazarus recovery |
 | `validate-yaml.sh` | Bauer/Lazarus | Config Discipline | Auto-remediation, JSON audits, Heritage checks |
+| `sync-canon.sh` | Bauer | Cascade Sync | GPG verification, T0-T1 ordering, Audit trails |
 | `validate-bash.sh` | ShellCheck | Logic Hardening | POSIX compliance, Trap enforcement |
 
 ### Using the YAML Validator
